@@ -1,0 +1,81 @@
+<!--
+=========================================================================================
+Author:Will Hardwick-Smith and Jacky Chang
+
+Input area:
+	. user name: no condition check user may able to use all symbols and letters
+	. password: only the condition is both password and confirm password values are match
+
+Button:
+	. save button
+		check userName if username already create by other user show error message
+		check both passwords if not equal user need to reenter
+
+	. close
+		Close html page
+
+Area need improve:
+	userName format
+	password format (length and value)
+	forgot password button to reset password
+	need store more info (user personal info)
+
+===========================================================================================
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Create new Account</title>
+<link href="style.css" rel="stylesheet">
+<script src="js/lib/d3.v3.min.js"></script>
+<script src="js/lib/topojson.v1.min.js"></script>
+<script src="js/lib/jquery.min.js"></script>
+
+</head>
+<body id="body" style="overflow: hidden;">
+	<div id="newAccount" name = "div">
+		<div id="popupContact">
+			<h3>New Account</h3>
+			<table id="newAccountTable">
+
+				<input id="newUserName" type="text" placeholder="UserName">
+				<input id="newPassword" type="text" placeholder="Choose password" onclick = removeErrorMessage()>
+				<input id="confirmPassword" type="text" placeholder="Confirm password" >
+				<td><input type="submit" id="submit-newUserandPassword"	value="Send"></td>
+				<td><button id="close" onclick="window.close()">Close</button></td>
+
+
+			</table>
+			<p id = "error-message" ></p>
+		</div>
+	</div>
+
+
+
+<script type="text/javascript">
+	// send button: send values to attemptCreatAccount
+	// access: user created
+	// reject: user need reenter password or user name
+	var sendButton = document.getElementById("submit-newUserandPassword");
+	sendButton.onclick = function(){
+		var regUserName = document.getElementById("newUserName");
+		var regPassword = document.getElementById("newPassword");
+		var regConfPassword = document.getElementById("confirmPassword");
+		if(regPassword.value.localeCompare(regConfPassword.value)==0){
+			attemptCreateAccount(regUserName.value, regPassword.value);
+		}
+		else{
+			regPassword.value ="";
+			regConfPassword.value = "";
+			document.getElementById("error-message").innerHTML = "password not matched!";
+		}
+	};
+
+	function removeErrorMessage(){
+		document.getElementById("error-message").innerHTML = "";
+	}
+     </script>
+<script src="js/user.js"></script>
+</body>
+</html>
