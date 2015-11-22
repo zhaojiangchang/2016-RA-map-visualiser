@@ -93,7 +93,7 @@ document.getElementById("submit-shared-file").addEventListener('click',function(
 var myWindow;
 var newAccount = document.getElementById("create-new-account");
 newAccount.onclick = function(){
-	myWindow = window.open("newAccountPopupWindow.html", "_blank", "toolbar=yes, scrollbars=no, resizable=no, top=500, left=800, width=270, height=180");
+	myWindow = window.open("new-account.html", "_blank", "toolbar=yes, scrollbars=no, resizable=no, top=500, left=800, width=270, height=180");
 };
 
 // ==========================================

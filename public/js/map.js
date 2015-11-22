@@ -368,7 +368,7 @@ function getRealBounds(transform) {
 }
 
 
-// 
+//
 function getAbsoluteBounds() {
 	var transforms = d3.transform(map.attr("transform"));
 
