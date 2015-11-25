@@ -15,10 +15,10 @@
 //  	. City event names: names will highlighted when selected exploration has city events
 //
 //  Path view actions:
-//		. Progress bar clicked - update both progress bar and path view (append path from frist city
-//		  evnets to paused position
-//		. Path view lines clicked - update path view line draw from last postion to clicked position
-//		  then calculate the time progress bar to update the progres bar position.
+//		. Progress bar clicked - update both progress bar and path view (append path from first city
+//		  events to paused position
+//		. Path view lines clicked - update path view line draw from last position to clicked position
+//		  then calculate the time progress bar to update the progress bar position.
 //
 //==================================================================================================
 function PathView(){
@@ -86,7 +86,6 @@ function PathView(){
 
 	//this function will return set of cityEvents in the exploration.
 	this.cityEvents = function(){
-		if(this.expl == null)return;
 		var citiesEvs =[] ;
 		if(this.expl == null)return;
 		for(var j = 0;  j < this.expl.events.length; j++ ){
@@ -170,7 +169,7 @@ function PathView(){
 	// when click on the pathview line on the map
 	// x: clicked point x
 	// y: clicked point y
-	// return boolean value - turn: on the line   false: not
+	// return boolean value - true: on the line   false: not
 	this.getCityIndexByPoint = function(x, y){
 		for(var i = 0; i< this.translates().length-1; i++){
 			var xi = this.translates()[i][0], yi = this.translates()[i][1];
@@ -275,7 +274,7 @@ function PathView(){
 		.data( [ this.translates() ] )
 		.attr({
 			id: "path-play",
-			class: "path-move",//same calss name with circle and strght line path for hide and show path button
+			class: "path-move",//same class name with circle and straight line path for hide and show path button
 			"stroke-dasharray": "4,4",
 			"stroke-opacity": "0.7",// transparency the dash line
 			d: d3.svg.line().tension(10),
@@ -286,7 +285,7 @@ function PathView(){
 		.attr("marker-end", "url(#marker-arrow)");*/
 
 		// when path line on the map clicked
-		// asign moouse x and y value to pausedX and pausedY
+		// assign mouse x and y value to pausedX and pausedY
 		.on("click", function(){
 			pausedX = d3.mouse(this)[0];
 			pausedY = d3.mouse(this)[1];
@@ -411,11 +410,13 @@ function PathView(){
 
 		if(this.progressBarClicked)
 			currentCityIndex = this.getCurrentCityIndex( this.pausedTime );
-		else if(this.pathLineClicked)
 
+		else if(this.pathLineClicked)
 			currentCityIndex = this.getCurrentCityIndex( pausedTime );
+
 		if( currentCityIndex < 1 ||undefined )
 			return;
+
 		//the pathLineMove variable signed when the timeline pass through the fist city
 		//if click on the progress bar before the yellow bar(city event).
 		//will cause error: undefined is not a function (pathLineMove is undefined)
@@ -430,7 +431,7 @@ function PathView(){
 				dur = this.cityEventTimes()[ currentCityIndex + 1 ]  - this.pausedTime;
 		}
 		else if(this.pausedTime ==  null){
-			if(pausedX  ===  -1)return;  //pausedX  ==   - 1  <  ==  >  paused  ==  false
+			if(pausedX  ===  -1)return;  //pausedX == -1  <==>  paused == false
 			dur = eventDur * (lineDistance({x:pausedX,y:pausedY},{x:ncx, y:ncy})/lineDistance({x:ctx,y:cty},{x:ncx,y:ncy}));
 
 
@@ -506,39 +507,41 @@ function PathView(){
 		//reset circle FROM position and TO position
 		var currentCityX = this.translates()[ currentCityIndex ][ 0 ];
 		var currentCityY = this.translates()[ currentCityIndex ][ 1 ];
-		var lastCityX = this.translates()[ currentCityIndex - 1 ][ 0 ];
-		var lastCityY = this.translates()[ currentCityIndex - 1 ][ 1 ];
-		// temp is percentage between (pausedTime  -  last CityEvent time) and total time between lastcity events and current city event time
+		var previousCityX = this.translates()[ currentCityIndex - 1 ][ 0 ];
+		var previousCityY = this.translates()[ currentCityIndex - 1 ][ 1 ];
 		var nextCityEventTime = -1;
-		// if current city index is the last city the sign the end event time to next cityevent time.
+		// if current city index is the last city
+		// then assign the end event time to next cityevent time.
 		if( currentCityIndex   ===  this.citiesDisplay().length - 1 ) {
 			nextCityEventTime = this.expl.events[ this.expl.events.length - 1 ].time;
 		}
-		// else sign the next city event time
+		// else assign the next city event time
 		else{
 			nextCityEventTime = this.cityEventTimes()[ currentCityIndex  +  1 ];
 
 		}
+
+		// temp is percentage between (pausedTime  -  previous CityEvent time) and total time between lastcity events and current city event time
 		// paused time percentage -  use percentage to calcualate the distance moved for horizontal and vertical
 		var temp = (this.pausedTime  -  this.cityEventTimes()[ currentCityIndex ] )	/
 					(nextCityEventTime - this.cityEventTimes()[ currentCityIndex ] );
 
-		var xMoved = temp  *  (Math.abs(lastCityX  -  currentCityX)); // horizontal moved
-		var yMoved = temp  *  (Math.abs(lastCityY  -  currentCityY)); // vertical moved
+		var xMoved = temp  *  (Math.abs(previousCityX  -  currentCityX)); // horizontal moved
+		var yMoved = temp  *  (Math.abs(previousCityY  -  currentCityY)); // vertical moved
 		//
-		if(lastCityX  >  currentCityX)
-			pausedX = lastCityX - xMoved;
-		else if(lastCityX  <  currentCityX)
-			pausedX = lastCityX + xMoved;
-		else if(lastCityX   ===  currentCityX)
+		if(previousCityX  >  currentCityX)
+			pausedX = previousCityX - xMoved;
+		else if(previousCityX  <  currentCityX)
+			pausedX = previousCityX + xMoved;
+		else if(previousCityX   ===  currentCityX)
 			pausedX = currentCityX;
 
-		if(currentCityY < lastCityY)
-			pausedY = lastCityY  -  yMoved;
-		else if(currentCityY > lastCityY)
-			pausedY = lastCityY  +  yMoved;
+		if(currentCityY < previousCityY)
+			pausedY = previousCityY  -  yMoved;
+		else if(currentCityY > previousCityY)
+			pausedY = previousCityY  +  yMoved;
 		else
-			pausedY = lastCityY;
+			pausedY = previousCityY;
 		ctx = pausedX;
 		cty = pausedY;
 		ncx = this.translates()[currentCityIndex][ 0 ];
@@ -651,7 +654,7 @@ function PathView(){
 // when click the path on the map will trigger this function to set the position at clicked point
 // also set the progress bar to the right "time".
 function setPositionFromClickedPathLine(cityIndex){
-	pathView.setProgressBarClicked(false,true);
+	pathView.setProgressBarClicked(false,true); // first param: progressBar clicked			second param: pathview clicked
 	d3.selectAll("#animationPath").remove();
 	if(!cityIndex){ // if argument is null get city index by calling getCityIndexByPoint function
 		currentCityIndex = pathView.getCityIndexByPoint(pathView.getPausedX(), pathView.getPausedY());
@@ -697,7 +700,7 @@ function setPositionFromClickedPathLine(cityIndex){
 		return;
 
 	// currentCityIndex is one step behand the progress bar city event
-	// distence between paused position to last city event
+	// distence between paused position to previous city event
 	var distToPausedX  = Math.abs(pathView.getPausedX() - pathView.translates()[currentCityIndex][0]),
 	nextCityEventTime = pathView.cityEventTimes()[currentCityIndex+2],
 	durCityEvents = -1,

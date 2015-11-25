@@ -12,6 +12,8 @@
 
 var guestUsers = ["obama", "john", "lorde", "will"];
 
+var selectedImgFile = null;
+
 guestUsers.forEach(function(userName){
 	document.getElementById(userName).onclick= function() {
 		userNameInput.value = userName;
@@ -22,13 +24,34 @@ guestUsers.forEach(function(userName){
 // ========= exploration controls ==================
 
 recordExplButton.addEventListener("click", function(){
+	var currentExpl = currentUser.getCurrentExploration();
+
 	if (recording){
 		stopRecording();
-		if (inserting)
-			insertIntoSelectedExploration(currentUser.getCurrentExploration());
+		if (inserting){
+			if (audioRecorder){
+				stopRecording(doneRecording);
+			}
+			else {
+				doneRecording();
+			}
+		}
 	}
 	else
 		startRecording();
+	function doneRecording(){
+		inserting = false;
+		var insertionDuration = currentExpl.getDuration();
+		var currentTime = getCurrentPlaybackTime();
+
+		insertIntoSelectedExploration(currentExpl);
+
+		// gui stuff
+		progressBar.hideInsertGraphics();
+		progressBar.showInsertedChunk(currentTime, insertionDuration);
+		palyControlButton.style.pointerEvents = 'auto';
+
+	}
 });
 
 playExplButton.on('click', function () {
@@ -103,13 +126,12 @@ newAccount.onclick = function(){
 notificationContainer.addEventListener('click',function(){
 	stopRecording();
 	if(showListNotifications()){
-		if($(".notification-elements").hide())
-			$(".notification-elements").show();
-		else $(".notification-elements").hide();
-
+		if(notificationSelector.style.visibility == "hidden")
+			showNotificationButtons();
+		else hideNotificationButtons();
 	}
 	else{
-		$(".notification-elements").hide();
+		 hideNotificationButtons();
 	}
 });
 
@@ -118,8 +140,6 @@ removeNotification.addEventListener("click", function(){
 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	selected.isNew = false;
 	setExplorationIsOld(selected);
-
-	hideNotificationButtons();
 	updateNotifications();
 	deselectExploration();
 });
@@ -131,6 +151,33 @@ quickplayNotification.addEventListener("click", function(){
 	updateNotifications();
 });
 
+
+//===========================================
+//=========== add image to annotation folder=
+
+saveImgButton.addEventListener('click', function(){
+	if (selectedLocation==null ||selectedImgFile==null|| currentUser==null){
+		return;
+	}
+	var fileName = selectedImgFile.title;
+	if(selectedImgFile==null)return;
+	$.ajax({
+		type: 'POST',
+		url: "saveImageToLocalServer",
+		data: JSON.stringify({
+			imgFile: selectedImgFile,
+			userName: currentUser.name,
+			location: selectedLocation.properties.NAME,
+			timeStamp: new Date(),
+			fileName: fileName
+
+		}),
+		contentType: "application/json",
+		success: null
+	});
+});
+
+
 // ==========================================
 // =========== inserting ====================
 
@@ -138,9 +185,11 @@ insertButton.click(function(){
 	inserting = true;
 	startRecording();
 	insertButton.css("visibility", "hidden");
+	palyControlButton.style.pointerEvents = 'none';
 	var time = getCurrentPlaybackTime();
 	var xpos = progressBar.getXPosOfTime(time);
 	progressBar.showInsertGraphics(xpos);
+
 });
 
 stopInsertButton.click( function(){
@@ -166,8 +215,27 @@ stopInsertButton.click( function(){
 		// gui stuff
 		progressBar.hideInsertGraphics();
 		progressBar.showInsertedChunk(currentTime, insertionDuration);
+		palyControlButton.style.pointerEvents = 'auto';
+
 	}
 });
 
+function onFileSelected(event) {
+	  var selectedFile = event.target.files[0];
+	  var reader = new FileReader();
+
+	  var imgtag = document.createElement("img");
+	  imgtag.title = selectedFile.name;
+
+	  reader.onload = function(event) {
+	    imgtag.src = event.target.result;
+	  };
+
+	  reader.readAsDataURL(selectedFile);
+	  console.log(imgtag)
+	  document.getElementById("location-div").appendChild(imgtag);
+	  selectedImgFile = imgtag;
+
+	}
 // ---- INIT
 resetExplorations();

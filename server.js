@@ -3,7 +3,7 @@
 // Contains: Handlers for client-side requests, such as:
 // - retrieving explorations and annotations
 // - verifying a username and password
-// - 
+// -
 // =================================================================================
 
 var express = require('express');
@@ -22,9 +22,10 @@ var server = app.listen(3000, function() {
 app.use(express.static(__dirname + '/public'));
 
 var USER_PATH = "public/data/user/",
+	ANNOTATION_PATH = "public/data/annotation/",
 	USER_INFO_FILE_NAME = "usersInfo.json"; // all user information is store in here
 
-// returns whether an account with the username and pw exist 
+// returns whether an account with the username and pw exist
 app.post("/checkAuthentication", function(req, res){
 	console.log("checking authentication");
 	var fields = req.body;
@@ -195,6 +196,29 @@ app.post('/shareExploration', function(req, res){
 	console.log("shared exploration to: "+ to + " from: "+ from);
 });
 
+
+// save image file to annotation folder
+app.post('/saveImageToLocalServer', function(req, res){
+	var body = req.body;
+	var imgFile = req.body.imgFile;
+	var user = req.body.username;
+	var cityName = req.body.location;
+	var timeStamp = req.body.timeStamp;
+	var fileName = req.body.fileName;
+	var path = ANNOTATION_PATH + cityName+"/";
+	ensureDirExists(path);
+	path += "images/";
+	ensureDirExists(path);
+
+
+	fs.writeFile(path + user  +"-"+ timeStamp +"-"+ fileName, imgFile +"\n", function(err){
+		if(err){
+			console.log(err);
+		}
+	});
+	res.send(true);
+	console.log("save image to local server File Name: "+ fileName + " cityName: "+ cityName + "Location: "+ path);
+});
 // set the "isOld" property of an exploration to true
 app.post("/setExplorationIsOld", function(req, res){
 	console.log("setting exploration isNew");
@@ -215,7 +239,7 @@ app.post("/setExplorationIsOld", function(req, res){
 		var filePath = path + filename;
 		if (fs.lstatSync(filePath).isDirectory())
 			return; // if the file is a directory
-		var exploration = JSON.parse(fs.readFileSync(filePath));		
+		var exploration = JSON.parse(fs.readFileSync(filePath));
 
 		if(explUserName === exploration.userName &&
 				timeStamp === exploration.timeStamp){
@@ -238,8 +262,6 @@ app.post("/checkUsersFile", function(req, res){
 	var userName = fields.userName;
 	var json = fs.readFileSync(USER_PATH + USER_INFO_FILE_NAME);
 	eval("var info = "+json);
-
-	// check if uname and pw match
 	var send = 1;
 	info.forEach(function(user){
 		if (user.userName === userName){
@@ -264,7 +286,10 @@ app.post("/createAccount", function(req, res){
 	eval("var info = "+json);
 	var newUser = {"userName":userName, "password":password};
 	info.push(newUser);
-	fs.writeFileSync(USER_PATH + USER_INFO_FILE_NAME, JSON.stringify(info, null, 4)+"\n");
+	fs.writeFileSync(USER_PATH + USER_INFO_FILE_NAME, JSON.stringify(info, null, 4), function(err) {
+		if (err){ console.log("errooor: "+err); }
+	});
+	res.sendStatus(200); // success code
 });
 
 // saves a new annotation to file

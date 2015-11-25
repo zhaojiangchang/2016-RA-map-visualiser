@@ -2,10 +2,10 @@
 // Author: Will Hardwick-Smith
 // Design based on: http://bl.ocks.org/keithcollins/a0564c578b9328fcdcbb
 // Contains: Contructor for ProgressBar, definition of the progress bar including
-// functionality such as: 
+// functionality such as:
 // - load/unload an exploration
 // - update, pause, reset, change position
-// 
+//
 // and other related elements in the same panel:
 // - timeText (displays exploration time at cursor position)
 // - exploration info text (name, timestamp, duration, has audio)

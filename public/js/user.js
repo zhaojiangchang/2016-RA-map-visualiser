@@ -226,13 +226,12 @@ function createAccount(name, pw){
 
 	$.ajax({
 		type: 'POST',
-		url: "createAccount",
+		url: "/createAccount",
 		data: JSON.stringify({userName: name, password: pw}),
 		contentType: "application/json",
-		success: function(response){ console.log(response); }, //callback when ajax request finishes
+		success: window.document.write("new account created!"), //callback when ajax request finishes
 	});
-	window.document.write("new account created!");
-	window.close();
+	window.close(1000);
 }
 
 // returns true if there is a user currently logged on

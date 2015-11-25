@@ -259,6 +259,8 @@ input,label {
 
 /* button (play, pause) */
 #play-control {
+	left: -3.8%;
+  	top: 55%;
   	width:37px;
   	height:36px;
   	background:url("http://www.bloomberg.com/image/idAx.BJxL1Lc.png") 37px 0px;

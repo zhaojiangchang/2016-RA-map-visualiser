@@ -236,7 +236,6 @@ function stopRecording(audioCB) {
 
 	// removes event listeners which are recording user navigation.
 	zoom.on("zoom.record", null); // remove recording zoom listener
-
 	// city elems on the map
 	var mapCities = document.getElementsByClassName("place");
 	for (var i = 0; i < mapCities.length; i++){
@@ -269,31 +268,6 @@ var currentEventIndex = 0,
 	// for pausePlayback
 	lastEventTime = -1, // the time which the last playback started
 	elapsedEventTime = -1; // how much time elapsed since event before pausing
-
-// plays an exploration from the start
-// PRE: no other exploration is being played
-function startPlayback(exploration){
-	if (!exploration || exploration.numEvents() == 0) {
-		alert("nothing to play");
-		return; // if no events, do nothing.
-	}
-
-	// launch the first event
-	launchEvents(exploration, 0);
-
-	if (exploration.hasAudio()){
-		playAudio(exploration.getAudio());
-	}
-	// update to show exploration has been played
-	if(currentUser.getExploration(exploration.timeStamp)){
-		setExplorationIsOld(exploration);
-	}
-	exploration.isNew = false;
-
-	// updates GUI and globals
-	updatePlaybackStarted();
-	updateNotifications();
-}
 
 // launches the events of an exploration started at the ith event
 // *not supported currently* if elapsedTime is specified, plays from elapsedTime to event end time.
@@ -330,9 +304,35 @@ function launchEvents(exploration, i, elapsedTime){
 
 	progressBar.updateProgress(exploration, currentEvent.time, delay);
 
-	// launch next event
+	// launch next event setTimeout(yourFunctionReference, 4000, param1, param2, paramN);
 	playTimerID = setTimeout(launchEvents, delay, exploration, i + 1);
 }
+
+//plays an exploration from the start
+//PRE: no other exploration is being played
+function startPlayback(exploration){
+	if (!exploration || exploration.numEvents() == 0) {
+		alert("nothing to play");
+		return; // if no events, do nothing.
+	}
+
+	// launch the first event
+	launchEvents(exploration, 0);
+
+	if (exploration.hasAudio()){
+		playAudio(exploration.getAudio());
+	}
+	// update to show exploration has been played
+	if(currentUser.getExploration(exploration.timeStamp)){
+		setExplorationIsOld(exploration);
+	}
+	exploration.isNew = false;
+
+	// updates GUI and globals
+	updatePlaybackStarted();
+	updateNotifications();
+}
+
 
 // stops playback and resets position to the start
 function stopPlayback(exploration){
@@ -499,6 +499,7 @@ function insertIntoSelectedExploration(insertee){
 
 // loads audio data into the audio element
 function setupAudio(exploration){
+	if(exploration.getAudio()==null) return;
 	var audioBlob = exploration.getAudio();
 	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
 }
@@ -583,6 +584,7 @@ function resetExplorations() {
 
 	deselectExploration();
 	progressBar.unload();
+	pathView.unload();
 	updateExplorationControls();
 }
 
@@ -614,7 +616,7 @@ function saveExploration(exploration) {
 			url: "/postExploration",
 			data: JSON.stringify(exploration),
 			success: function(response){
-
+				//TODO: try not load all explorations after send exploration, add this exploration to currentuser's expls
 				loadAllExplorations(currentUser.name, gotExplorations);
 
 				function gotExplorations(allExplorations){

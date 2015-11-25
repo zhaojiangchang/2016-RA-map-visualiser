@@ -25,6 +25,7 @@ notificationContainer = document.getElementById("notification-container"),
 removeNotification = document.getElementById("remove-notification"),
 quickplayNotification = document.getElementById("quickplay-notification"),
 notificationSelector = document.getElementById("notification-selector"),
+notificationElements = document.getElementsByClassName("notification-elements")
 showPathButton = document.getElementById("show-path");
 insertButton = $("#insert-button"),
 stopInsertButton = $("#stop-insert-button"),
@@ -33,7 +34,11 @@ timeText = $("#time-text"),
 durationText = $("#duration-text"),
 hasAudio = $("#has-audio"),
 aboveBarDiv = $("#above-bar"),
-belowBarDiv = $("#below-bar");
+belowBarDiv = $("#below-bar"),
+palyControlButton = document.getElementById("play-control");
+saveImgButton = document.getElementById("save-img-button");
+removeImgButton  = document.getElementById("remove-img-button");
+
 
 //updates elements in the side bar
 function updateSideBar(){
@@ -123,8 +128,6 @@ function updateNotifications(){
 function updateExplorationControls(specialCase){
 	if (!selectedExploration){
 		disableAction(["save","play","stop","pause","reset","delete"]);
-		enableAction(["record"]);
-
 		if (userLoggedOn()){
 			enableAction(["record"]);
 		}
@@ -144,6 +147,7 @@ function updateExplorationControls(specialCase){
 	}
 	if (recording){
 		disableAction(["save","play","stop","pause","delete"]);
+		enableAction(["record"]);
 		changeButtonColour("record", true);
 	}
 
@@ -181,6 +185,7 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 	// update user image
 	var elems = document.getElementsByClassName("user-button");
 		for(var i = 0; i<elems.length; i++){
+
 			elems[i].disabled = loggedOn;
 			if (!loggedOn)
 				elems[i].style.cursor = cursorP;
@@ -228,8 +233,8 @@ function addRecordingGraphics(){
 		id:    "record-border",
 		x:     0 + borderWidth/2,
 		y:     0 + borderWidth/2,
-		width: width - borderWidth,
-		height:height - bottomPadding - borderWidth})
+		width: width - borderWidth*2,
+		height:height - bottomPadding - borderWidth*2})
 		.style("stroke", "red")
 		.style("fill", "none")
 		.style("stroke-width", borderWidth);
@@ -237,8 +242,8 @@ function addRecordingGraphics(){
 	svg.append('circle')
 	.attr({
 		id: "record-circle",
-		cx:  circleCX,
-		cy:  circleCY,
+		cx:  circleCX + borderWidth/2,
+		cy:  circleCY + borderWidth/2,
 		r: 	 circleRadius})
 		.style('fill', 'red')
 		.transition().duration();
@@ -299,7 +304,11 @@ function hideNotificationButtons(){
 	resetVisibility(removeNotification, "hidden");
 	resetVisibility(quickplayNotification, "hidden");
 }
-
+function showNotificationButtons(){
+	resetVisibility(notificationSelector, "visible");
+	resetVisibility(removeNotification, "visible");
+	resetVisibility(quickplayNotification, "visible");
+}
 //displays information about the location selected
 function displayLocationInfo(city){
 

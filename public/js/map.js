@@ -91,10 +91,10 @@ d3.json("data/map/kaz.json", function(error, json) {
 	.attr("class", "kaz_subunit")
 	// set colour
 	.attr("fill","#D0FA58")
-	.attr("stroke", "#FF0040");
+	.attr("stroke", "#FFAA40");
 });
 
-// Add cities
+// cities
 d3.json("data/map/kaz_places.json", function(error, json){
 	cities = json.features;
 	// places group to contain all elements of a place
@@ -130,6 +130,7 @@ d3.json("data/map/kaz_places.json", function(error, json){
 function selectLocation(city){
 	selectedLocation = city;
 	displayLocationInfo(city);
+
 }
 
 // adds an annotations to the currently selected location
@@ -292,7 +293,7 @@ function goToLoc(location, duration, elapsedTime) {
 	travelToCity(location, duration, elapsedTime);
 }
 
-// Pings a country on the scren
+// Pings a country on the screen
 function ping(location) {
 	var source;
 	if (typeof location === "number")
