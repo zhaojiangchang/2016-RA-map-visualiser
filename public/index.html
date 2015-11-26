@@ -72,7 +72,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 </head>
 
 <body>
-	<div id="side-bar">
+	<div id="side-bar" style=" overflow-y: scroll;">
 
 		<div class="users">
 			<div id="user-buttons">
@@ -154,10 +154,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			</div>
 			<div id="annotation-input-container">
 				<!-- input will be added --></div>
+				<p></p>
+				<div id ="display-city-image"></div>
 				<div id= "file-browse">
 				<input type="file" onchange="onFileSelected(event)">
-				<button id="save-img-button">Save</button>
-				<button id="remove-img-button">Remove</button>
+				<button id="save-ann-button">Save Annotation</button>
+				<button id="remove-img-button">Remove Preview Image</button>
+
+				<div id = "preview-city-img"></div>
 </div>
 
 		</div>

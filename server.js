@@ -196,29 +196,6 @@ app.post('/shareExploration', function(req, res){
 	console.log("shared exploration to: "+ to + " from: "+ from);
 });
 
-
-// save image file to annotation folder
-app.post('/saveImageToLocalServer', function(req, res){
-	var body = req.body;
-	var imgFile = req.body.imgFile;
-	var user = req.body.username;
-	var cityName = req.body.location;
-	var timeStamp = req.body.timeStamp;
-	var fileName = req.body.fileName;
-	var path = ANNOTATION_PATH + cityName+"/";
-	ensureDirExists(path);
-	path += "images/";
-	ensureDirExists(path);
-
-
-	fs.writeFile(path + user  +"-"+ timeStamp +"-"+ fileName, imgFile +"\n", function(err){
-		if(err){
-			console.log(err);
-		}
-	});
-	res.send(true);
-	console.log("save image to local server File Name: "+ fileName + " cityName: "+ cityName + "Location: "+ path);
-});
 // set the "isOld" property of an exploration to true
 app.post("/setExplorationIsOld", function(req, res){
 	console.log("setting exploration isNew");
@@ -300,8 +277,6 @@ app.post('/postAnnotation', function(req, res){
 	var userName = annotation.userName; // string
 	var text = annotation.text;
 
-	console.log("posting annotation: \"" + text + "\" at \"" + timeStamp +"\"");
-
 	var path = "public/data/annotation/";
 	// makes annotation path if none exists.
 	ensureDirExists(path);
@@ -313,11 +288,14 @@ app.post('/postAnnotation', function(req, res){
 	fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
 		if (err){ console.log("errooor: "+err); }
 	});
+	console.log(annotation.imageData)
 	res.sendStatus(200); // success code
 });
 
 // retrieves and sends all annotations for a specified location
 app.get("/getAnnotations", function(req, res){
+	console.log("get")
+
 	var locationName = req._parsedUrl.query; // data is appended to the URL
 	console.log("retrieving annotations for: " + locationName);
 
@@ -331,7 +309,6 @@ app.get("/getAnnotations", function(req, res){
 
 	// get all annotation objects (1 per file)
 	var annotations = [];
-
 	annotationFiles.forEach(function(filename, index){
 		annotations.push(JSON.parse(fs.readFileSync(path+filename)));
 	});
@@ -392,3 +369,4 @@ function doesUserExist(userName){
 	});
 	return exist;
 }
+
