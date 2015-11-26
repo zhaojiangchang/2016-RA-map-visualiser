@@ -135,14 +135,20 @@ function selectLocation(city){
 
 // adds an annotations to the currently selected location
 function submitAnnotation(annotationText){
-
 	var annotation = {
 		userName: currentUser.name,
 		location: selectedLocation,
 		text: annotationText,
-		timeStamp: new Date()
+		timeStamp: new Date(),
+		imgFile: null,
+		fileName: null,
+		imageData: null,
 	};
-
+	if(selectedImgFile!=null){
+		annotation.imgFile = selectedImgFile;
+		annotation.fileName = selectedImgFile.title;
+		annotation.imageData = selectedImgFile.src;
+	}
 	$.ajax({
 		type: 'POST',
 		url: "/postAnnotation",
@@ -163,7 +169,7 @@ function updateLocationInfo(){
 function deleteAnnotation(annotation){
 	$.ajax({
 		type: 'POST',
-		url: "deleteAnnotation",
+		url: "/deleteAnnotation",
 		data: JSON.stringify(annotation),
 		contentType: "application/json",
 		complete: updateLocationInfo

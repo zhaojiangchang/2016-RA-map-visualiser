@@ -36,7 +36,7 @@ hasAudio = $("#has-audio"),
 aboveBarDiv = $("#above-bar"),
 belowBarDiv = $("#below-bar"),
 palyControlButton = document.getElementById("play-control");
-saveImgButton = document.getElementById("save-img-button");
+saveAnnButton = document.getElementById("save-ann-button");
 removeImgButton  = document.getElementById("remove-img-button");
 
 
@@ -334,6 +334,7 @@ function displayLocationInfo(city){
 
 	// displays annotations associated with the current location
 	function displayAnnotations(annotations){
+
 		// if response is "no_annotations", no annotations were found, so do nothing
 		if (annotations === "no_annotations") return;
 		// make a secondary annotation container so that all annotations can be loaded at once
@@ -356,6 +357,7 @@ function displayLocationInfo(city){
 			var rowDiv = document.createElement("div");
 			var textDiv = document.createElement("div");
 			var controlsDiv = document.createElement("div");
+			var imgDiv = document.createElement('div');
 			var content = document.createElement("p");
 			var info = document.createElement("p");
 
@@ -365,7 +367,15 @@ function displayLocationInfo(city){
 			controlsDiv.className = "annotation-inner-container annotation-controls";
 			textDiv.className ="annotation-inner-container annotation-text-container";
 			rowDiv.className = "annotation-row";
+			imgDiv.className = "annotation-image";
 
+			if(annotation.imageData!=null){
+				var image = new Image();
+				image.src = annotation.imageData;
+				image.width = 50;
+				image.height = 50;
+				imgDiv.appendChild(image);
+			}
 			content.innerHTML = annotation.text;
 			info.innerHTML = annInfo;
 
@@ -385,23 +395,29 @@ function displayLocationInfo(city){
 
 			rowDiv.appendChild(textDiv);
 			rowDiv.appendChild(controlsDiv);
-
 			container.appendChild(rowDiv);
+			container.appendChild(imgDiv);
 		});
 		// TODO: load all annotations at once
 		document.getElementById("annotation-container")
 		.appendChild(container);
 	}
+
+
 }
 
 //makes an annotation text input element.
 function makeAnnotationInput(container){
 	var annInput = document.createElement("input");
+	annInput.id = "annInput";
 	annInput.type = "text";
 	annInput.placeholder = "Add annotation";
 
 	annInput.onkeydown = function(event) { // if enter is pushed, submit the annotation
-		if (event.keyCode === 13) submitAnnotation(annInput.value);
+		if (event.keyCode === 13) {
+			submitAnnotation(annInput.value);
+			selectedImgFile = null;
+		}
 	}
 	container.appendChild(annInput);
 	annInput.focus();

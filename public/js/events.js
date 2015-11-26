@@ -151,32 +151,21 @@ quickplayNotification.addEventListener("click", function(){
 	updateNotifications();
 });
 
-
 //===========================================
-//=========== add image to annotation folder=
+//=========== annotation ====================
 
-saveImgButton.addEventListener('click', function(){
-	if (selectedLocation==null ||selectedImgFile==null|| currentUser==null){
-		return;
-	}
-	var fileName = selectedImgFile.title;
-	if(selectedImgFile==null)return;
-	$.ajax({
-		type: 'POST',
-		url: "saveImageToLocalServer",
-		data: JSON.stringify({
-			imgFile: selectedImgFile,
-			userName: currentUser.name,
-			location: selectedLocation.properties.NAME,
-			timeStamp: new Date(),
-			fileName: fileName
-
-		}),
-		contentType: "application/json",
-		success: null
-	});
+removeImgButton.addEventListener('click', function(){
+	  var previewImg = document.getElementById("preview-city-img");
+	  while(previewImg.firstChild)//remove old labels
+		  previewImg.removeChild(previewImg.firstChild);
 });
 
+saveAnnButton.addEventListener('click', function(){
+	var annInput = document.getElementById('annInput').value;
+	if(annInput == "")	return;
+	submitAnnotation(annInput);
+	selectedImgFile = null;
+})
 
 // ==========================================
 // =========== inserting ====================
@@ -233,8 +222,14 @@ function onFileSelected(event) {
 
 	  reader.readAsDataURL(selectedFile);
 	  console.log(imgtag)
-	  document.getElementById("location-div").appendChild(imgtag);
+	  var previewImg = document.getElementById("preview-city-img");
+	  while(previewImg.firstChild)//remove old labels
+		  previewImg.removeChild(previewImg.firstChild);
+	  previewImg.appendChild(imgtag);
+	  document.getElementById("location-div").appendChild(previewImg);
+
 	  selectedImgFile = imgtag;
+	  console.log(selectedFile);
 
 	}
 // ---- INIT
