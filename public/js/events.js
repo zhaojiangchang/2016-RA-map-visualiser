@@ -11,6 +11,8 @@
 // ========= guest users =============================
 
 var guestUsers = ["obama", "john", "lorde", "will"];
+var selectedSendOption = "exploration";
+var testMessageToSend = null;
 
 var selectedImgFile = null;
 
@@ -106,8 +108,14 @@ logonButton.onclick = function(){
 // if userLabelValue not on the userList on the server will not able to send.
 document.getElementById("submit-shared-file").addEventListener('click',function(){
 	var userLabelValue = document.getElementById("shared-with").value;
-	if(userLabelValue!=null && userLabelValue!=currentUser.name && selectedExploration!=null){
+	if(userLabelValue==null || userLabelValue==currentUser.name) return;
+	if(selectedSendOption === "exploration" && selectedExploration!=null){
 		shareFile(selectedExploration, userLabelValue);
+	}
+	else if(selectedSendOption === "text"){
+		testMessageToSend = document.getElementById("text-message-input").value;
+		console.log(testMessageToSend)
+
 	}
 });
 
@@ -232,5 +240,23 @@ function onFileSelected(event) {
 	  console.log(selectedFile);
 
 	}
+
+function selectedOption() {
+    var sendOption = document.getElementById("sendOption");
+    for(var i = 0; i<sendOption.options.length; i++){
+    	sendOption.options[sendOption.selectedIndex].onclick = function(){
+    	    selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
+    	    if(selectedSendOption === "text"){
+    	    	document.getElementById("text-message-input-div").style.display = "block";
+    	    }
+    	    else if(selectedSendOption === "exploration" ||selectedSendOption === "voice" ){
+    	    	document.getElementById("text-message-input-div").style.display = "none";
+    	    }
+    	    else if(selectedSendOption === "voice"){
+
+    	    }
+    	}
+    }
+   }
 // ---- INIT
 resetExplorations();
