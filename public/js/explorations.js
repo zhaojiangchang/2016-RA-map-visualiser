@@ -23,7 +23,7 @@ var recording = false,
 var	playTimerID = -1;
 
 // HTML5 audio element for any audio .
-var audioElem = document.getElementById("exploration-audio");
+var audioElem = el("exploration-audio");
 
 // the bar in the lower region of the screen
 var progressBar = new ProgressBar;
@@ -163,22 +163,6 @@ function Exploration() {
 	// gives the exploration a name based on the time it was recorded
 	this.giveName = function(){
 		this.name = this.userName + " " + makeShortTimeFormat(new Date(this.timeStamp));
-
-		function makeShortTimeFormat(date){
-			// convert millis to mm:ss
-			var hours = date.getHours().toString(),
-				minutes = date.getMinutes().toString(),
-				seconds = date.getSeconds() < 10 	? "0" + date.getSeconds().toString()
-													: date.getSeconds(),
-				day = date.getDate(),
-				month = monthAsString(date.getMonth());
-
-			return hours + ":" + minutes + " - " + day + "th " + month;
-
-			function monthAsString(monthIndex){
-				return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-			}
-		}
 	};
 
 	// check the exploration is has city events return true
@@ -635,7 +619,7 @@ function saveExploration(exploration) {
 // disables an action (currently button)
 function disableAction(names){
 	names.forEach(function(name){
-		var button = document.getElementById(name + "-exploration-button");
+		var button = el(name + "-exploration-button");
 		button.disabled = true;
 		button.style.cursor = "not-allowed";
 		changeButtonColour(name, false);
@@ -645,7 +629,7 @@ function disableAction(names){
 //enable an action
 function enableAction(names){
 	names.forEach(function(name){
-		var button = document.getElementById(name + "-exploration-button");
+		var button = el(name + "-exploration-button");
 		button.disabled = false;
 		button.style.cursor = "pointer";
 		// change the colour if it's not the record button

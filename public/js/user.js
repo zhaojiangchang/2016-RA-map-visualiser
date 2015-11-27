@@ -7,7 +7,27 @@ function User(name, explorations){
 	this.explorations = explorations;
 	// a recording in progress (none at start)
 	this.currentExpl = null;
+	// the user's messages
+	this.messages = [];
+	this.newMessages = [];
 
+	this.setMessages = function(messages){
+		this.messages = messages;
+	};
+	this.getMessages = function(){
+		return this.messages;
+	}
+	this.haveMessages = function(){
+		if(this.essages.length == 0) return false;
+		else return true;
+	}
+	this.haveNewMessages = function(){
+		if(this.newMessages.length==0) return false;
+		else return true;
+	}
+	this.setNewMessages = function(newMessages){
+		this.newMessages = newMessages;
+	}
 	// add an exploration
 	this.addExploration = function (expl){
 		this.explorations.push(expl);
@@ -81,6 +101,9 @@ function User(name, explorations){
 	// has the user got any explorations?
 	this.hasExplorations = function(){
 		return this.explorations.length > 0;
+	}
+	this.hasMessages = function(){
+
 	}
 }
 
@@ -161,7 +184,7 @@ function loadAllExplorations(userName, cb){
 		var explorationCount = allExplorationsData.length;
 
 		if (explorationCount == 0){
-			$("#noOfFilesLoaded").html("no exploration loaded");
+			$("#noOfFilesLoaded").html("no notification loaded");
 		}
 		else {
 			$("#noOfFilesLoaded").html("have "+ explorationCount + " explorations loaded");
@@ -195,7 +218,7 @@ function loadAllExplorations(userName, cb){
 }
 
 // shares the exploration with the user
-function shareFile(exploration, userName){
+function shareExplFile(exploration, userName){
 	if(userName==currentUser.name) return;
 	if(selectedExploration==null) return;
 	$.ajax({
@@ -208,15 +231,37 @@ function shareFile(exploration, userName){
 		}),
 		success: function(response){
 			if(!JSON.parse(response)){
-				document.getElementById("expl-sent-message").innerHTML = "user does not exist!";
+				el("expl-sent-message").innerHTML = "user does not exist!";
 			}
 			else {
-				var userLabelValue = document.getElementById("shared-with").value;
-				document.getElementById("expl-sent-message").innerHTML = "Sent to: "+userLabelValue+ "     ExplName:"+ selectedExploration.name;
+				var userLabelValue = el("shared-with").value;
+				el("expl-sent-message").innerHTML = "Sent to: "+userLabelValue+ "     ExplName:"+ selectedExploration.name;
 			}
 
 		}, //callback when ajax request finishes
 		contentType: "application/json" //text/json...
+	});
+}
+
+function shareTextMessage(userLabelValue){
+	testMessageToSend = el("text-message-input").value;
+	if(testMessageToSend==null) return;
+	var Message = {
+			timeStamp: new Date(),
+			from: currentUser.name,
+			to: userLabelValue,
+			message: testMessageToSend,
+			isNew: true
+	}
+	$.ajax({
+		type: 'POST',
+		url: "/postMessage",
+		data: JSON.stringify(Message),
+		success: function(response){
+			el("text-message-input-div").style.display = "none";
+			el("shared-with").value = "";
+		},
+		contentType: "application/json"
 	});
 }
 

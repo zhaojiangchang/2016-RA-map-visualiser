@@ -1,10 +1,10 @@
-// =================================================================================
-// Author: Will Hardwick-Smith & Jacky Chang
-// Contains: Handlers for client-side requests, such as:
-// - retrieving explorations and annotations
-// - verifying a username and password
-// -
-// =================================================================================
+//=================================================================================
+//Author: Will Hardwick-Smith & Jacky Chang
+//Contains: Handlers for client-side requests, such as:
+//- retrieving explorations and annotations
+//- verifying a username and password
+//-
+//=================================================================================
 
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -14,7 +14,7 @@ var app = express();
 
 app.use(bodyParser.json({limit: '50mb'}));
 
-// listen on port 3000
+//listen on port 3000
 var server = app.listen(3000, function() {
 	console.log('Listening on port %d', server.address().port);
 });
@@ -22,10 +22,10 @@ var server = app.listen(3000, function() {
 app.use(express.static(__dirname + '/public'));
 
 var USER_PATH = "public/data/user/",
-	ANNOTATION_PATH = "public/data/annotation/",
-	USER_INFO_FILE_NAME = "usersInfo.json"; // all user information is store in here
+ANNOTATION_PATH = "public/data/annotation/",
+USER_INFO_FILE_NAME = "usersInfo.json"; // all user information is store in here
 
-// returns whether an account with the username and pw exist
+//returns whether an account with the username and pw exist
 app.post("/checkAuthentication", function(req, res){
 	console.log("checking authentication");
 	var fields = req.body;
@@ -53,38 +53,38 @@ app.post("/checkAuthentication", function(req, res){
 	res.send(JSON.stringify(authenticated));
 });
 
-// sends all explorations which belong to a user
+//sends all explorations which belong to a user
 app.get("/getUserExplorations", function(req, res){
 	var userName = req._parsedUrl.query; // data is appended to the URL
 
 	console.log("retrieving all explorations for " + userName);
 
 	var userPath = USER_PATH + userName + "/",
-		explPath = userPath + "explorations/";
+	explPath = userPath + "explorations/";
 
 	// ensure all dirs exist.
 	ensureDirExists(userPath);
 	ensureDirExists(explPath);
 
 	// get user info
-    var allExplorations = [];
+	var allExplorations = [];
 
-    fs.readdirSync(explPath).forEach(function(filename){
-    	var filePath = explPath + filename;
-    	if (fs.lstatSync(filePath).isDirectory())
-    		return;
-    	var exploration = JSON.parse(fs.readFileSync(filePath));
+	fs.readdirSync(explPath).forEach(function(filename){
+		var filePath = explPath + filename;
+		if (fs.lstatSync(filePath).isDirectory())
+			return;
+		var exploration = JSON.parse(fs.readFileSync(filePath));
 
-    	// if exploration has audio, grab audio and attach to the exploration
-    	if (exploration.audio){
-    		var audioPath = exploration.audio;
-    		var fd = fs.readFileSync(audioPath, "binary");
-    		var ascii = btoa(fd);
-	    	exploration.audio = ascii;
-    	}
+		// if exploration has audio, grab audio and attach to the exploration
+		if (exploration.audio){
+			var audioPath = exploration.audio;
+			var fd = fs.readFileSync(audioPath, "binary");
+			var ascii = btoa(fd);
+			exploration.audio = ascii;
+		}
 
-    	allExplorations.push(exploration);
-    });
+		allExplorations.push(exploration);
+	});
 
 	// sends all and new explorations as separate arrays
 	res.send(JSON.stringify(allExplorations));
@@ -153,7 +153,7 @@ app.post("/deleteExploration", function(req, res){
 			continue; // if the file is a directory
 		var exploration = JSON.parse(fs.readFileSync(filePath));
 
-			// found match
+		// found match
 		if (timeStamp.localeCompare(exploration.timeStamp)==0){
 			// delete exploration file.
 			fs.unlinkSync(filePath);
@@ -196,7 +196,7 @@ app.post('/shareExploration', function(req, res){
 	console.log("shared exploration to: "+ to + " from: "+ from);
 });
 
-// set the "isOld" property of an exploration to true
+//set the "isOld" property of an exploration to true
 app.post("/setExplorationIsOld", function(req, res){
 	console.log("setting exploration isNew");
 	var update = req.body;
@@ -269,7 +269,7 @@ app.post("/createAccount", function(req, res){
 	res.sendStatus(200); // success code
 });
 
-// saves a new annotation to file
+//saves a new annotation to file
 app.post('/postAnnotation', function(req, res){
 	var annotation = req.body;
 	var timeStamp = new Date(annotation.timeStamp);
@@ -292,7 +292,7 @@ app.post('/postAnnotation', function(req, res){
 	res.sendStatus(200); // success code
 });
 
-// retrieves and sends all annotations for a specified location
+//retrieves and sends all annotations for a specified location
 app.get("/getAnnotations", function(req, res){
 	console.log("get")
 
@@ -344,7 +344,7 @@ app.post("/deleteAnnotation", function(req, res){
 	}
 });
 
-// *** BUG ***
+//*** BUG ***
 app.get("/null", function(req, res){
 	console.log("caught null request (bug)");
 	res.sendStatus(200);
@@ -369,4 +369,79 @@ function doesUserExist(userName){
 	});
 	return exist;
 }
+
+app.post('/postMessage', function(req, res){
+
+	var Message = req.body;
+	var to = Message.to;
+	var from = Message.from;
+	// makes directory for files if none exist.
+	var path = USER_PATH;
+	ensureDirExists(path);
+	path += from + "/";
+	ensureDirExists(path);
+	path += "message/";
+	ensureDirExists(path);
+
+	var toPath = USER_PATH;
+	ensureDirExists(toPath);
+	toPath += to + "/";
+	ensureDirExists(toPath);
+	toPath += "message/";
+	ensureDirExists(toPath);
+
+	var fileName = to + ".json";
+	var fileSenderName = from + ".json";
+	var filePath = path + fileName;
+	var fileReceiverPath = toPath + fileSenderName;
+	var messageFiles = fs.readdirSync(path);
+	var findFile = false;
+	for (var i = 0; i < messageFiles.length; i++){
+		var fname = messageFiles[i];
+		if(fileName===fname){
+			findFile = true;
+			var messages= [];
+			var inputMessage = JSON.parse(fs.readFileSync(path + fileName));
+			for(var i =0; i<inputMessage.length; i++){
+				messages.push(inputMessage[i]);
+			}
+			messages.push(Message);
+
+			fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
+			fs.writeFileSync(fileReceiverPath, JSON.stringify(messages, null, 4));
+			console.log("wrote message file \"" + fileName + "\"");
+			res.sendStatus(200); // success code
+				return;
+			}
+		}
+	if(!findFile){
+		var m = [];
+		m.push(Message);
+		fs.writeFileSync(filePath, JSON.stringify(m, null, 4));
+		fs.writeFileSync(fileReceiverPath, JSON.stringify(m, null, 4));
+		console.log("wrote message file \"" + fileName + "\"");
+		res.sendStatus(200); // success code
+	}
+});
+
+//retrieves and sends all annotations for a specified location
+app.get("/getMessages", function(req, res){
+	var userName = req._parsedUrl.query; // data is appended to the URL
+	var path = USER_PATH;
+	ensureDirExists(path);
+	path += userName + "/";
+	ensureDirExists(path);
+	path += "message/";
+	ensureDirExists(path);
+	var messages = [];
+	var messageFiles = fs.readdirSync(path);
+	messageFiles.forEach(function(filename, index){
+		var message = JSON.parse(fs.readFileSync(path+filename));
+		messages.push(message);
+	});
+
+	res.send(JSON.stringify(messages));
+
+});
+
 

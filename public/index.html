@@ -113,6 +113,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				placeholder="Username" />
 			<select id="sendOption" size="0"
 				style="display: inline-block;" onchange="selectedOption();">
+				<option id="sendExpl" value = "select">Select an option to send</option>
 				<option id="sendExpl" value="exploration">Send Exploration</option>
 				<option id="sendExpl" value="text">Send Text</option>
 				<option id="sendExpl" value="voice">Send Voice</option>
@@ -120,7 +121,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			<div id = "text-message-input-div"  style = "display: none;">
 				<textarea id="text-message-input" cols = "40" rows = "5"></textarea>
 			</div>
-			<p></p>
+			<div id = "selectedExplNameDivId">
+				</div>
 			<button type='button' id="submit-shared-file">Send</button>
 			<p id="expl-sent-message"></p>
 		</div>
