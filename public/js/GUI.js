@@ -1,32 +1,32 @@
-// =================================================================================
-// Author: Will Hardwick-Smith & Jacky Chang
-// Contains: Only GUI/view related methods, such as:
-// - graphical representations
-// - animations
-// - disabling/enabling buttons
-// - showing/hiding elements
-// - reloading data for GUI elements
-// =================================================================================
+//=================================================================================
+//Author: Will Hardwick-Smith & Jacky Chang
+//Contains: Only GUI/view related methods, such as:
+//- graphical representations
+//- animations
+//- disabling/enabling buttons
+//- showing/hiding elements
+//- reloading data for GUI elements
+//=================================================================================
 
 //------ Dom elements --------
-var recordExplButton = document.getElementById("record-exploration-button"),
+var recordExplButton = el("record-exploration-button"),
 playExplButton = $("#play-exploration-button"),
 pauseExplButton = $("#pause-exploration-button"),
 stopExplButton = $("#stop-exploration-button"),
 saveExplButton = $("#save-exploration-button"),
 deleteExplButton = $("#delete-exploration-button"),
 resetExplButton = $("#reset-exploration-button"),
-explChooser = document.getElementById("exploration-selector"),
-userNameInput = document.getElementById("username-input"),
-passwordInput = document.getElementById("password-input"),
-logonButton = document.getElementById("logon-button"),
-messageBar = document.getElementById("percent"),
-notificationContainer = document.getElementById("notification-container"),
-removeNotification = document.getElementById("remove-notification"),
-quickplayNotification = document.getElementById("quickplay-notification"),
-notificationSelector = document.getElementById("notification-selector"),
+explChooser = el("exploration-selector"),
+userNameInput = el("username-input"),
+passwordInput = el("password-input"),
+logonButton = el("logon-button"),
+messageBar = el("percent"),
+notificationContainer = el("notification-container"),
+removeNotification = el("remove-notification"),
+quickplayNotification = el("quickplay-notification"),
+notificationSelector = el("notification-selector"),
 notificationElements = document.getElementsByClassName("notification-elements")
-showPathButton = document.getElementById("show-path");
+showPathButton = el("show-path");
 insertButton = $("#insert-button"),
 stopInsertButton = $("#stop-insert-button"),
 explorationTitle = $("#exploration-title"),
@@ -35,9 +35,9 @@ durationText = $("#duration-text"),
 hasAudio = $("#has-audio"),
 aboveBarDiv = $("#above-bar"),
 belowBarDiv = $("#below-bar"),
-palyControlButton = document.getElementById("play-control");
-saveAnnButton = document.getElementById("save-ann-button");
-removeImgButton  = document.getElementById("remove-img-button");
+palyControlButton = el("play-control");
+saveAnnButton = el("save-ann-button");
+removeImgButton  = el("remove-img-button");
 
 
 //updates elements in the side bar
@@ -93,38 +93,62 @@ function updateUserButtons(currentUser){
 
 //updates the notification GUI elements
 function updateNotifications(){
+
 	//set visibility to all notification buttons/labels hidden when log on.
 	resetVisibility(notificationContainer,"hidden");
-	hideNotificationButtons();
 
+	resetVisibility(el("file-browse"), "hidden");
+
+	hideNotificationButtons();
 	if (!userLoggedOn()){
 		return;
 	}
+
 	// all shared exploration from current user exploratin folder (use username to id)
 	var sharedExpl = currentUser.getSharedExploration();
+	checkMessages();
+	console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa: "+newMessageCount)
+
 
 	// newCount == the number of nonplayed shared exploration in current user folder
-	var newCount = 0;
+	var newExplCount = 0;
+	var newMessageCount = 0;
 
 	sharedExpl.forEach(function(expl){
 		if(expl.isNew)
-			newCount++;
+			newExplCount++;
 	});
 
+	currentUser.newMessages.forEach(function(message){
+		if(message.isNew)
+			newMessageCount++;
+
+
+	});
 	// show notification message
-	if(newCount>0){
+	if(newExplCount>0 && newMessageCount==0){
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newCount + " new explorations.");
+		$("#notification-container").html(newExplCount + " new explorations.");
+		notificationContainer.style.cursor = "pointer";
+	}
+	else if(newExplCount>0 && newMessageCount>0){
+		resetVisibility(notificationContainer,"visible");
+		$("#notification-container").html(newMessageCount + " new messages and "+newExplCount+" explorations.");
+		notificationContainer.style.cursor = "pointer";
+	}
+	else if(newExplCount==0 && newMessageCount>0){
+		resetVisibility(notificationContainer,"visible");
+		$("#notification-container").html(newMessageCount + " new messages.");
 		notificationContainer.style.cursor = "pointer";
 	}
 	else{
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(" No new explorations.");
+		$("#notification-container").html(" No new notification.");
 		notificationContainer.style.cursor = "not-allowed";
 	}
 }
 
-// updates the state of the buttons (record, play, pause, stop, save, delete, reset)
+//updates the state of the buttons (record, play, pause, stop, save, delete, reset)
 function updateExplorationControls(specialCase){
 	if (!selectedExploration){
 		disableAction(["save","play","stop","pause","reset","delete"]);
@@ -164,12 +188,13 @@ function updateExplorationControls(specialCase){
 	}
 }
 
-// userLoggedOn funciton return currentUser object
-// user loggedOn if not null
+//userLoggedOn funciton return currentUser object
+//user loggedOn if not null
 function updateLogonElements(){
 	// if user is currently logged on, disable all userImage button
-	if (userLoggedOn())
+	if (userLoggedOn()){
 		toggleLogon(true,"not-allowed");
+	}
 	else
 		toggleLogon(false, "default" , "pointer");
 
@@ -184,14 +209,14 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 	passwordInput.style.cursor = cursorD;
 	// update user image
 	var elems = document.getElementsByClassName("user-button");
-		for(var i = 0; i<elems.length; i++){
+	for(var i = 0; i<elems.length; i++){
 
-			elems[i].disabled = loggedOn;
-			if (!loggedOn)
-				elems[i].style.cursor = cursorP;
-			else
-				elems[i].style.cursor = cursorD;
-		}
+		elems[i].disabled = loggedOn;
+		if (!loggedOn)
+			elems[i].style.cursor = cursorP;
+		else
+			elems[i].style.cursor = cursorD;
+	}
 	// logoff set value to default
 	if (!loggedOn){
 		userNameInput.value = "";
@@ -199,7 +224,7 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 	}
 }
 
-// this function called once showPathButton clicked (event.js)
+//this function called once showPathButton clicked (event.js)
 function toggleVisiblePath(){
 	if(!selectedExploration) return;
 	if(selectedExploration.hasCityEvents()){
@@ -212,13 +237,13 @@ function toggleVisiblePath(){
 	}
 }
 
-// init shared element value
+//init shared element value
 function updateShareExplElements(){
-	document.getElementById("shared-with").value = "";
-	document.getElementById("expl-sent-message").innerHTML = "";
+	el("shared-with").value = "";
+	el("expl-sent-message").innerHTML = "";
 }
 
-// adds graphics to the map to show that recording is in progress.
+//adds graphics to the map to show that recording is in progress.
 function addRecordingGraphics(){
 	// var points = [0, 0, width, height];
 	var borderWidth = 10;
@@ -255,34 +280,58 @@ function removeRecordingGraphics(){
 	d3.select("#record-circle").remove();
 }
 
-// function triggered when notification container clicked
-// return true - when has new shared exploration
+//function triggered when notification container clicked
+//return true - when has new shared exploration
 function showListNotifications(){
-
 	while(notificationSelector.firstChild)//remove old labels
 		notificationSelector.removeChild(notificationSelector.firstChild);
 
 	var newSharedExpls = currentUser.getSharedExploration();
 	var hasNewExpl = false;
+	var newMessages = [];
+	if(currentUser.haveNewMessages()) {
+		newMessages = currentUser.newMessages;
+	}
+
 	// if has new shared exploration append to notificationSelector
-	if(newSharedExpls.length>0){
-		newSharedExpls.forEach(function(expl, index){
-			if(expl.isNew){
+	if(newSharedExpls.length>0 || newMessages.length>0){
+
+		if(newMessages.length>0){
+			newMessages.forEach(function(message, index){
 				var newOption = document.createElement('option');
-				newOption.setAttribute("id", currentUser.name+index);
+				newOption.setAttribute("id", currentUser.name+"message"+ index);
 				newOption.value = index;
-				explorationName = expl.name;
-				newOption.innerHTML = explorationName;
+				messageName = "Message: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
-					stopRecording();
-					selectExploration(expl);
+					//TODO: show message
 				};
 				notificationSelector.appendChild(newOption);
-				hasNewExpl = true;
+			});
+		}
+
+		if(newSharedExpls.length>0){
+			newSharedExpls.forEach(function(expl, index){
+				if(expl.isNew){
+					var newOption = document.createElement('option');
+					newOption.setAttribute("id", currentUser.name+index);
+					newOption.value = index;
+					explorationName = "Expl: "+ expl.name;
+					newOption.innerHTML = explorationName;
+					newOption.onclick  = function(){
+						stopRecording();
+						selectExploration(expl);
+					};
+					console.log("append new expl: "+ newOption.innerHTML)
+					notificationSelector.appendChild(newOption);
+					hasNewExpl = true;
+				}
 			}
-		});
+
+			);
+			return hasNewExpl;
+		}
 	}
-	return hasNewExpl;
 }
 
 function divHideShow(div){
@@ -312,13 +361,15 @@ function showNotificationButtons(){
 //displays information about the location selected
 function displayLocationInfo(city){
 
-	document.getElementById("location-title").innerHTML = city.properties.NAME;
+	el("location-title").innerHTML = city.properties.NAME;
+	resetVisibility(el("file-browse"), "visible");
 
-	var annotations = document.getElementById("annotation-container");
+
+	var annotations = el("annotation-container");
 	annotations.innerHTML = null; // clear previous annotations
 
 	//remove and add new annotation input
-	var annotationInputCont = document.getElementById("annotation-input-container");
+	var annotationInputCont = el("annotation-input-container");
 	annotationInputCont.innerHTML = null;
 	if (currentUser != null)
 		makeAnnotationInput(annotationInputCont);
@@ -398,8 +449,9 @@ function displayLocationInfo(city){
 			container.appendChild(rowDiv);
 			container.appendChild(imgDiv);
 		});
+
 		// TODO: load all annotations at once
-		document.getElementById("annotation-container")
+		el("annotation-container")
 		.appendChild(container);
 	}
 
@@ -424,7 +476,7 @@ function makeAnnotationInput(container){
 }
 
 function changeButtonColour(name, state){
-	var button = document.getElementById(name + "-exploration-button");
+	var button = el(name + "-exploration-button");
 
 	if (state)
 		button.src = IMAGE_PATH + name + "-on.png";
@@ -445,8 +497,51 @@ function displayAudioGraphic(){
 	});
 }
 
-// removes the mic graphic shown while recording
+//removes the mic graphic shown while recording
 function removeAudioGraphic(){
-    svg.select("#microphone-graphic")
-        .remove();
+	svg.select("#microphone-graphic")
+	.remove();
+}
+
+//check local server  - messages
+function checkMessages(){
+	$.ajax({
+		type: 'GET',
+		url: "/getMessages",
+		data: currentUser.name,
+		success: setMessage,
+		dataType: "json",
+	});
+	function setMessage(messages){
+		currentUser.setMessages(messages);
+		var newMessages = [];
+		for (var i = 0; i < messages.length; i++){
+			for(var j = 0; j< messages[i].length; j++){
+				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
+					newMessages.push(messages[i][j]);
+				}
+
+			}
+		}
+		currentUser.setNewMessages(newMessages);
+
+	}
+}
+
+function el(id){
+	return document.getElementById(id);
+}
+function makeShortTimeFormat(date){
+	// convert millis to mm:ss
+	var hours = date.getHours().toString(),
+		minutes = date.getMinutes().toString(),
+		seconds = date.getSeconds() < 10 	? "0" + date.getSeconds().toString()
+											: date.getSeconds(),
+		day = date.getDate(),
+		month = monthAsString(date.getMonth());
+
+	return hours + ":" + minutes + " - " + day + "th " + month;
+	function monthAsString(monthIndex){
+		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+	}
 }

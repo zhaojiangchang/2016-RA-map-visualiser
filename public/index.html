@@ -41,38 +41,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 <script src="js/lib/d3.v3.min.js"></script>
 <script src="js/lib/topojson.v1.min.js"></script>
 <script src="js/lib/jquery.min.js"></script>
- <style>
-    .black_overlay{
-        display: none;
-        position: absolute;
-        top: 0%;
-        left: 0%;
-        width: 100%;
-        height: 100%;
-        background-color: black;
-        z-index:1001;
-        -moz-opacity: 0.8;
-        opacity:.80;
-        filter: alpha(opacity=80);
-    }
-    .white_content {
-        display: none;
-        position: absolute;
-        top: 25%;
-        left: 25%;
-        width: 50%;
-        height: 50%;
-        padding: 16px;
-        border: 16px solid orange;
-        background-color: white;
-        z-index:1002;
-        overflow: auto;
-    }
-</style>
+
 </head>
 
 <body>
-	<div id="side-bar" style=" overflow-y: scroll;">
+	<div id="side-bar" style="overflow-y: scroll;">
 
 		<div class="users">
 			<div id="user-buttons">
@@ -93,8 +66,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				<input type="text" id="username-input" placeholder='user-name'>
 				<input type="password" id="password-input" placeholder='password'>
 				<div>
-					<input type="submit" id="logon-button" class="account-submit" value="Logon">
-					<button id="create-new-account" class="account-submit">Create Account</button>
+					<input type="submit" id="logon-button" class="account-submit"
+						value="Logon">
+					<button id="create-new-account" class="account-submit">Create
+						Account</button>
 				</div>
 			</div>
 		</div>
@@ -103,23 +78,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			<div id="exploration-buttons">
 				<input type="image" id="record-exploration-button"
 					class="exploration-button" src="data/image/record-off.png"
-					alt="javascript button">
-				<input type="image" id="play-exploration-button"
-					class="exploration-button" src="data/image/play-off.png"
-					alt="javascript button">
-				<input type="image" id="pause-exploration-button"
+					alt="javascript button"> <input type="image"
+					id="play-exploration-button" class="exploration-button"
+					src="data/image/play-off.png" alt="javascript button"> <input
+					type="image" id="pause-exploration-button"
 					class="exploration-button" src="data/image/pause-off.png"
-					alt="javascript button">
-				<input type="image" id="stop-exploration-button"
-					class="exploration-button" src="data/image/stop-off.png"
-					alt="javascript button">
-				<input type="image" id="save-exploration-button"
+					alt="javascript button"> <input type="image"
+					id="stop-exploration-button" class="exploration-button"
+					src="data/image/stop-off.png" alt="javascript button"> <input
+					type="image" id="save-exploration-button"
 					class="exploration-button" src="data/image/save-off.png"
-					alt="javascript button">
-				<input type="image" id="delete-exploration-button"
-					class="exploration-button" src="data/image/delete-off.png"
-					alt="javascript button">
-				<input type="image" id="reset-exploration-button"
+					alt="javascript button"> <input type="image"
+					id="delete-exploration-button" class="exploration-button"
+					src="data/image/delete-off.png" alt="javascript button"> <input
+					type="image" id="reset-exploration-button"
 					class="exploration-button" src="data/image/reset-on.png"
 					alt="javascript button">
 			</div>
@@ -132,16 +104,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				<select id="exploration-selector" size="0" placeholder="Username"></select>
 			</div>
 		</div>
-		<div id = "share-file">
+		<div id="share-file">
 			<h3>
 				<label for="user-input" id="to-label">Send to:</label>
 			</h3>
-			<input type="text" id="shared-with" name="user" placeholder="Username" />
+			<p></p>
+			<input type="text" id="shared-with" name="user"
+				placeholder="Username" />
+			<select id="sendOption" size="0"
+				style="display: inline-block;" onchange="selectedOption();">
+				<option id="sendExpl" value = "select">Select an option to send</option>
+				<option id="sendExpl" value="exploration">Send Exploration</option>
+				<option id="sendExpl" value="text">Send Text</option>
+				<option id="sendExpl" value="voice">Send Voice</option>
+			</select>
+			<div id = "text-message-input-div"  style = "display: none;">
+				<textarea id="text-message-input" cols = "40" rows = "5"></textarea>
+			</div>
+			<div id = "selectedExplNameDivId">
+				</div>
 			<button type='button' id="submit-shared-file">Send</button>
-			<p id = "expl-sent-message"></p>
- 	</div>
+			<p id="expl-sent-message"></p>
+		</div>
 		<div class='select-device'>
-			<label for='audio-source'>Audio source: </label> <select id='audio-source'></select>
+			<label for='audio-source'>Audio source: </label> <select
+				id='audio-source'></select>
 		</div>
 
 		<div id="location-div" class="location-pane">
@@ -153,29 +140,33 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				<!-- will be populated by user annotations -->
 			</div>
 			<div id="annotation-input-container">
-				<!-- input will be added --></div>
-				<p></p>
-				<div id ="display-city-image"></div>
-				<div id= "file-browse">
+				<!-- input will be added -->
+			</div>
+			<p></p>
+			<div id="display-city-image"></div>
+			<div id="file-browse">
 				<input type="file" onchange="onFileSelected(event)">
 				<button id="save-ann-button">Save Annotation</button>
 				<button id="remove-img-button">Remove Preview Image</button>
 
-				<div id = "preview-city-img"></div>
-</div>
+				<div id="preview-city-img"></div>
+			</div>
 
 		</div>
 	</div>
 	<button id="show-path">Show Path</button>
 	<div id="notification-container" class="notification-container"></div>
 	<div>
-	<input id="remove-notification"  class="notification-elements" type="image" src="data/image/delete.png" alt="javascript button">
+		<input id="remove-notification" class="notification-elements"
+			type="image" src="data/image/delete.png" alt="javascript button">
 	</div>
 	<div>
-	<input id="quickplay-notification"  class="notification-elements" type="image" src="data/image/play.jpeg"  alt="javascript button">
+		<input id="quickplay-notification" class="notification-elements"
+			type="image" src="data/image/play.jpeg" alt="javascript button">
 	</div>
 	<div>
-		<select id="notification-selector" class="notification-elements" size="3"></select>
+		<select id="notification-selector" class="notification-elements"
+			size="3"></select>
 	</div>
 
 	<div id="player-panel">

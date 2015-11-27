@@ -11,11 +11,13 @@
 // ========= guest users =============================
 
 var guestUsers = ["obama", "john", "lorde", "will"];
+var selectedSendOption = "exploration";
+var testMessageToSend = null;
 
 var selectedImgFile = null;
 
 guestUsers.forEach(function(userName){
-	document.getElementById(userName).onclick= function() {
+	el(userName).onclick= function() {
 		userNameInput.value = userName;
 		passwordInput.value = "password";
 	};
@@ -88,8 +90,9 @@ showPathButton.onclick = toggleVisiblePath;
 
 //submit button
 logonButton.onclick = function(){
-	// if noone is logged on
+	// if no one is logged on
 	if(userLoggedOn()){
+		selectedLocation = null;
 		if (!recording)
 			logout(currentUser);
 	}
@@ -104,17 +107,24 @@ logonButton.onclick = function(){
 // exploration file sent when button clicked
 // userLabelValue: receiver
 // if userLabelValue not on the userList on the server will not able to send.
-document.getElementById("submit-shared-file").addEventListener('click',function(){
-	var userLabelValue = document.getElementById("shared-with").value;
-	if(userLabelValue!=null && userLabelValue!=currentUser.name && selectedExploration!=null){
-		shareFile(selectedExploration, userLabelValue);
+el("submit-shared-file").addEventListener('click',function(){
+	var userLabelValue = el("shared-with").value;
+	if(userLabelValue==null || userLabelValue==currentUser.name) return;
+	if(selectedSendOption === "exploration" && selectedExploration!=null){
+		shareExplFile(selectedExploration, userLabelValue);
+	}
+	else if(selectedSendOption === "text"){
+		shareTextMessage(userLabelValue);
+
+
+
 	}
 });
 
 // ==========================================
 // ============== create new account ========
 var myWindow;
-var newAccount = document.getElementById("create-new-account");
+var newAccount = el("create-new-account");
 newAccount.onclick = function(){
 	myWindow = window.open("new-account.html", "_blank", "toolbar=yes, scrollbars=no, resizable=no, top=500, left=800, width=270, height=180");
 };
@@ -155,13 +165,13 @@ quickplayNotification.addEventListener("click", function(){
 //=========== annotation ====================
 
 removeImgButton.addEventListener('click', function(){
-	  var previewImg = document.getElementById("preview-city-img");
+	  var previewImg = el("preview-city-img");
 	  while(previewImg.firstChild)//remove old labels
 		  previewImg.removeChild(previewImg.firstChild);
 });
 
 saveAnnButton.addEventListener('click', function(){
-	var annInput = document.getElementById('annInput').value;
+	var annInput = el('annInput').value;
 	if(annInput == "")	return;
 	submitAnnotation(annInput);
 	selectedImgFile = null;
@@ -222,15 +232,59 @@ function onFileSelected(event) {
 
 	  reader.readAsDataURL(selectedFile);
 	  console.log(imgtag)
-	  var previewImg = document.getElementById("preview-city-img");
+	  var previewImg = el("preview-city-img");
 	  while(previewImg.firstChild)//remove old labels
 		  previewImg.removeChild(previewImg.firstChild);
 	  previewImg.appendChild(imgtag);
-	  document.getElementById("location-div").appendChild(previewImg);
+	  el("location-div").appendChild(previewImg);
 
 	  selectedImgFile = imgtag;
 	  console.log(selectedFile);
 
 	}
+
+function selectedOption() {
+    var sendOption = el("sendOption");
+    for(var i = 0; i<sendOption.options.length; i++){
+    	sendOption.options[sendOption.selectedIndex].onclick = function(){
+    		console.log("clicked")
+    	    selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
+    	    if(selectedSendOption === "text"){
+    	    	el("text-message-input-div").style.display = "block";
+    	    }
+    	    if(selectedSendOption === "exploration" ||selectedSendOption === "voice"||selectedSendOption === "select"  ){
+    	    	el("text-message-input-div").style.display = "none";
+    	    }
+    	    if(selectedSendOption === "exploration"){
+    	    	removegroupElem("selectedExplName");
+    	    	if(!selectedExploration)return;
+    	    	console.log(selectedExploration.name)
+    	    	var p = document.createElement("p");
+    	    	p.id = "selectedExplName";
+    	    	p.className = "selectedExplName";
+    	    	var div = el("selectedExplNameDivId");
+    	    	div.appendChild(p);
+    	    	p.innerHTML= "Selected: "+selectedExploration.name;
+
+    	    }
+    	    if(selectedSendOption === "voice"){
+
+    	    }
+    	    if(selectedSendOption === "text" ||selectedSendOption === "voice"||selectedSendOption === "select" ){
+    	    	removegroupElem("selectedExplName");
+    	    }
+    	}
+    }
+   }
+function removegroupElem(classname) {
+    var list = document.getElementsByClassName(classname);
+    for(var i=list.length-1; i>=0; i--){
+        var elem = list[i];
+        if(elem.className === classname){
+        	console.log(elem.className)
+        	elem.parentNode.removeChild(elem);
+        }
+    }
+}
 // ---- INIT
 resetExplorations();
