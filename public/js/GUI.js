@@ -46,7 +46,8 @@ function updateSideBar(){
 	updateExplorationChooser();
 	updateLocationInfo();
 	updateExplorationControls();
-	updateNotifications();
+	//updateNotifications();
+	checkMessages();
 	updateLogonElements();
 	updateShareExplElements();
 }
@@ -64,7 +65,6 @@ function updateExplorationChooser(){
 		$("#exploration-selector").hide();
 		return;
 	}else $("#exploration-selector").show();
-
 	explorations.forEach(function(exploration, index){
 		var explOption = document.createElement('option');
 		explOption.setAttribute("id", exploration.timeStamp);
@@ -97,7 +97,7 @@ function updateNotifications(){
 	//set visibility to all notification buttons/labels hidden when log on.
 	resetVisibility(notificationContainer,"hidden");
 
-	resetVisibility(el("file-browse"), "hidden");
+	//resetVisibility(el("file-browse"), "hidden");
 
 	hideNotificationButtons();
 	if (!userLoggedOn()){
@@ -105,11 +105,9 @@ function updateNotifications(){
 	}
 
 	// all shared exploration from current user exploratin folder (use username to id)
+
 	var sharedExpl = currentUser.getSharedExploration();
-	checkMessages();
-	console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa: "+newMessageCount)
-
-
+	var newMessages = currentUser.newMessages;
 	// newCount == the number of nonplayed shared exploration in current user folder
 	var newExplCount = 0;
 	var newMessageCount = 0;
@@ -117,14 +115,15 @@ function updateNotifications(){
 	sharedExpl.forEach(function(expl){
 		if(expl.isNew)
 			newExplCount++;
-	});
 
-	currentUser.newMessages.forEach(function(message){
+	});
+	newMessages.forEach(function(message){
 		if(message.isNew)
 			newMessageCount++;
 
 
 	});
+
 	// show notification message
 	if(newExplCount>0 && newMessageCount==0){
 		resetVisibility(notificationContainer,"visible");
@@ -146,6 +145,7 @@ function updateNotifications(){
 		$("#notification-container").html(" No new notification.");
 		notificationContainer.style.cursor = "not-allowed";
 	}
+	showListNotifications();
 }
 
 //updates the state of the buttons (record, play, pause, stop, save, delete, reset)
@@ -287,9 +287,10 @@ function showListNotifications(){
 		notificationSelector.removeChild(notificationSelector.firstChild);
 
 	var newSharedExpls = currentUser.getSharedExploration();
-	var hasNewExpl = false;
+	var hasNewNoti = false;
 	var newMessages = [];
 	if(currentUser.haveNewMessages()) {
+		console.log(currentUser.newMessages)
 		newMessages = currentUser.newMessages;
 	}
 
@@ -305,8 +306,15 @@ function showListNotifications(){
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
 					//TODO: show message
+					setMessageIsOld(message);
+					addOptions(message);
+
+
+
+
 				};
 				notificationSelector.appendChild(newOption);
+				hasNewNoti = true;
 			});
 		}
 
@@ -322,18 +330,41 @@ function showListNotifications(){
 						stopRecording();
 						selectExploration(expl);
 					};
-					console.log("append new expl: "+ newOption.innerHTML)
 					notificationSelector.appendChild(newOption);
-					hasNewExpl = true;
+					hasNewNoti = true;
 				}
 			}
 
 			);
-			return hasNewExpl;
 		}
 	}
-}
+	return hasNewNoti;
 
+}
+function addOptions(message){
+	resetVisibility(el("show-messages-div"), "visible");
+	el("showTextArea").innerHTML = '';
+	for(var i = 0; i<currentUser.messages.length; i++){
+		for(var j = 0; j<currentUser.messages[i].length; j++){
+			if(currentUser.messages[i][j].from==message.from){
+				el("showTextArea").innerHTML += "\nTime: " + currentUser.messages[i][j].timeStamp;
+				el("showTextArea").innerHTML += "\nFrom: " + currentUser.messages[i][j].from;
+				if(currentUser.messages[i][j].isNew){
+					el("showTextArea").innerHTML += "\nNew "+"Message: " + currentUser.messages[i][j].message;
+
+				}
+				else{
+					el("showTextArea").innerHTML += "\nMessage: " + currentUser.messages[i][j].message;
+
+				}
+
+				el("showTextArea").innerHTML += "\n";
+			}
+
+		}
+	}
+	updateNotifications();
+}
 function divHideShow(div){
 	if (div.style.visibility==="visible"){
 		div.style.visibility= "hidden";
@@ -374,6 +405,10 @@ function displayLocationInfo(city){
 	if (currentUser != null)
 		makeAnnotationInput(annotationInputCont);
 
+	getAnnotationFromLocalServer(city);
+
+}
+function getAnnotationFromLocalServer(city){
 	// get annotations for this location
 	$.ajax({
 		type: 'GET',
@@ -385,7 +420,8 @@ function displayLocationInfo(city){
 
 	// displays annotations associated with the current location
 	function displayAnnotations(annotations){
-
+		while(el("annotation-container").firstChild)//remove old labels
+			el("annotation-container").removeChild(el("annotation-container").firstChild);
 		// if response is "no_annotations", no annotations were found, so do nothing
 		if (annotations === "no_annotations") return;
 		// make a secondary annotation container so that all annotations can be loaded at once
@@ -453,8 +489,9 @@ function displayLocationInfo(city){
 		// TODO: load all annotations at once
 		el("annotation-container")
 		.appendChild(container);
-	}
+		resetVisibility(el("file-browse"), "visible");
 
+	}
 
 }
 
@@ -502,9 +539,10 @@ function removeAudioGraphic(){
 	svg.select("#microphone-graphic")
 	.remove();
 }
-
+var messageFromNameList = [];
 //check local server  - messages
 function checkMessages(){
+	if(currentUser==null) return;
 	$.ajax({
 		type: 'GET',
 		url: "/getMessages",
@@ -513,9 +551,11 @@ function checkMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
+		messageFromNameList = [];
 		currentUser.setMessages(messages);
 		var newMessages = [];
 		for (var i = 0; i < messages.length; i++){
+			messageFromNameList[i] = messages[i][0].from;
 			for(var j = 0; j< messages[i].length; j++){
 				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
 					newMessages.push(messages[i][j]);
@@ -523,9 +563,37 @@ function checkMessages(){
 
 			}
 		}
-		currentUser.setNewMessages(newMessages);
-
+		currentUser.newMessages = newMessages;
+		updateNotifications();
+		if(messageFromNameList.length!=0){
+			resetVisibility(el("show-messages-div"), "visible");
+			for(var j = 0; j<messageFromNameList.length;j++){
+				var option = document.createElement('option');
+				option.setAttribute("id", "messageFrom");
+				var name = messageFromNameList[j];
+				option.innerHTML = name;
+				option.value = name;
+				el("messageFromOption").appendChild(option);
+			}
+		}
 	}
+}
+
+function setMessageIsOld(m){
+	currentUser.setIsOld(m);
+	$.ajax({
+		type: 'POST',
+		url: "setMessageIsOld",
+		data: JSON.stringify({
+			mObject: m,
+			sender:m.from,
+			currentUser:m.to, // the user who made the exploration
+			timeStamp: m.timeStamp,
+			messageDetial: m.message
+
+		}),
+		contentType: "application/json"
+	});
 }
 
 function el(id){
@@ -534,14 +602,35 @@ function el(id){
 function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
-		minutes = date.getMinutes().toString(),
-		seconds = date.getSeconds() < 10 	? "0" + date.getSeconds().toString()
-											: date.getSeconds(),
-		day = date.getDate(),
-		month = monthAsString(date.getMonth());
+	minutes = date.getMinutes().toString(),
+	seconds = date.getSeconds() < 10 	? "0" + date.getSeconds().toString()
+			: date.getSeconds(),
+			day = date.getDate(),
+			month = monthAsString(date.getMonth());
 
 	return hours + ":" + minutes + " - " + day + "th " + month;
 	function monthAsString(monthIndex){
 		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
 	}
+}
+
+
+window.setInterval(function(){
+	if(currentUser!=null){
+		loadAllExplorations(currentUser.name, gotExplorations);
+		enableAction(["delete"]);
+		updateExplorationChooser();
+	}
+
+	if(selectedLocation!=null){
+		getAnnotationFromLocalServer(selectedLocation);
+	}
+	//updateShareExplElements();
+	checkMessages();
+}, 100000);
+
+
+function gotExplorations(allExplorations){
+	currentUser.setExplorations(allExplorations);
+	updateExplorationChooser();
 }

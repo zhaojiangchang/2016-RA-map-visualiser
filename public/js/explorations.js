@@ -602,12 +602,6 @@ function saveExploration(exploration) {
 			success: function(response){
 				//TODO: try not load all explorations after send exploration, add this exploration to currentuser's expls
 				loadAllExplorations(currentUser.name, gotExplorations);
-
-				function gotExplorations(allExplorations){
-					currentUser.setExplorations(allExplorations);
-					updateExplorationChooser();
-				}
-
 				enableAction(["delete"]);
 				updateExplorationChooser();
 			},

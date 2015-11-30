@@ -1,6 +1,6 @@
 var currentUser = null; // the user who is currently logged in
 
-// user object is created with their name and explorations
+//user object is created with their name and explorations
 function User(name, explorations){
 	this.name = name;
 	// the user's explorations
@@ -17,6 +17,24 @@ function User(name, explorations){
 	this.getMessages = function(){
 		return this.messages;
 	}
+	this.setIsOld = function(message){
+		for (var i = 0; i<this.messages.length; i++){
+			for (var j = 0; j<this.messages[i].length; j++){
+				if(this.messages[i][j]===message){
+					console.log(this.messages[i][j]===message)
+					this.messages[i][j].isNew = false;
+
+				}
+			}
+		}
+		for (var a = 0; a<this.newMessages.length; a++){
+			if(this.newMessages[a]===message){
+				this.newMessages.splice(a,1);
+			}
+
+		}
+
+	}
 	this.haveMessages = function(){
 		if(this.essages.length == 0) return false;
 		else return true;
@@ -27,6 +45,18 @@ function User(name, explorations){
 	}
 	this.setNewMessages = function(newMessages){
 		this.newMessages = newMessages;
+	}
+	this.getMessagesBySender = function(name){
+		var messagesForSelectedSender = [];
+		for (var i = 0; i<this.messages.length; i++){
+
+			if(this.messages[i][0].from===name){
+				for (var j = 0; j<this.messages[i].length; j++){
+					messagesForSelectedSender[j] = this.messages[i][j];
+				}
+			}
+		}
+		return messagesForSelectedSender;
 	}
 	// add an exploration
 	this.addExploration = function (expl){
@@ -95,19 +125,17 @@ function User(name, explorations){
 		for (var i = 0; i < this.explorations.length; i++){
 			if (this.explorations[i].equals(exploration))
 				this.explorations.splice(i, 1);
-				return true;
+			return true;
 		}
 	}
 	// has the user got any explorations?
 	this.hasExplorations = function(){
 		return this.explorations.length > 0;
 	}
-	this.hasMessages = function(){
 
-	}
 }
 
-// asks server if login details are acceptable
+//asks server if login details are acceptable
 function attemptLogin(name, pw){
 
 	// returns whether logon is approved
@@ -129,7 +157,7 @@ function attemptLogin(name, pw){
 	}
 }
 
-// logs the user in, makes all of the user's file accessible
+//logs the user in, makes all of the user's file accessible
 function login(name){
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
@@ -140,14 +168,15 @@ function login(name){
 	}
 }
 
-// logs the current user out, removes access to the user's files
+//logs the current user out, removes access to the user's files
 function logout(){
 	currentUser = null;
 	resetExplorations();
+	updateNotifications();
 	updateSideBar();
 }
 
-// attempts to create an account. Alerts user if name and pw are unacceptable
+//attempts to create an account. Alerts user if name and pw are unacceptable
 function attemptCreateAccount(name, pw){
 	$.ajax({
 		type: 'POST',
@@ -167,7 +196,7 @@ function attemptCreateAccount(name, pw){
 	}
 }
 
-// downloads all of the user's (specified by userName) explorations
+//downloads all of the user's (specified by userName) explorations
 function loadAllExplorations(userName, cb){
 	$.ajax({
 		type: 'GET',
@@ -217,7 +246,7 @@ function loadAllExplorations(userName, cb){
 	}
 }
 
-// shares the exploration with the user
+//shares the exploration with the user
 function shareExplFile(exploration, userName){
 	if(userName==currentUser.name) return;
 	if(selectedExploration==null) return;
@@ -265,7 +294,7 @@ function shareTextMessage(userLabelValue){
 	});
 }
 
-// creates an account with this name and pw
+//creates an account with this name and pw
 function createAccount(name, pw){
 	console.log("add new user's name and pw to logonInfo file");
 
@@ -279,7 +308,7 @@ function createAccount(name, pw){
 	window.close(1000);
 }
 
-// returns true if there is a user currently logged on
+//returns true if there is a user currently logged on
 function userLoggedOn(){
 	return currentUser;
 }

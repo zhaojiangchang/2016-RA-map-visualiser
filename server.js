@@ -411,9 +411,9 @@ app.post('/postMessage', function(req, res){
 			fs.writeFileSync(fileReceiverPath, JSON.stringify(messages, null, 4));
 			console.log("wrote message file \"" + fileName + "\"");
 			res.sendStatus(200); // success code
-				return;
-			}
+			return;
 		}
+	}
 	if(!findFile){
 		var m = [];
 		m.push(Message);
@@ -444,4 +444,46 @@ app.get("/getMessages", function(req, res){
 
 });
 
+//set the "isOld" property of a message to true
+app.post("/setMessageIsOld", function(req, res){
+	console.log("setting message isOld");
+	var update = req.body;
+	var mObject = update.mObject;
+	var currentUserName = update.currentUser;
+	var senderName = update.sender;
+	var timeStamp = update.timeStamp;
+	var messageDetial = update.messageDetial;
+
+	var path = USER_PATH;
+	// ensure both dirs exist.
+	path += currentUserName + "/";
+	ensureDirExists(path);
+	path += "message/";
+	ensureDirExists(path);
+
+	// find the exploration with the right user and timeStamp, and change the isNew property
+	var msgFiles = fs.readdirSync(path);
+	var found;
+
+	msgFiles.forEach(function(filename, index){
+		var filePath = path + filename;
+		if (fs.lstatSync(filePath).isDirectory())
+			return; // if the file is a directory
+		var messages = JSON.parse(fs.readFileSync(filePath));
+		for(var i = 0; i<messages.length; i++){
+			console.log(messages[i].from+"   "+senderName+"   "+messages[i].timeStamp+"   "+timeStamp+"   "+messages[i].message+"   "+messageDetial);
+			if(messages[i].from==senderName && messages[i].timeStamp==timeStamp &&
+					messages[i].message == messageDetial){
+				messages[i].isNew = false;
+				fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
+				res.sendStatus(200);
+				found = true;
+				return;
+			}
+		}
+
+	});
+	if (!found)
+		res.sendStatus(404); // not found
+});
 
