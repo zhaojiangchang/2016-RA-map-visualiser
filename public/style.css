@@ -378,3 +378,8 @@ input,label {
 .select-device {
 	display: none;
 }
+
+.showTextArea {
+	 font-size: 20pt;
+   font-family: Arial;
+}

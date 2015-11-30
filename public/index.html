@@ -153,6 +153,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			</div>
 
 		</div>
+		<div id = "show-messages-div">
+			<h3>
+				<label for="user-messages">Messages From:</label>
+			</h3>
+			<select id="messageFromOption" size="0"
+				style="display: inline-block;" onchange="selectedMessageSenderOption();">
+				<option id="messageFrom" value = "select">Select a sender</option>
+			</select>
+			<textarea id="showTextArea" cols = "40" rows = "5" style="overflow-y: scroll;" readonly></textarea>
+		</div>
 	</div>
 	<button id="show-path">Show Path</button>
 	<div id="notification-container" class="notification-container"></div>

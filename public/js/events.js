@@ -1,14 +1,14 @@
-// =================================================================================
-// Author: Will Hardwick-Smith & Jacky Chang
-// Contains: Event handlers for most GUI elements, including:
-// - log in elements
-// - exploration control buttons
-// - exploration chooser
-// - notifications
-// - inserting
-// =================================================================================
+//=================================================================================
+//Author: Will Hardwick-Smith & Jacky Chang
+//Contains: Event handlers for most GUI elements, including:
+//- log in elements
+//- exploration control buttons
+//- exploration chooser
+//- notifications
+//- inserting
+//=================================================================================
 
-// ========= guest users =============================
+//========= guest users =============================
 
 var guestUsers = ["obama", "john", "lorde", "will"];
 var selectedSendOption = "exploration";
@@ -22,8 +22,8 @@ guestUsers.forEach(function(userName){
 		passwordInput.value = "password";
 	};
 });
-// =================================================
-// ========= exploration controls ==================
+//=================================================
+//========= exploration controls ==================
 
 recordExplButton.addEventListener("click", function(){
 	var currentExpl = currentUser.getCurrentExploration();
@@ -81,8 +81,8 @@ deleteExplButton.click(function(){
 
 resetExplButton.click(resetExplorations);
 
-// ==========================================
-// ======== exploration chooser and login====
+//==========================================
+//======== exploration chooser and login====
 
 explChooser.onclick = updateSelectedExploration;
 
@@ -101,12 +101,12 @@ logonButton.onclick = function(){
 	}
 };
 
-// =========================================
-// ============= share button ==============
+//=========================================
+//============= share button ==============
 
-// exploration file sent when button clicked
-// userLabelValue: receiver
-// if userLabelValue not on the userList on the server will not able to send.
+//exploration file sent when button clicked
+//userLabelValue: receiver
+//if userLabelValue not on the userList on the server will not able to send.
 el("submit-shared-file").addEventListener('click',function(){
 	var userLabelValue = el("shared-with").value;
 	if(userLabelValue==null || userLabelValue==currentUser.name) return;
@@ -121,36 +121,41 @@ el("submit-shared-file").addEventListener('click',function(){
 	}
 });
 
-// ==========================================
-// ============== create new account ========
+//==========================================
+//============== create new account ========
 var myWindow;
 var newAccount = el("create-new-account");
 newAccount.onclick = function(){
 	myWindow = window.open("new-account.html", "_blank", "toolbar=yes, scrollbars=no, resizable=no, top=500, left=800, width=270, height=180");
 };
 
-// ==========================================
-// =============== notifications ============
+//==========================================
+//=============== notifications ============
 
-// notification container clicked - show or hide the selector box
+//notification container clicked - show or hide the selector box
 notificationContainer.addEventListener('click',function(){
 	stopRecording();
+//	checkMessages();
+	updateNotifications();
 	if(showListNotifications()){
-		if(notificationSelector.style.visibility == "hidden")
+		if(notificationSelector.style.visibility == "hidden"){
+			console.log(1)
 			showNotificationButtons();
+		}
+
 		else hideNotificationButtons();
 	}
 	else{
-		 hideNotificationButtons();
+		hideNotificationButtons();
 	}
 });
 
-// remove exploration from selector box, not delete from user's folder
+//remove exploration from selector box, not delete from user's folder
 removeNotification.addEventListener("click", function(){
 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	selected.isNew = false;
 	setExplorationIsOld(selected);
-	updateNotifications();
+	checkMessages();
 	deselectExploration();
 });
 
@@ -158,16 +163,16 @@ quickplayNotification.addEventListener("click", function(){
 	selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	startPlayback(selected);
 	selected.isNew = true;
-	updateNotifications();
+	checkMessages();
 });
 
 //===========================================
 //=========== annotation ====================
 
 removeImgButton.addEventListener('click', function(){
-	  var previewImg = el("preview-city-img");
-	  while(previewImg.firstChild)//remove old labels
-		  previewImg.removeChild(previewImg.firstChild);
+	var previewImg = el("preview-city-img");
+	while(previewImg.firstChild)//remove old labels
+		previewImg.removeChild(previewImg.firstChild);
 });
 
 saveAnnButton.addEventListener('click', function(){
@@ -177,8 +182,8 @@ saveAnnButton.addEventListener('click', function(){
 	selectedImgFile = null;
 })
 
-// ==========================================
-// =========== inserting ====================
+//==========================================
+//=========== inserting ====================
 
 insertButton.click(function(){
 	inserting = true;
@@ -220,71 +225,102 @@ stopInsertButton.click( function(){
 });
 
 function onFileSelected(event) {
-	  var selectedFile = event.target.files[0];
-	  var reader = new FileReader();
+	var selectedFile = event.target.files[0];
+	var reader = new FileReader();
 
-	  var imgtag = document.createElement("img");
-	  imgtag.title = selectedFile.name;
+	var imgtag = document.createElement("img");
+	imgtag.title = selectedFile.name;
 
-	  reader.onload = function(event) {
-	    imgtag.src = event.target.result;
-	  };
+	reader.onload = function(event) {
+		imgtag.src = event.target.result;
+	};
 
-	  reader.readAsDataURL(selectedFile);
-	  console.log(imgtag)
-	  var previewImg = el("preview-city-img");
-	  while(previewImg.firstChild)//remove old labels
-		  previewImg.removeChild(previewImg.firstChild);
-	  previewImg.appendChild(imgtag);
-	  el("location-div").appendChild(previewImg);
+	reader.readAsDataURL(selectedFile);
+	console.log(imgtag)
+	var previewImg = el("preview-city-img");
+	while(previewImg.firstChild)//remove old labels
+		previewImg.removeChild(previewImg.firstChild);
+	previewImg.appendChild(imgtag);
+	el("location-div").appendChild(previewImg);
 
-	  selectedImgFile = imgtag;
-	  console.log(selectedFile);
+	selectedImgFile = imgtag;
+	console.log(selectedFile);
 
-	}
+}
 
 function selectedOption() {
-    var sendOption = el("sendOption");
-    for(var i = 0; i<sendOption.options.length; i++){
-    	sendOption.options[sendOption.selectedIndex].onclick = function(){
-    		console.log("clicked")
-    	    selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
-    	    if(selectedSendOption === "text"){
-    	    	el("text-message-input-div").style.display = "block";
-    	    }
-    	    if(selectedSendOption === "exploration" ||selectedSendOption === "voice"||selectedSendOption === "select"  ){
-    	    	el("text-message-input-div").style.display = "none";
-    	    }
-    	    if(selectedSendOption === "exploration"){
-    	    	removegroupElem("selectedExplName");
-    	    	if(!selectedExploration)return;
-    	    	console.log(selectedExploration.name)
-    	    	var p = document.createElement("p");
-    	    	p.id = "selectedExplName";
-    	    	p.className = "selectedExplName";
-    	    	var div = el("selectedExplNameDivId");
-    	    	div.appendChild(p);
-    	    	p.innerHTML= "Selected: "+selectedExploration.name;
+	var sendOption = el("sendOption");
+	for(var i = 0; i<sendOption.options.length; i++){
+		sendOption.options[sendOption.selectedIndex].onclick = function(){
+			console.log("clicked")
+			selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
+			if(selectedSendOption === "text"){
+				el("text-message-input-div").style.display = "block";
+			}
+			if(selectedSendOption === "exploration" ||selectedSendOption === "voice"||selectedSendOption === "select"  ){
+				el("text-message-input-div").style.display = "none";
+			}
+			if(selectedSendOption === "exploration"){
+				removegroupElem("selectedExplName");
+				if(!selectedExploration)return;
+				console.log(selectedExploration.name)
+				var p = document.createElement("p");
+				p.id = "selectedExplName";
+				p.className = "selectedExplName";
+				var div = el("selectedExplNameDivId");
+				div.appendChild(p);
+				p.innerHTML= "Selected: "+selectedExploration.name;
 
-    	    }
-    	    if(selectedSendOption === "voice"){
+			}
+			if(selectedSendOption === "voice"){
 
-    	    }
-    	    if(selectedSendOption === "text" ||selectedSendOption === "voice"||selectedSendOption === "select" ){
-    	    	removegroupElem("selectedExplName");
-    	    }
-    	}
-    }
-   }
-function removegroupElem(classname) {
-    var list = document.getElementsByClassName(classname);
-    for(var i=list.length-1; i>=0; i--){
-        var elem = list[i];
-        if(elem.className === classname){
-        	console.log(elem.className)
-        	elem.parentNode.removeChild(elem);
-        }
-    }
+			}
+			if(selectedSendOption === "text" ||selectedSendOption === "voice"||selectedSendOption === "select" ){
+				removegroupElem("selectedExplName");
+			}
+		}
+	}
 }
-// ---- INIT
+function selectedMessageSenderOption(){
+	var messageFromOption = el("messageFromOption");
+	el("showTextArea").innerHTML = '';
+
+	for(var i = 0; i<messageFromOption.options.length; i++){
+		messageFromOption.options[messageFromOption.selectedIndex].onclick = function(){
+			selectedMessageFromOption = messageFromOption.options[messageFromOption.selectedIndex].value;
+			console.log("clicked messages from option list: " +  selectedMessageFromOption)
+			var messagesFromSender = currentUser.getMessagesBySender(selectedMessageFromOption);
+
+			for(var i = 0; i<messagesFromSender.length; i++){
+				el("showTextArea").innerHTML += "\nTime: " + messagesFromSender[i].timeStamp;
+				el("showTextArea").innerHTML += "\nFrom: " + messagesFromSender[i].from;
+				if(messagesFromSender[i].isNew){
+					el("showTextArea").innerHTML += "\nNew "+"Message: " + messagesFromSender[i].message;
+
+				}
+				else{
+					el("showTextArea").innerHTML += "\nMessage: " + messagesFromSender[i].message;
+
+				}
+
+				el("showTextArea").innerHTML += "\n";
+			}
+
+		}
+
+	}
+	updateNotifications();
+
+}
+function removegroupElem(classname) {
+	var list = document.getElementsByClassName(classname);
+	for(var i=list.length-1; i>=0; i--){
+		var elem = list[i];
+		if(elem.className === classname){
+			console.log(elem.className)
+			elem.parentNode.removeChild(elem);
+		}
+	}
+}
+//---- INIT
 resetExplorations();
