@@ -148,6 +148,7 @@ function submitAnnotation(annotationText){
 		annotation.imgFile = selectedImgFile;
 		annotation.fileName = selectedImgFile.title;
 		annotation.imageData = selectedImgFile.src;
+
 	}
 	$.ajax({
 		type: 'POST',
