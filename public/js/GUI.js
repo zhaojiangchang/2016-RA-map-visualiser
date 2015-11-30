@@ -127,17 +127,17 @@ function updateNotifications(){
 	// show notification message
 	if(newExplCount>0 && newMessageCount==0){
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newExplCount + " new explorations.");
+		$("#notification-container").html(newExplCount + " new expls.");
 		notificationContainer.style.cursor = "pointer";
 	}
 	else if(newExplCount>0 && newMessageCount>0){
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newMessageCount + " new messages and "+newExplCount+" explorations.");
+		$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
 		notificationContainer.style.cursor = "pointer";
 	}
 	else if(newExplCount==0 && newMessageCount>0){
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newMessageCount + " new messages.");
+		$("#notification-container").html(newMessageCount + " new msgs.");
 		notificationContainer.style.cursor = "pointer";
 	}
 	else{
@@ -308,10 +308,6 @@ function showListNotifications(){
 					//TODO: show message
 					setMessageIsOld(message);
 					addOptions(message);
-
-
-
-
 				};
 				notificationSelector.appendChild(newOption);
 				hasNewNoti = true;
@@ -348,16 +344,14 @@ function addOptions(message){
 		for(var j = 0; j<currentUser.messages[i].length; j++){
 			if(currentUser.messages[i][j].from==message.from){
 				el("showTextArea").innerHTML += "\nTime: " + currentUser.messages[i][j].timeStamp;
-				el("showTextArea").innerHTML += "\nFrom: " + currentUser.messages[i][j].from;
 				if(currentUser.messages[i][j].isNew){
-					el("showTextArea").innerHTML += "\nNew "+"Message: " + currentUser.messages[i][j].message;
+					el("showTextArea").innerHTML += "\n(New Message): "+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
 
 				}
 				else{
-					el("showTextArea").innerHTML += "\nMessage: " + currentUser.messages[i][j].message;
+					el("showTextArea").innerHTML += currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
 
 				}
-
 				el("showTextArea").innerHTML += "\n";
 			}
 
@@ -462,6 +456,14 @@ function getAnnotationFromLocalServer(city){
 				image.width = 50;
 				image.height = 50;
 				imgDiv.appendChild(image);
+				image.onclick = function(){
+					var img = new Image();
+					img.src = annotation.imageData;
+					img.width = 250;
+					img.height = 300;
+					el("preview-city-img").appendChild(img);
+
+				}
 			}
 			content.innerHTML = annotation.text;
 			info.innerHTML = annInfo;
@@ -566,14 +568,30 @@ function checkMessages(){
 		currentUser.newMessages = newMessages;
 		updateNotifications();
 		if(messageFromNameList.length!=0){
+//			for(var h = 0; h<el("messageFromOption").options.length; h++){
+//				el("messageFromOption").removeChild(el("messageFromOption").options[h]);
+//			}
+			if(el("messageFrom1")==null){
+				var option = document.createElement('option');
+				option.setAttribute("id", "messageFrom1");
+				var name = "Select a sender";
+				option.innerHTML = name;
+				option.value = "select";
+				el("messageFromOption").appendChild(option);
+			}
+
 			resetVisibility(el("show-messages-div"), "visible");
 			for(var j = 0; j<messageFromNameList.length;j++){
-				var option = document.createElement('option');
-				option.setAttribute("id", "messageFrom");
 				var name = messageFromNameList[j];
-				option.innerHTML = name;
-				option.value = name;
-				el("messageFromOption").appendChild(option);
+				console.log(el(name+"Message"))
+
+				if(el(name+"Message")==null){
+					option = document.createElement('option');
+					option.setAttribute("id", name+"Message");
+					option.innerHTML = name;
+					option.value = name;
+					el("messageFromOption").appendChild(option);
+				}
 			}
 		}
 	}
@@ -602,13 +620,12 @@ function el(id){
 function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
-	minutes = date.getMinutes().toString(),
-	seconds = date.getSeconds() < 10 	? "0" + date.getSeconds().toString()
-			: date.getSeconds(),
-			day = date.getDate(),
-			month = monthAsString(date.getMonth());
+	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
+	seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
+	day = date.getDate(),
+	month = monthAsString(date.getMonth());
 
-	return hours + ":" + minutes + " - " + day + "th " + month;
+	return hours + ":" + minutes + " -" + day + "th " + month;
 	function monthAsString(monthIndex){
 		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
 	}
@@ -626,11 +643,16 @@ window.setInterval(function(){
 		getAnnotationFromLocalServer(selectedLocation);
 	}
 	//updateShareExplElements();
+	console.log(notificationSelector.style.visibility)
 	checkMessages();
-}, 100000);
+}, 10000);
 
 
 function gotExplorations(allExplorations){
 	currentUser.setExplorations(allExplorations);
 	updateExplorationChooser();
 }
+
+$("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
+	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1
+	}))

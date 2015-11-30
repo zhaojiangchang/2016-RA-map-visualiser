@@ -256,6 +256,8 @@ function selectedOption() {
 			selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
 			if(selectedSendOption === "text"){
 				el("text-message-input-div").style.display = "block";
+
+
 			}
 			if(selectedSendOption === "exploration" ||selectedSendOption === "voice"||selectedSendOption === "select"  ){
 				el("text-message-input-div").style.display = "none";
@@ -277,6 +279,7 @@ function selectedOption() {
 			}
 			if(selectedSendOption === "text" ||selectedSendOption === "voice"||selectedSendOption === "select" ){
 				removegroupElem("selectedExplName");
+				el("text-message-input").innerHTML = '';
 			}
 		}
 	}
@@ -288,18 +291,15 @@ function selectedMessageSenderOption(){
 	for(var i = 0; i<messageFromOption.options.length; i++){
 		messageFromOption.options[messageFromOption.selectedIndex].onclick = function(){
 			selectedMessageFromOption = messageFromOption.options[messageFromOption.selectedIndex].value;
-			console.log("clicked messages from option list: " +  selectedMessageFromOption)
 			var messagesFromSender = currentUser.getMessagesBySender(selectedMessageFromOption);
-
 			for(var i = 0; i<messagesFromSender.length; i++){
-				el("showTextArea").innerHTML += "\nTime: " + messagesFromSender[i].timeStamp;
-				el("showTextArea").innerHTML += "\nFrom: " + messagesFromSender[i].from;
+				el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
 				if(messagesFromSender[i].isNew){
-					el("showTextArea").innerHTML += "\nNew "+"Message: " + messagesFromSender[i].message;
+					el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+"(New Message) " + ": "+messagesFromSender[i].message;
 
 				}
 				else{
-					el("showTextArea").innerHTML += "\nMessage: " + messagesFromSender[i].message;
+					el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+": "+messagesFromSender[i].message;
 
 				}
 
