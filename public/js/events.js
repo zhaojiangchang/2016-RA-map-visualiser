@@ -101,26 +101,6 @@ logonButton.onclick = function(){
 	}
 };
 
-//=========================================
-//============= share button ==============
-
-//exploration file sent when button clicked
-//userLabelValue: receiver
-//if userLabelValue not on the userList on the server will not able to send.
-el("submit-shared-file").addEventListener('click',function(){
-	var userLabelValue = el("shared-with").value;
-	if(userLabelValue==null || userLabelValue==currentUser.name) return;
-	if(selectedSendOption === "exploration" && selectedExploration!=null){
-		shareExplFile(selectedExploration, userLabelValue);
-	}
-	else if(selectedSendOption === "text"){
-		shareTextMessage(userLabelValue);
-
-
-
-	}
-});
-
 //==========================================
 //============== create new account ========
 var myWindow;
@@ -183,7 +163,7 @@ saveAnnButton.addEventListener('click', function(){
 })
 
 //==========================================
-//=========== inserting ====================
+//=========== inserting expl ===============
 
 insertButton.click(function(){
 	inserting = true;
@@ -224,6 +204,10 @@ stopInsertButton.click( function(){
 	}
 });
 
+//==========================================
+//=========== inserting image ==============
+
+// file browse for image select
 function onFileSelected(event) {
 	var selectedFile = event.target.files[0];
 	var reader = new FileReader();
@@ -248,11 +232,36 @@ function onFileSelected(event) {
 
 }
 
-function selectedOption() {
+//=========================================
+//============= share button ==============
+
+//exploration file sent when button clicked
+//userLabelValue: receiver
+//if userLabelValue not on the userList on the server will not able to send.
+el("submit-shared-file").addEventListener('click',function(){
+	var userLabelValue = el("shared-with").value;
+	if(userLabelValue==null || userLabelValue==currentUser.name) return;
+	if(selectedSendOption === "exploration" && selectedExploration!=null){
+		shareExplFile(selectedExploration, userLabelValue);
+	}
+	else if(selectedSendOption === "text"){
+		shareTextMessage(userLabelValue);
+	}
+	else if(selectedSendOption === "voice"){
+		shareVoiceMessage(userLabelValue);
+	}
+});
+
+//==========================================
+//=========== select - options (Send to:)===
+
+//	on click on select options to send to other users
+function selectedSendInfoOption() {
 	var sendOption = el("sendOption");
 	for(var i = 0; i<sendOption.options.length; i++){
 		sendOption.options[sendOption.selectedIndex].onclick = function(){
 			console.log("clicked")
+			el("record-voice").style.display = "none";
 			selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
 			if(selectedSendOption === "text"){
 				el("text-message-input-div").style.display = "block";
@@ -275,6 +284,11 @@ function selectedOption() {
 
 			}
 			if(selectedSendOption === "voice"){
+				if(recording){
+					window.alert('Can Not Record Exploration and Voice Message At Same Time!')
+				}
+				else
+					el("record-voice").style.display = "block";
 
 			}
 			if(selectedSendOption === "text" ||selectedSendOption === "voice"||selectedSendOption === "select" ){
@@ -284,6 +298,52 @@ function selectedOption() {
 		}
 	}
 }
+
+
+//=====================================================
+//=========== Send Voice ==============================
+
+el("record-voice").onclick = function(){
+	if(el("record-voice").value=="Start Recording"){
+		updateRecordVoiceButton();
+		startRecordVoiceMessage();
+
+	}else{
+		updateRecordVoiceButton();
+		//stopRecordVoiceMessage();
+	}
+
+};
+
+function updateRecordVoiceButton(){
+	// if user is currently logged on, disable all userImage button
+	if (el("record-voice").value=="Start Recording"){
+		el("record-voice").value="Stop Recording"
+	}
+	else
+		el("record-voice").value = "Start Recording";
+}
+
+var voiceMessageRecording = false;
+var voiceMessageData = null;
+function startRecordVoiceMessage(){
+	if (audioRecorder){
+		voiceMessageRecording = true;
+		voiceMessageData = null;
+		startAudioRecording();
+		removeAudioGraphic();
+
+	}else{
+		window.alert("No voice input device detected");
+	}
+
+
+}
+function stopRecordVoiceMessage(){
+	stopAudioRecording();
+}
+//=====================================================
+//=========== show text messages from all senders  ====
 function selectedMessageSenderOption(){
 	var messageFromOption = el("messageFromOption");
 	el("showTextArea").innerHTML = '';
@@ -312,6 +372,13 @@ function selectedMessageSenderOption(){
 	updateNotifications();
 
 }
+
+
+
+//=====================================================
+//=========== functions ===============================
+
+//remove element by classname
 function removegroupElem(classname) {
 	var list = document.getElementsByClassName(classname);
 	for(var i=list.length-1; i>=0; i--){

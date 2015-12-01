@@ -77,6 +77,46 @@ function updateExplorationChooser(){
 	ensureExplorationSelected();
 }
 
+//updates the state of the buttons (record, play, pause, stop, save, delete, reset)
+function updateExplorationControls(specialCase){
+	if (!selectedExploration){
+		disableAction(["save","play","stop","pause","reset","delete"]);
+		if (userLoggedOn()){
+			enableAction(["record"]);
+		}
+		else {
+			disableAction(["record"]);
+		}
+	}
+	else if (!playing){
+		enableAction(["record","play","reset","delete"]);
+		disableAction(["stop","pause"]);
+
+		changeButtonColour("record", false);
+	}
+	else if (playing){
+		enableAction(["stop","pause"]);
+		disableAction(["record","play","delete"]);
+	}
+	if (recording){
+		disableAction(["save","play","stop","pause","delete"]);
+		enableAction(["record"]);
+		changeButtonColour("record", true);
+	}
+
+	if (specialCase){
+		if (specialCase === "stopped-recording"){
+			enableAction(["record","play","reset","save"]);
+			disableAction(["stop","pause","delete"]);
+			changeButtonColour("record", false);
+			enableAction(["save"]);
+		}
+		if (specialCase === "saved"){
+			disableAction(["save","delete"]);
+		}
+	}
+}
+
 //updates the user buttons to show who is logged in
 function updateUserButtons(currentUser){
 	var userButtons = document.getElementsByClassName("user-button");
@@ -90,6 +130,44 @@ function updateUserButtons(currentUser){
 		}
 	});
 }
+//userLoggedOn funciton return currentUser object
+//user loggedOn if not null
+function updateLogonElements(){
+	// if user is currently logged on, disable all userImage button
+	if (userLoggedOn()){
+		toggleLogon(true,"not-allowed");
+	}
+	else
+		toggleLogon(false, "default" , "pointer");
+
+}
+
+function toggleLogon(loggedOn, cursorD, cursorP){
+	// update logon button and username / password
+	logonButton.value = loggedOn ? "Log off" : "Log on";
+	userNameInput.disabled = loggedOn;
+	passwordInput.disabled = loggedOn;
+	userNameInput.style.cursor = cursorD;
+	passwordInput.style.cursor = cursorD;
+	// update user image
+	var elems = document.getElementsByClassName("user-button");
+	for(var i = 0; i<elems.length; i++){
+
+		elems[i].disabled = loggedOn;
+		if (!loggedOn)
+			elems[i].style.cursor = cursorP;
+		else
+			elems[i].style.cursor = cursorD;
+	}
+	// logoff set value to default
+	if (!loggedOn){
+		userNameInput.value = "";
+		passwordInput.value = "";
+	}
+}
+
+//=====================================================
+//=========== Notification ============================
 
 //updates the notification GUI elements
 function updateNotifications(){
@@ -147,139 +225,6 @@ function updateNotifications(){
 	}
 	showListNotifications();
 }
-
-//updates the state of the buttons (record, play, pause, stop, save, delete, reset)
-function updateExplorationControls(specialCase){
-	if (!selectedExploration){
-		disableAction(["save","play","stop","pause","reset","delete"]);
-		if (userLoggedOn()){
-			enableAction(["record"]);
-		}
-		else {
-			disableAction(["record"]);
-		}
-	}
-	else if (!playing){
-		enableAction(["record","play","reset","delete"]);
-		disableAction(["stop","pause"]);
-
-		changeButtonColour("record", false);
-	}
-	else if (playing){
-		enableAction(["stop","pause"]);
-		disableAction(["record","play","delete"]);
-	}
-	if (recording){
-		disableAction(["save","play","stop","pause","delete"]);
-		enableAction(["record"]);
-		changeButtonColour("record", true);
-	}
-
-	if (specialCase){
-		if (specialCase === "stopped-recording"){
-			enableAction(["record","play","reset","save"]);
-			disableAction(["stop","pause","delete"]);
-			changeButtonColour("record", false);
-			enableAction(["save"]);
-		}
-		if (specialCase === "saved"){
-			disableAction(["save","delete"]);
-		}
-	}
-}
-
-//userLoggedOn funciton return currentUser object
-//user loggedOn if not null
-function updateLogonElements(){
-	// if user is currently logged on, disable all userImage button
-	if (userLoggedOn()){
-		toggleLogon(true,"not-allowed");
-	}
-	else
-		toggleLogon(false, "default" , "pointer");
-
-}
-
-function toggleLogon(loggedOn, cursorD, cursorP){
-	// update logon button and username / password
-	logonButton.value = loggedOn ? "Log off" : "Log on";
-	userNameInput.disabled = loggedOn;
-	passwordInput.disabled = loggedOn;
-	userNameInput.style.cursor = cursorD;
-	passwordInput.style.cursor = cursorD;
-	// update user image
-	var elems = document.getElementsByClassName("user-button");
-	for(var i = 0; i<elems.length; i++){
-
-		elems[i].disabled = loggedOn;
-		if (!loggedOn)
-			elems[i].style.cursor = cursorP;
-		else
-			elems[i].style.cursor = cursorD;
-	}
-	// logoff set value to default
-	if (!loggedOn){
-		userNameInput.value = "";
-		passwordInput.value = "";
-	}
-}
-
-//this function called once showPathButton clicked (event.js)
-function toggleVisiblePath(){
-	if(!selectedExploration) return;
-	if(selectedExploration.hasCityEvents()){
-		if(showPathButton.innerHTML=="Show Path"){
-			pathView.showPathElems();
-		}
-		else if(showPathButton.innerHTML=="Hide Path"){
-			pathView.hidePathElems();
-		}
-	}
-}
-
-//init shared element value
-function updateShareExplElements(){
-	el("shared-with").value = "";
-	el("expl-sent-message").innerHTML = "";
-}
-
-//adds graphics to the map to show that recording is in progress.
-function addRecordingGraphics(){
-	// var points = [0, 0, width, height];
-	var borderWidth = 10;
-	var circleRadius = 20;
-	var padding = 10;
-	var bottomPadding = 10;
-	var circleCX = borderWidth + circleRadius;
-	var circleCY = borderWidth + circleRadius;
-
-	svg.append("rect")
-	.attr({
-		id:    "record-border",
-		x:     0 + borderWidth/2,
-		y:     0 + borderWidth/2,
-		width: width - borderWidth*2,
-		height:height - bottomPadding - borderWidth*2})
-		.style("stroke", "red")
-		.style("fill", "none")
-		.style("stroke-width", borderWidth);
-
-	svg.append('circle')
-	.attr({
-		id: "record-circle",
-		cx:  circleCX + borderWidth/2,
-		cy:  circleCY + borderWidth/2,
-		r: 	 circleRadius})
-		.style('fill', 'red')
-		.transition().duration();
-}
-
-//remove recording related graphics
-function removeRecordingGraphics(){
-	d3.select("#record-border").remove();
-	d3.select("#record-circle").remove();
-}
-
 //function triggered when notification container clicked
 //return true - when has new shared exploration
 function showListNotifications(){
@@ -343,13 +288,13 @@ function addOptions(message){
 	for(var i = 0; i<currentUser.messages.length; i++){
 		for(var j = 0; j<currentUser.messages[i].length; j++){
 			if(currentUser.messages[i][j].from==message.from){
-				el("showTextArea").innerHTML += "\nTime: " + currentUser.messages[i][j].timeStamp;
+				el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(currentUser.messages[i][j].timeStamp));
 				if(currentUser.messages[i][j].isNew){
-					el("showTextArea").innerHTML += "\n(New Message): "+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
+					el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+"(New Message): " + currentUser.messages[i][j].message;
 
 				}
 				else{
-					el("showTextArea").innerHTML += currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
+					el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
 
 				}
 				el("showTextArea").innerHTML += "\n";
@@ -359,19 +304,7 @@ function addOptions(message){
 	}
 	updateNotifications();
 }
-function divHideShow(div){
-	if (div.style.visibility==="visible"){
-		div.style.visibility= "hidden";
-	}
-	else{
-		div.style.visibility = "visible";
-		//setTimeout(function () {div.style.display = "none";}, 3000);
-	}
-}
-//reset notifications lable when logoff
-function resetVisibility(idVar, state){
-	idVar.style.visibility = state;
-}
+
 
 function hideNotificationButtons(){
 	resetVisibility(notificationSelector, "hidden");
@@ -383,6 +316,69 @@ function showNotificationButtons(){
 	resetVisibility(removeNotification, "visible");
 	resetVisibility(quickplayNotification, "visible");
 }
+
+//this function called once showPathButton clicked (event.js)
+function toggleVisiblePath(){
+	if(!selectedExploration) return;
+	if(selectedExploration.hasCityEvents()){
+		if(showPathButton.innerHTML=="Show Path"){
+			pathView.showPathElems();
+		}
+		else if(showPathButton.innerHTML=="Hide Path"){
+			pathView.hidePathElems();
+		}
+	}
+}
+
+//init shared element value
+function updateShareExplElements(){
+	el("shared-with").value = "";
+	el("expl-sent-message").innerHTML = "";
+}
+
+//=====================================================
+//=========== GUI  ====================================
+
+//adds graphics to the map to show that recording is in progress.
+function addRecordingGraphics(){
+	// var points = [0, 0, width, height];
+	var borderWidth = 10;
+	var circleRadius = 20;
+	var padding = 10;
+	var bottomPadding = 10;
+	var circleCX = borderWidth + circleRadius;
+	var circleCY = borderWidth + circleRadius;
+
+	svg.append("rect")
+	.attr({
+		id:    "record-border",
+		x:     0 + borderWidth/2,
+		y:     0 + borderWidth/2,
+		width: width - borderWidth*2,
+		height:height - bottomPadding - borderWidth*2})
+		.style("stroke", "red")
+		.style("fill", "none")
+		.style("stroke-width", borderWidth);
+
+	svg.append('circle')
+	.attr({
+		id: "record-circle",
+		cx:  circleCX + borderWidth/2,
+		cy:  circleCY + borderWidth/2,
+		r: 	 circleRadius})
+		.style('fill', 'red')
+		.transition().duration();
+}
+
+//remove recording related graphics
+function removeRecordingGraphics(){
+	d3.select("#record-border").remove();
+	d3.select("#record-circle").remove();
+}
+
+//=====================================================
+//=========== Annotation  =============================
+
 //displays information about the location selected
 function displayLocationInfo(city){
 
@@ -400,8 +396,8 @@ function displayLocationInfo(city){
 		makeAnnotationInput(annotationInputCont);
 
 	getAnnotationFromLocalServer(city);
-
 }
+
 function getAnnotationFromLocalServer(city){
 	// get annotations for this location
 	$.ajax({
@@ -457,6 +453,8 @@ function getAnnotationFromLocalServer(city){
 				image.height = 50;
 				imgDiv.appendChild(image);
 				image.onclick = function(){
+					while(el("preview-city-img").firstChild)//remove old labels
+						el("preview-city-img").removeChild(el("preview-city-img").firstChild);
 					var img = new Image();
 					img.src = annotation.imageData;
 					img.width = 250;
@@ -514,33 +512,8 @@ function makeAnnotationInput(container){
 	annInput.focus();
 }
 
-function changeButtonColour(name, state){
-	var button = el(name + "-exploration-button");
-
-	if (state)
-		button.src = IMAGE_PATH + name + "-on.png";
-	else
-		button.src = IMAGE_PATH + name + "-off.png";
-}
-
-//displays an image of a microphone
-function displayAudioGraphic(){
-	svg.append("image")
-	.attr({
-		x: width*0.9,
-		y: 20,
-		width: 50,
-		height: 50,
-		"xlink:href": "data/image/microphone-128.png",
-		id: "microphone-graphic"
-	});
-}
-
-//removes the mic graphic shown while recording
-function removeAudioGraphic(){
-	svg.select("#microphone-graphic")
-	.remove();
-}
+//=====================================================
+//=========== Messages  ===============================
 var messageFromNameList = [];
 //check local server  - messages
 function checkMessages(){
@@ -569,7 +542,7 @@ function checkMessages(){
 		updateNotifications();
 		if(messageFromNameList.length!=0){
 //			for(var h = 0; h<el("messageFromOption").options.length; h++){
-//				el("messageFromOption").removeChild(el("messageFromOption").options[h]);
+//			el("messageFromOption").removeChild(el("messageFromOption").options[h]);
 //			}
 			if(el("messageFrom1")==null){
 				var option = document.createElement('option');
@@ -614,6 +587,40 @@ function setMessageIsOld(m){
 	});
 }
 
+
+
+
+//=====================================================
+//=========== functions  ==============================
+
+function changeButtonColour(name, state){
+	var button = el(name + "-exploration-button");
+
+	if (state)
+		button.src = IMAGE_PATH + name + "-on.png";
+	else
+		button.src = IMAGE_PATH + name + "-off.png";
+}
+
+//displays an image of a microphone
+function displayAudioGraphic(){
+	svg.append("image")
+	.attr({
+		x: width*0.9,
+		y: 20,
+		width: 50,
+		height: 50,
+		"xlink:href": "data/image/microphone-128.png",
+		id: "microphone-graphic"
+	});
+}
+
+//removes the mic graphic shown while recording
+function removeAudioGraphic(){
+	svg.select("#microphone-graphic")
+	.remove();
+}
+
 function el(id){
 	return document.getElementById(id);
 }
@@ -621,16 +628,15 @@ function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
 	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
-	seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
-	day = date.getDate(),
-	month = monthAsString(date.getMonth());
+			seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
+					day = date.getDate(),
+					month = monthAsString(date.getMonth());
 
-	return hours + ":" + minutes + " -" + day + "th " + month;
-	function monthAsString(monthIndex){
-		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-	}
+			return hours + ":" + minutes + " -" + day + "th " + month;
+			function monthAsString(monthIndex){
+				return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+			}
 }
-
 
 window.setInterval(function(){
 	if(currentUser!=null){
@@ -655,4 +661,18 @@ function gotExplorations(allExplorations){
 
 $("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
 	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1
-	}))
+}))
+
+function divHideShow(div){
+	if (div.style.visibility==="visible"){
+		div.style.visibility= "hidden";
+	}
+	else{
+		div.style.visibility = "visible";
+		//setTimeout(function () {div.style.display = "none";}, 3000);
+	}
+}
+//reset notifications lable when logoff
+function resetVisibility(idVar, state){
+	idVar.style.visibility = state;
+}

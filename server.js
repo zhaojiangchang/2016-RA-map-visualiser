@@ -380,14 +380,14 @@ app.post('/postMessage', function(req, res){
 	ensureDirExists(path);
 	path += from + "/";
 	ensureDirExists(path);
-	path += "message/";
+	path += "Text Message/";
 	ensureDirExists(path);
 
 	var toPath = USER_PATH;
 	ensureDirExists(toPath);
 	toPath += to + "/";
 	ensureDirExists(toPath);
-	toPath += "message/";
+	toPath += "Text Message/";
 	ensureDirExists(toPath);
 
 	var fileName = to + ".json";
@@ -431,7 +431,7 @@ app.get("/getMessages", function(req, res){
 	ensureDirExists(path);
 	path += userName + "/";
 	ensureDirExists(path);
-	path += "message/";
+	path += "Text Message/";
 	ensureDirExists(path);
 	var messages = [];
 	var messageFiles = fs.readdirSync(path);
@@ -458,7 +458,7 @@ app.post("/setMessageIsOld", function(req, res){
 	// ensure both dirs exist.
 	path += currentUserName + "/";
 	ensureDirExists(path);
-	path += "message/";
+	path += "Text Message/";
 	ensureDirExists(path);
 
 	// find the exploration with the right user and timeStamp, and change the isNew property
@@ -487,3 +487,38 @@ app.post("/setMessageIsOld", function(req, res){
 		res.sendStatus(404); // not found
 });
 
+app.post('/postVoiceMessage', function(req, res){
+
+	var voiceMessage = req.body;
+	var to = voiceMessage.to;
+	var from = voiceMessage.from;
+	var timeStamp = voiceMessage.timeStamp;
+	// makes directory for files if none exist.
+	var path = USER_PATH;
+	ensureDirExists(path);
+	path += from + "/";
+	ensureDirExists(path);
+	path += "Voice Message/";
+	ensureDirExists(path);
+
+	var toPath = USER_PATH;
+	ensureDirExists(toPath);
+	toPath += to + "/";
+	ensureDirExists(toPath);
+	toPath += "Voice Message/";
+	ensureDirExists(toPath);
+
+
+	var fileName = to+ timeStamp+ ".wav";
+	var fileReceiverName = from + timeStamp+ ".wav";
+	var filePath = path+fileName;
+	voiceMessage.voiceURL = filePath;
+	fs.writeFileSync(filePath, new Buffer(voiceMessage, "binary"));
+	var fileReceiverPath = toPath+fileReceiverName;
+	voiceMessage.voiceURL = fileReceiverPath;
+	fs.writeFileSync(fileReceiverPath, new Buffer(voiceMessage, "binary"));
+
+	console.log("wrote audio file "+filename);
+	res.sendStatus(200); // success code
+	return;
+});

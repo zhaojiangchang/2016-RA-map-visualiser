@@ -10,7 +10,7 @@ function User(name, explorations){
 	// the user's messages
 	this.messages = [];
 	this.newMessages = [];
-
+	this.voiceMessages = [];
 	this.setMessages = function(messages){
 		this.messages = messages;
 	};
@@ -135,6 +135,9 @@ function User(name, explorations){
 
 }
 
+//=====================================================
+//=========== Login logout=============================
+
 //asks server if login details are acceptable
 function attemptLogin(name, pw){
 
@@ -176,6 +179,26 @@ function logout(){
 	updateSideBar();
 	resetMessages();
 }
+//returns true if there is a user currently logged on
+function userLoggedOn(){
+	return currentUser;
+}
+//=====================================================
+//=========== Account =================================
+
+//creates an account with this name and pw
+function createAccount(name, pw){
+	console.log("add new user's name and pw to logonInfo file");
+
+	$.ajax({
+		type: 'POST',
+		url: "/createAccount",
+		data: JSON.stringify({userName: name, password: pw}),
+		contentType: "application/json",
+		success: window.document.write("new account created!"), //callback when ajax request finishes
+	});
+	window.close(1000);
+}
 
 //attempts to create an account. Alerts user if name and pw are unacceptable
 function attemptCreateAccount(name, pw){
@@ -196,6 +219,9 @@ function attemptCreateAccount(name, pw){
 		}
 	}
 }
+
+//=========================================================
+//=========== Exploration =================================
 
 //downloads all of the user's (specified by userName) explorations
 function loadAllExplorations(userName, cb){
@@ -272,7 +298,9 @@ function shareExplFile(exploration, userName){
 		contentType: "application/json" //text/json...
 	});
 }
-
+//=====================================================
+//=========== Message =================================
+//	share text message to userLabelValue
 function shareTextMessage(userLabelValue){
 	testMessageToSend = el("text-message-input").value;
 	if(testMessageToSend==null) return;
@@ -295,24 +323,29 @@ function shareTextMessage(userLabelValue){
 	});
 }
 
-//creates an account with this name and pw
-function createAccount(name, pw){
-	console.log("add new user's name and pw to logonInfo file");
-
+//share voice message to userLabelValue
+function shareVoiceMessage(userLabelValue){
+	if(voiceMessageData==null) return;
+	var VoiceMessage = {
+			timeStamp: new Date(),
+			from: currentUser.name,
+			to: userLabelValue,
+			voiceData: voiceMessageData,
+			voiceURL: null,
+			isNew: true
+	}
 	$.ajax({
 		type: 'POST',
-		url: "/createAccount",
-		data: JSON.stringify({userName: name, password: pw}),
-		contentType: "application/json",
-		success: window.document.write("new account created!"), //callback when ajax request finishes
+		url: "/postVoiceMessage",
+		data: JSON.stringify(VoiceMessage),
+		success: function(response){
+			el("record-voice").style.display = "none";
+			el("shared-with").value = "";
+		},
+		contentType: "application/json"
 	});
-	window.close(1000);
 }
 
-//returns true if there is a user currently logged on
-function userLoggedOn(){
-	return currentUser;
-}
 function resetMessages(){
 	for(var h = 0; h<el("messageFromOption").options.length; h++){
 		el("messageFromOption").removeChild(el("messageFromOption").options[h]);

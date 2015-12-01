@@ -1,9 +1,9 @@
 // =================================================================================
 // Author: github.com/samdutton, modified by Will Hardwick-Smith
 // original code from https://github.com/samdutton/simpl/blob/master/getusermedia/sources/js/main.js
-// Contains: request access to user microphone, 
+// Contains: request access to user microphone,
 // requests to recorder.js to record audio and export as a wav blob,
-// 
+//
 // =================================================================================
 
 // select elem for audio devices
@@ -38,13 +38,13 @@ function startAudioRecording() {
 // cb is executed after encoding is complete
 function stopAudioRecording(cb){
     audioRecorder.stop();
-    audioRecorder.getBuffers( function (buffers){        
+    audioRecorder.getBuffers( function (buffers){
         gotBuffers(buffers, cb);
     });
     removeAudioGraphic();
 
     function gotBuffers( buffers, cb ) {
-        // the ONLY time gotBuffers is called is right after a new recording is completed - 
+        // the ONLY time gotBuffers is called is right after a new recording is completed -
         // so here's where we should set up the download.
         audioRecorder.exportWAV( function(buffers){
             doneEncoding(buffers, cb);
@@ -52,7 +52,10 @@ function stopAudioRecording(cb){
 
         function doneEncoding( blob, cb ) {
             // sets the audio of the current user's current exploration
-            currentUser.getCurrentExploration().setAudio(blob);            
+            currentUser.getCurrentExploration().setAudio(blob);
+            if(voiceMessageRecording){
+            	voiceMessageData = blob;
+            }
             if (cb)
                 cb();
         }
@@ -60,7 +63,7 @@ function stopAudioRecording(cb){
 }
 
 
-// called when sources are confirmed 
+// called when sources are confirmed
 function gotSources(sourceInfos) {
     for (var i = 0; i != sourceInfos.length; ++i) {
         var sourceInfo = sourceInfos[i];
