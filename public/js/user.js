@@ -323,6 +323,24 @@ function shareTextMessage(userLabelValue){
 	});
 }
 
+// when logout remove all names from select options (Messages From:)
+function resetMessages(){
+	for(var h = 0; h<el("messageFromOption").options.length; h++){
+		el("messageFromOption").removeChild(el("messageFromOption").options[h]);
+	}
+	if(el("messageFrom1")==null){
+		var option = document.createElement('option');
+		option.setAttribute("id", "messageFrom1");
+		var name = "Select a sender";
+		option.innerHTML = name;
+		option.value = "select";
+		el("messageFromOption").appendChild(option);
+	}
+	el("showTextArea").innerHTML = '';
+	resetVisibility(el("show-messages-div"), "hidden");
+}
+
+
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
 	if(voiceMessageData==null) return;
@@ -344,22 +362,4 @@ function shareVoiceMessage(userLabelValue){
 		},
 		contentType: "application/json"
 	});
-}
-
-function resetMessages(){
-	for(var h = 0; h<el("messageFromOption").options.length; h++){
-		el("messageFromOption").removeChild(el("messageFromOption").options[h]);
-	}
-	if(el("messageFrom1")==null){
-		var option = document.createElement('option');
-		option.setAttribute("id", "messageFrom1");
-		var name = "Select a sender";
-		option.innerHTML = name;
-		option.value = "select";
-		el("messageFromOption").appendChild(option);
-	}
-	el("showTextArea").innerHTML = '';
-	resetVisibility(el("show-messages-div"), "hidden");
-
-
 }

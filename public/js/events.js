@@ -260,29 +260,25 @@ function selectedSendInfoOption() {
 	var sendOption = el("sendOption");
 	for(var i = 0; i<sendOption.options.length; i++){
 		sendOption.options[sendOption.selectedIndex].onclick = function(){
-			console.log("clicked")
 			el("record-voice").style.display = "none";
+			removegroupElem("selectedExplName");
+			el("text-message-input").value = '';
+			el("text-message-input-div").style.display = "none";
 			selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
 			if(selectedSendOption === "text"){
 				el("text-message-input-div").style.display = "block";
-
-
 			}
-			if(selectedSendOption === "exploration" ||selectedSendOption === "voice"||selectedSendOption === "select"  ){
-				el("text-message-input-div").style.display = "none";
-			}
+
 			if(selectedSendOption === "exploration"){
-				removegroupElem("selectedExplName");
 				if(!selectedExploration)return;
-				console.log(selectedExploration.name)
 				var p = document.createElement("p");
 				p.id = "selectedExplName";
 				p.className = "selectedExplName";
 				var div = el("selectedExplNameDivId");
 				div.appendChild(p);
 				p.innerHTML= "Selected: "+selectedExploration.name;
-
 			}
+
 			if(selectedSendOption === "voice"){
 				if(recording){
 					window.alert('Can Not Record Exploration and Voice Message At Same Time!')
@@ -290,10 +286,6 @@ function selectedSendInfoOption() {
 				else
 					el("record-voice").style.display = "block";
 
-			}
-			if(selectedSendOption === "text" ||selectedSendOption === "voice"||selectedSendOption === "select" ){
-				removegroupElem("selectedExplName");
-				el("text-message-input").innerHTML = '';
 			}
 		}
 	}
@@ -304,13 +296,16 @@ function selectedSendInfoOption() {
 //=========== Send Voice ==============================
 
 el("record-voice").onclick = function(){
-	if(el("record-voice").value=="Start Recording"){
+	if(el("record-voice").value=="Start Recording" && audioRecorder){
 		updateRecordVoiceButton();
 		startRecordVoiceMessage();
 
-	}else{
+	}else if(el("record-voice").value=="Stop Recording" && audioRecorder){
 		updateRecordVoiceButton();
 		//stopRecordVoiceMessage();
+	}
+	else{
+		window.alert("No voice input device detected");
 	}
 
 };
@@ -333,11 +328,7 @@ function startRecordVoiceMessage(){
 		startAudioRecording();
 		removeAudioGraphic();
 
-	}else{
-		window.alert("No voice input device detected");
 	}
-
-
 }
 function stopRecordVoiceMessage(){
 	stopAudioRecording();

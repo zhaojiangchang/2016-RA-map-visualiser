@@ -46,7 +46,7 @@ function updateSideBar(){
 	updateExplorationChooser();
 	updateLocationInfo();
 	updateExplorationControls();
-	//updateNotifications();
+	checkNotifications();
 	checkMessages();
 	updateLogonElements();
 	updateShareExplElements();
@@ -168,6 +168,11 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 
 //=====================================================
 //=========== Notification ============================
+
+function checkNotifications(){
+	checkMessages();
+	checkVoiceMessages();
+}
 
 //updates the notification GUI elements
 function updateNotifications(){
@@ -513,7 +518,7 @@ function makeAnnotationInput(container){
 }
 
 //=====================================================
-//=========== Messages  ===============================
+//=========== Messages  ==========================
 var messageFromNameList = [];
 //check local server  - messages
 function checkMessages(){
@@ -541,9 +546,7 @@ function checkMessages(){
 		currentUser.newMessages = newMessages;
 		updateNotifications();
 		if(messageFromNameList.length!=0){
-//			for(var h = 0; h<el("messageFromOption").options.length; h++){
-//			el("messageFromOption").removeChild(el("messageFromOption").options[h]);
-//			}
+
 			if(el("messageFrom1")==null){
 				var option = document.createElement('option');
 				option.setAttribute("id", "messageFrom1");
@@ -586,6 +589,78 @@ function setMessageIsOld(m){
 		contentType: "application/json"
 	});
 }
+
+var voiceMessageFromNameList = [];
+//check local server  - messages
+function checkVoiceMessages(){
+//	if(currentUser==null) return;
+//	$.ajax({
+//		type: 'GET',
+//		url: "/getVoiceMessages",
+//		data: currentUser.name,
+//		success: setMessage,
+//		dataType: "json",
+//	});
+//	function setMessage(messages){
+//		voiceMessageFromNameList = [];
+//		currentUser.setMessages(messages);
+//		var newMessages = [];
+//		for (var i = 0; i < messages.length; i++){
+//			voiceMessageFromNameList[i] = messages[i][0].from;
+//			for(var j = 0; j< messages[i].length; j++){
+//				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
+//					newMessages.push(messages[i][j]);
+//				}
+//
+//			}
+//		}
+//		currentUser.newMessages = newMessages;
+//		updateNotifications();
+//		if(voiceMessageFromNameList.length!=0){
+//
+//			if(el("messageFrom1")==null){
+//				var option = document.createElement('option');
+//				option.setAttribute("id", "messageFrom1");
+//				var name = "Select a sender";
+//				option.innerHTML = name;
+//				option.value = "select";
+//				el("messageFromOption").appendChild(option);
+//			}
+//
+//			resetVisibility(el("show-messages-div"), "visible");
+//			for(var j = 0; j<voiceMessageFromNameList.length;j++){
+//				var name = voiceMessageFromNameList[j];
+//				console.log(el(name+"Message"))
+//
+//				if(el(name+"Message")==null){
+//					option = document.createElement('option');
+//					option.setAttribute("id", name+"Message");
+//					option.innerHTML = name;
+//					option.value = name;
+//					el("messageFromOption").appendChild(option);
+//				}
+//			}
+//		}
+//	}
+}
+
+function setVoiceMessageIsOld(m){
+	currentUser.setIsOld(m);
+	$.ajax({
+		type: 'POST',
+		url: "setMessageIsOld",
+		data: JSON.stringify({
+			mObject: m,
+			sender:m.from,
+			currentUser:m.to, // the user who made the exploration
+			timeStamp: m.timeStamp,
+			messageDetial: m.message
+
+		}),
+		contentType: "application/json"
+	});
+}
+
 
 
 
