@@ -21,7 +21,6 @@ function User(name, explorations){
 		for (var i = 0; i<this.messages.length; i++){
 			for (var j = 0; j<this.messages[i].length; j++){
 				if(this.messages[i][j]===message){
-					console.log(this.messages[i][j]===message)
 					this.messages[i][j].isNew = false;
 
 				}
@@ -188,8 +187,6 @@ function userLoggedOn(){
 
 //creates an account with this name and pw
 function createAccount(name, pw){
-	console.log("add new user's name and pw to logonInfo file");
-
 	$.ajax({
 		type: 'POST',
 		url: "/createAccount",
@@ -343,23 +340,35 @@ function resetMessages(){
 
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
-	if(voiceMessageData==null) return;
-	var VoiceMessage = {
-			timeStamp: new Date(),
-			from: currentUser.name,
-			to: userLabelValue,
-			voiceData: voiceMessageData,
-			voiceURL: null,
-			isNew: true
+	if(voiceMessageData==null)return;
+	//converted audio
+	var newFormetVoice = null;
+	var VoiceMessage = null;
+	var reader = new FileReader();
+	reader.addEventListener("loadend", audioConverted);
+	reader.readAsBinaryString(voiceMessageData);
+	function audioConverted(){
+		var audioString = reader.result;
+		newFormetVoice = audioString;
+		VoiceMessage = {
+				timeStamp: new Date(),
+				from: currentUser.name,
+				to: userLabelValue,
+				audioData: newFormetVoice,
+				audioURL: null,
+				isNew: true
+		}
+
+		$.ajax({
+			type: 'POST',
+			url: "/postVoiceMessage",
+			data: JSON.stringify(VoiceMessage),
+			success: function(response){
+				el("record-voice").style.display = "none";
+				el("shared-with").value = "";
+			},
+			contentType: "application/json"
+		});
 	}
-	$.ajax({
-		type: 'POST',
-		url: "/postVoiceMessage",
-		data: JSON.stringify(VoiceMessage),
-		success: function(response){
-			el("record-voice").style.display = "none";
-			el("shared-with").value = "";
-		},
-		contentType: "application/json"
-	});
+
 }

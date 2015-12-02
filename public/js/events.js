@@ -11,9 +11,7 @@
 //========= guest users =============================
 
 var guestUsers = ["obama", "john", "lorde", "will"];
-var selectedSendOption = "exploration";
 var testMessageToSend = null;
-
 var selectedImgFile = null;
 
 guestUsers.forEach(function(userName){
@@ -28,7 +26,7 @@ guestUsers.forEach(function(userName){
 recordExplButton.addEventListener("click", function(){
 	var currentExpl = currentUser.getCurrentExploration();
 
-	if (recording){
+	if (explRecording){
 		stopRecording();
 		if (inserting){
 			if (audioRecorder){
@@ -93,7 +91,7 @@ logonButton.onclick = function(){
 	// if no one is logged on
 	if(userLoggedOn()){
 		selectedLocation = null;
-		if (!recording)
+		if (!explRecording)
 			logout(currentUser);
 	}
 	else{
@@ -115,11 +113,9 @@ newAccount.onclick = function(){
 //notification container clicked - show or hide the selector box
 notificationContainer.addEventListener('click',function(){
 	stopRecording();
-//	checkMessages();
 	updateNotifications();
 	if(showListNotifications()){
 		if(notificationSelector.style.visibility == "hidden"){
-			console.log(1)
 			showNotificationButtons();
 		}
 
@@ -135,7 +131,7 @@ removeNotification.addEventListener("click", function(){
 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	selected.isNew = false;
 	setExplorationIsOld(selected);
-	checkMessages();
+	checkTextMessages();
 	deselectExploration();
 });
 
@@ -143,7 +139,7 @@ quickplayNotification.addEventListener("click", function(){
 	selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	startPlayback(selected);
 	selected.isNew = true;
-	checkMessages();
+	checkTextMessages();
 });
 
 //===========================================
@@ -207,7 +203,7 @@ stopInsertButton.click( function(){
 //==========================================
 //=========== inserting image ==============
 
-// file browse for image select
+//file browse for image select
 function onFileSelected(event) {
 	var selectedFile = event.target.files[0];
 	var reader = new FileReader();
@@ -220,7 +216,6 @@ function onFileSelected(event) {
 	};
 
 	reader.readAsDataURL(selectedFile);
-	console.log(imgtag)
 	var previewImg = el("preview-city-img");
 	while(previewImg.firstChild)//remove old labels
 		previewImg.removeChild(previewImg.firstChild);
@@ -228,7 +223,6 @@ function onFileSelected(event) {
 	el("location-div").appendChild(previewImg);
 
 	selectedImgFile = imgtag;
-	console.log(selectedFile);
 
 }
 
@@ -240,54 +234,55 @@ function onFileSelected(event) {
 //if userLabelValue not on the userList on the server will not able to send.
 el("submit-shared-file").addEventListener('click',function(){
 	var userLabelValue = el("shared-with").value;
-	if(userLabelValue==null || userLabelValue==currentUser.name) return;
-	if(selectedSendOption === "exploration" && selectedExploration!=null){
+	var sendOptionValue = el("sendOption").value;
+	switch(sendOptionValue){
+	case "exploration":
+		if(!selectedExploration)return;
 		shareExplFile(selectedExploration, userLabelValue);
-	}
-	else if(selectedSendOption === "text"){
+	case "text":
 		shareTextMessage(userLabelValue);
-	}
-	else if(selectedSendOption === "voice"){
+	case "voice":
 		shareVoiceMessage(userLabelValue);
-	}
+
+}
+	el("sendOption").value = "select";
+
+
 });
 
 //==========================================
 //=========== select - options (Send to:)===
 
-//	on click on select options to send to other users
+//on click on select options to send to other users
 function selectedSendInfoOption() {
-	var sendOption = el("sendOption");
-	for(var i = 0; i<sendOption.options.length; i++){
-		sendOption.options[sendOption.selectedIndex].onclick = function(){
-			el("record-voice").style.display = "none";
-			removegroupElem("selectedExplName");
-			el("text-message-input").value = '';
-			el("text-message-input-div").style.display = "none";
-			selectedSendOption = sendOption.options[sendOption.selectedIndex].value;
-			if(selectedSendOption === "text"){
-				el("text-message-input-div").style.display = "block";
-			}
+	var sendOptionValue = el("sendOption").value;
+	removegroupElem("selectedExplName");
+	el("expl-sent-message").innerHTML = '';
+	el("text-message-input").value = '';
+	el("text-message-input-div").style.display = "none";
+	el("record-voice").style.display = "none";
 
-			if(selectedSendOption === "exploration"){
-				if(!selectedExploration)return;
-				var p = document.createElement("p");
-				p.id = "selectedExplName";
-				p.className = "selectedExplName";
-				var div = el("selectedExplNameDivId");
-				div.appendChild(p);
-				p.innerHTML= "Selected: "+selectedExploration.name;
-			}
+	console.log(sendOptionValue)
+	switch(sendOptionValue){
+		case "exploration":
+			if(!selectedExploration)return;
+			var p = document.createElement("p");
+			p.id = "selectedExplName";
+			p.className = "selectedExplName";
+			var div = el("selectedExplNameDivId");
+			div.appendChild(p);
+			p.innerHTML= "Selected: "+selectedExploration.name;
+			break;
+		case "text":
+			el("text-message-input-div").style.display = "block";
+			break;
+		case "voice":
+			if(explRecording)
+				window.alert('Can Not Record Exploration and Voice Message At Same Time!')
+			else
+				el("record-voice").style.display = "block";
+			break;
 
-			if(selectedSendOption === "voice"){
-				if(recording){
-					window.alert('Can Not Record Exploration and Voice Message At Same Time!')
-				}
-				else
-					el("record-voice").style.display = "block";
-
-			}
-		}
 	}
 }
 
@@ -302,7 +297,7 @@ el("record-voice").onclick = function(){
 
 	}else if(el("record-voice").value=="Stop Recording" && audioRecorder){
 		updateRecordVoiceButton();
-		//stopRecordVoiceMessage();
+		stopRecordVoiceMessage();
 	}
 	else{
 		window.alert("No voice input device detected");
@@ -322,12 +317,11 @@ function updateRecordVoiceButton(){
 var voiceMessageRecording = false;
 var voiceMessageData = null;
 function startRecordVoiceMessage(){
+	voiceMessageRecording = false;
 	if (audioRecorder){
 		voiceMessageRecording = true;
 		voiceMessageData = null;
 		startAudioRecording();
-		removeAudioGraphic();
-
 	}
 }
 function stopRecordVoiceMessage(){
@@ -375,7 +369,6 @@ function removegroupElem(classname) {
 	for(var i=list.length-1; i>=0; i--){
 		var elem = list[i];
 		if(elem.className === classname){
-			console.log(elem.className)
 			elem.parentNode.removeChild(elem);
 		}
 	}

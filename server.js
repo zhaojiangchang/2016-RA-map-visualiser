@@ -493,6 +493,7 @@ app.post('/postVoiceMessage', function(req, res){
 	var to = voiceMessage.to;
 	var from = voiceMessage.from;
 	var timeStamp = voiceMessage.timeStamp;
+	var data = voiceMessage.audioData;
 	// makes directory for files if none exist.
 	var path = USER_PATH;
 	ensureDirExists(path);
@@ -500,6 +501,10 @@ app.post('/postVoiceMessage', function(req, res){
 	ensureDirExists(path);
 	path += "Voice Message/";
 	ensureDirExists(path);
+	path += to + "/";
+	ensureDirExists(path);
+	var audioPath = path +"voices/";
+	ensureDirExists(audioPath);
 
 	var toPath = USER_PATH;
 	ensureDirExists(toPath);
@@ -507,18 +512,36 @@ app.post('/postVoiceMessage', function(req, res){
 	ensureDirExists(toPath);
 	toPath += "Voice Message/";
 	ensureDirExists(toPath);
+	toPath += from + "/";
+	ensureDirExists(toPath);
+	var audioToPath = toPath +"voices/";
+	ensureDirExists(audioToPath);
 
 
-	var fileName = to+ timeStamp+ ".wav";
+	var audioFileName = to+ timeStamp+ ".wav";
 	var fileReceiverName = from + timeStamp+ ".wav";
-	var filePath = path+fileName;
-	voiceMessage.voiceURL = filePath;
-	fs.writeFileSync(filePath, new Buffer(voiceMessage, "binary"));
-	var fileReceiverPath = toPath+fileReceiverName;
-	voiceMessage.voiceURL = fileReceiverPath;
-	fs.writeFileSync(fileReceiverPath, new Buffer(voiceMessage, "binary"));
+	var filePath = path+audioFileName;
+	var audioFilePath = audioPath+audioFileName;
+	voiceMessage.audioURL = audioFilePath;
+	fs.writeFileSync(audioFilePath, new Buffer(data, "binary"));
 
-	console.log("wrote audio file "+filename);
+	var fileName = to + " - " + timeStamp + ".json";
+	var filePath = path + fileName;
+
+	fs.writeFileSync(filePath, JSON.stringify(voiceMessage, null, 4));
+
+	var fileReceiverPath = toPath+fileReceiverName;
+	var audioFileReceiverPath = audioToPath+fileReceiverName;
+
+	voiceMessage.audioURL = audioFileReceiverPath;
+	fs.writeFileSync(audioFileReceiverPath, new Buffer(data, "binary"));
+
+	var fileName = from + " - " + timeStamp + ".json";
+	var filePath = toPath + fileName;
+
+	fs.writeFileSync(filePath, JSON.stringify(voiceMessage, null, 4));
+
+	console.log("wrote audio file "+fileName);
 	res.sendStatus(200); // success code
 	return;
 });

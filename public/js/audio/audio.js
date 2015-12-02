@@ -47,17 +47,22 @@ function stopAudioRecording(cb){
         // the ONLY time gotBuffers is called is right after a new recording is completed -
         // so here's where we should set up the download.
         audioRecorder.exportWAV( function(buffers){
-            doneEncoding(buffers, cb);
+        	doneEncoding(buffers, cb);
         });
 
         function doneEncoding( blob, cb ) {
             // sets the audio of the current user's current exploration
-            currentUser.getCurrentExploration().setAudio(blob);
+        	if(!voiceMessageRecording){
+        		currentUser.getCurrentExploration().setAudio(blob);
+        	}
+
             if(voiceMessageRecording){
             	voiceMessageData = blob;
+            	voiceMessageRecording = false;
             }
-            if (cb)
+            if (cb){
                 cb();
+            }
         }
     }
 }

@@ -47,7 +47,6 @@ function updateSideBar(){
 	updateLocationInfo();
 	updateExplorationControls();
 	checkNotifications();
-	checkMessages();
 	updateLogonElements();
 	updateShareExplElements();
 }
@@ -98,7 +97,7 @@ function updateExplorationControls(specialCase){
 		enableAction(["stop","pause"]);
 		disableAction(["record","play","delete"]);
 	}
-	if (recording){
+	if (explRecording){
 		disableAction(["save","play","stop","pause","delete"]);
 		enableAction(["record"]);
 		changeButtonColour("record", true);
@@ -170,7 +169,7 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 //=========== Notification ============================
 
 function checkNotifications(){
-	checkMessages();
+	checkTextMessages();
 	checkVoiceMessages();
 }
 
@@ -240,7 +239,6 @@ function showListNotifications(){
 	var hasNewNoti = false;
 	var newMessages = [];
 	if(currentUser.haveNewMessages()) {
-		console.log(currentUser.newMessages)
 		newMessages = currentUser.newMessages;
 	}
 
@@ -521,7 +519,7 @@ function makeAnnotationInput(container){
 //=========== Messages  ==========================
 var messageFromNameList = [];
 //check local server  - messages
-function checkMessages(){
+function checkTextMessages(){
 	if(currentUser==null) return;
 	$.ajax({
 		type: 'GET',
@@ -559,7 +557,6 @@ function checkMessages(){
 			resetVisibility(el("show-messages-div"), "visible");
 			for(var j = 0; j<messageFromNameList.length;j++){
 				var name = messageFromNameList[j];
-				console.log(el(name+"Message"))
 
 				if(el(name+"Message")==null){
 					option = document.createElement('option');
@@ -718,14 +715,15 @@ window.setInterval(function(){
 		loadAllExplorations(currentUser.name, gotExplorations);
 		enableAction(["delete"]);
 		updateExplorationChooser();
+
+
 	}
 
 	if(selectedLocation!=null){
 		getAnnotationFromLocalServer(selectedLocation);
 	}
 	//updateShareExplElements();
-	console.log(notificationSelector.style.visibility)
-	checkMessages();
+	checkTextMessages();
 }, 10000);
 
 
