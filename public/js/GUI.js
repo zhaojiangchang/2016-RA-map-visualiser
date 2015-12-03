@@ -605,19 +605,21 @@ function checkAudioMessages(){
 		currentUser.setAudioMessages(messages);
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			audioMessageFromNameList[i] = messages[i][0].from;
-			for(var j = 0; j< messages[i].length; j++){
-				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
-					newAudioMessages.push(messages[i][j]);
-				}
+			if(messages[i].isNew==true && messages[i].from!=currentUser.name){
+				if(messages[i].from!=currentUser.name)
+					newAudioMessages.push(messages[i]);
+				if($.inArray(messages[i].from,audioMessageFromNameList )==-1)
+					audioMessageFromNameList.push(messages[i].from);
 
+				}
 			}
-		}
+		console.log(audioMessageFromNameList)
+
 		currentUser.newAudioMessages = newAudioMessages;
 		updateNotifications();
 
 		if(audioMessageFromNameList.length!=0){
-
+			el("audio-messages-list").style.display = "block";
 			if(el("audio-message-from")==null){
 				var option = document.createElement('option');
 				option.setAttribute("id", "audio-message-from");
@@ -639,6 +641,9 @@ function checkAudioMessages(){
 					el("audioMessageFromOption").appendChild(option);
 				}
 			}
+		}
+		else{
+			el("audio-messages-list").style.display = "none";
 		}
 	}
 }

@@ -600,7 +600,9 @@ app.get("/getAudioMessages", function(req, res){
 			console.log(fs.lstatSync(path+filename+"/"+fname).isDirectory())
 			if(!fs.lstatSync(path+filename+"/"+fname).isDirectory()){
 				var msg = JSON.parse(fs.readFileSync(path+filename+"/"+fname));
-				messages.push(msg);
+				for(var i = 0; i<msg.length; i++){
+					messages.push(msg[i]);
+				}
 			}
 		})
 	});

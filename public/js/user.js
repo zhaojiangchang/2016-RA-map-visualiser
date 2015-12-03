@@ -9,7 +9,7 @@ function User(name, explorations){
 	this.currentExpl = null;
 	// the user's messages
 	this.messages = [];
-	this.audioMessage = [];
+	this.audioMessages = [];
 	this.newMessages = [];
 	this.newAudioMessages = [];
 	this.setMessages = function(messages){
@@ -17,6 +17,9 @@ function User(name, explorations){
 	};
 	this.setAudioMessages = function(messages){
 		this.audioMessages = messages;
+	};
+	this.setNewAudioMessages = function(messages){
+		this.newAudioMessages = messages;
 	};
 	this.getMessages = function(){
 		return this.messages;
@@ -374,7 +377,7 @@ function resetShareDiv(){
 	el("messageFromOption").value = 'select';
 	el("location-div").style.display = "none";
 	while(el("messageFromOption").firstChild){//remove old labels
-		if(el("messageFromOption").value!='select')
+		//if(el("messageFromOption").value!='select')
 			el("messageFromOption").removeChild(el("messageFromOption").firstChild);
 	}
 }
