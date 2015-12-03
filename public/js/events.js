@@ -233,16 +233,27 @@ function onFileSelected(event) {
 //userLabelValue: receiver
 //if userLabelValue not on the userList on the server will not able to send.
 el("submit-shared-file").addEventListener('click',function(){
+	if(el("shared-with").value=='') return;
 	var userLabelValue = el("shared-with").value;
 	var sendOptionValue = el("sendOption").value;
+	if(sendOptionValue == null)return;
 	switch(sendOptionValue){
 	case "exploration":
 		if(!selectedExploration)return;
 		shareExplFile(selectedExploration, userLabelValue);
 	case "text":
+		if(el("text-message-input").value == ''){
+			return;
+		}
 		shareTextMessage(userLabelValue);
 	case "voice":
-		shareVoiceMessage(userLabelValue);
+		if(el("record-voice").value=="Stop Recording" || voiceMessageData == null){
+			return;
+		}
+		else{
+			shareVoiceMessage(userLabelValue);
+		}
+
 
 }
 	el("sendOption").value = "select";
@@ -255,14 +266,16 @@ el("submit-shared-file").addEventListener('click',function(){
 
 //on click on select options to send to other users
 function selectedSendInfoOption() {
-	var sendOptionValue = el("sendOption").value;
+	if(el("shared-with").value==''){
+		el("sendOption").value = "select";
+		return;
+	}
 	removegroupElem("selectedExplName");
 	el("expl-sent-message").innerHTML = '';
 	el("text-message-input").value = '';
 	el("text-message-input-div").style.display = "none";
 	el("record-voice").style.display = "none";
-
-	console.log(sendOptionValue)
+	var sendOptionValue = el("sendOption").value;
 	switch(sendOptionValue){
 		case "exploration":
 			if(!selectedExploration)return;
@@ -332,11 +345,9 @@ function stopRecordVoiceMessage(){
 function selectedMessageSenderOption(){
 	var messageFromOption = el("messageFromOption");
 	el("showTextArea").innerHTML = '';
+	var selectedName = el("messageFromOption").value;
 
-	for(var i = 0; i<messageFromOption.options.length; i++){
-		messageFromOption.options[messageFromOption.selectedIndex].onclick = function(){
-			selectedMessageFromOption = messageFromOption.options[messageFromOption.selectedIndex].value;
-			var messagesFromSender = currentUser.getMessagesBySender(selectedMessageFromOption);
+		var messagesFromSender = currentUser.getMessagesBySender(selectedName);
 			for(var i = 0; i<messagesFromSender.length; i++){
 				el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
 				if(messagesFromSender[i].isNew){
@@ -350,13 +361,13 @@ function selectedMessageSenderOption(){
 
 				el("showTextArea").innerHTML += "\n";
 			}
+			//updateNotifications();
+
 
 		}
 
-	}
-	updateNotifications();
 
-}
+
 
 
 

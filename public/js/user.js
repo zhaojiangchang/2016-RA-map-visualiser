@@ -9,13 +9,20 @@ function User(name, explorations){
 	this.currentExpl = null;
 	// the user's messages
 	this.messages = [];
+	this.audioMessage = [];
 	this.newMessages = [];
-	this.voiceMessages = [];
+	this.newAudioMessages = [];
 	this.setMessages = function(messages){
 		this.messages = messages;
 	};
+	this.setAudioMessages = function(messages){
+		this.audioMessages = messages;
+	};
 	this.getMessages = function(){
 		return this.messages;
+	}
+	this.getAudioMessages = function(){
+		return this.audioMessage;
 	}
 	this.setIsOld = function(message){
 		for (var i = 0; i<this.messages.length; i++){
@@ -34,12 +41,37 @@ function User(name, explorations){
 		}
 
 	}
+	this.setAudioMessageIsOld = function(message){
+		for (var i = 0; i<this.audioMessages.length; i++){
+			for (var j = 0; j<this.audioMessages[i].length; j++){
+				if(this.audioMessages[i][j]===message){
+					this.audioMessages[i][j].isNew = false;
+
+				}
+			}
+		}
+		for (var a = 0; a<this.newAudioMessages.length; a++){
+			if(this.newAudioMessages[a]===message){
+				this.newAudioMessages.splice(a,1);
+			}
+
+		}
+
+	}
 	this.haveMessages = function(){
-		if(this.essages.length == 0) return false;
+		if(this.messages.length == 0) return false;
+		else return true;
+	}
+	this.haveAudioMessages = function(){
+		if(this.audioMessages.length == 0) return false;
 		else return true;
 	}
 	this.haveNewMessages = function(){
 		if(this.newMessages.length==0) return false;
+		else return true;
+	}
+	this.haveNewAudioMessages = function(){
+		if(this.newAudioMessages.length==0) return false;
 		else return true;
 	}
 	this.setNewMessages = function(newMessages){
@@ -48,7 +80,6 @@ function User(name, explorations){
 	this.getMessagesBySender = function(name){
 		var messagesForSelectedSender = [];
 		for (var i = 0; i<this.messages.length; i++){
-
 			if(this.messages[i][0].from===name){
 				for (var j = 0; j<this.messages[i].length; j++){
 					messagesForSelectedSender[j] = this.messages[i][j];
@@ -56,6 +87,17 @@ function User(name, explorations){
 			}
 		}
 		return messagesForSelectedSender;
+	}
+	this.getAudioMessagesBySender = function(name){
+		var audioMessagesForSelectedSender = [];
+		for (var i = 0; i<this.audioMessages.length; i++){
+			if(this.audioMessages[i][0].from===name){
+				for (var j = 0; j<this.audioMessages[i].length; j++){
+					audioMessagesForSelectedSender[j] = this.messages[i][j];
+				}
+			}
+		}
+		return audioMessagesForSelectedSender;
 	}
 	// add an exploration
 	this.addExploration = function (expl){
@@ -163,6 +205,11 @@ function attemptLogin(name, pw){
 function login(name){
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
+	el("share-file").style.display = "block";
+	if(selectedLocation==null){
+		el("file-browse").style.display = "none";
+	}
+
 
 	function gotExplorations(allExplorations){
 		currentUser.setExplorations(allExplorations);
@@ -176,7 +223,7 @@ function logout(){
 	resetExplorations();
 	updateNotifications();
 	updateSideBar();
-	resetMessages();
+	resetShareDiv();
 }
 //returns true if there is a user currently logged on
 function userLoggedOn(){
@@ -297,7 +344,7 @@ function shareExplFile(exploration, userName){
 }
 //=====================================================
 //=========== Message =================================
-//	share text message to userLabelValue
+//share text message to userLabelValue
 function shareTextMessage(userLabelValue){
 	testMessageToSend = el("text-message-input").value;
 	if(testMessageToSend==null) return;
@@ -313,6 +360,7 @@ function shareTextMessage(userLabelValue){
 		url: "/postMessage",
 		data: JSON.stringify(Message),
 		success: function(response){
+			el("sendOption").value = "select";
 			el("text-message-input-div").style.display = "none";
 			el("shared-with").value = "";
 		},
@@ -320,24 +368,16 @@ function shareTextMessage(userLabelValue){
 	});
 }
 
-// when logout remove all names from select options (Messages From:)
-function resetMessages(){
-	for(var h = 0; h<el("messageFromOption").options.length; h++){
-		el("messageFromOption").removeChild(el("messageFromOption").options[h]);
-	}
-	if(el("messageFrom1")==null){
-		var option = document.createElement('option');
-		option.setAttribute("id", "messageFrom1");
-		var name = "Select a sender";
-		option.innerHTML = name;
-		option.value = "select";
-		el("messageFromOption").appendChild(option);
-	}
+function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
-	resetVisibility(el("show-messages-div"), "hidden");
+	el("share-file").style.display = "none";
+	el("messageFromOption").value = 'select';
+	el("location-div").style.display = "none";
+	while(el("messageFromOption").firstChild){//remove old labels
+		if(el("messageFromOption").value!='select')
+			el("messageFromOption").removeChild(el("messageFromOption").firstChild);
+	}
 }
-
-
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
 	if(voiceMessageData==null)return;
@@ -355,7 +395,6 @@ function shareVoiceMessage(userLabelValue){
 				from: currentUser.name,
 				to: userLabelValue,
 				audioData: newFormetVoice,
-				audioURL: null,
 				isNew: true
 		}
 
