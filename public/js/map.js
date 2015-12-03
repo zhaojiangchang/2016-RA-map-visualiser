@@ -128,6 +128,7 @@ d3.json("data/map/kaz_places.json", function(error, json){
 
 // updates info bar to show information about the location and allows user to add annotations
 function selectLocation(city){
+	el("location-div").style.display = "block";
 	selectedLocation = city;
 	displayLocationInfo(city);
 
@@ -162,8 +163,11 @@ function submitAnnotation(annotationText){
 
 // refresh the location info bar
 function updateLocationInfo(){
-	if (selectedLocation)
+	if (selectedLocation){
+
 		selectLocation(selectedLocation);
+	}
+
 }
 
 // removing an annotation from a location.

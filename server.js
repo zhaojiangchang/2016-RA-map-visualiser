@@ -380,14 +380,14 @@ app.post('/postMessage', function(req, res){
 	ensureDirExists(path);
 	path += from + "/";
 	ensureDirExists(path);
-	path += "message/";
+	path += "Text Message/";
 	ensureDirExists(path);
 
 	var toPath = USER_PATH;
 	ensureDirExists(toPath);
 	toPath += to + "/";
 	ensureDirExists(toPath);
-	toPath += "message/";
+	toPath += "Text Message/";
 	ensureDirExists(toPath);
 
 	var fileName = to + ".json";
@@ -424,14 +424,14 @@ app.post('/postMessage', function(req, res){
 	}
 });
 
-//retrieves and sends all annotations for a specified location
+//retrieves and sends all text message for a current user
 app.get("/getMessages", function(req, res){
 	var userName = req._parsedUrl.query; // data is appended to the URL
 	var path = USER_PATH;
 	ensureDirExists(path);
 	path += userName + "/";
 	ensureDirExists(path);
-	path += "message/";
+	path += "Text Message/";
 	ensureDirExists(path);
 	var messages = [];
 	var messageFiles = fs.readdirSync(path);
@@ -458,7 +458,7 @@ app.post("/setMessageIsOld", function(req, res){
 	// ensure both dirs exist.
 	path += currentUserName + "/";
 	ensureDirExists(path);
-	path += "message/";
+	path += "Text Message/";
 	ensureDirExists(path);
 
 	// find the exploration with the right user and timeStamp, and change the isNew property
@@ -487,3 +487,124 @@ app.post("/setMessageIsOld", function(req, res){
 		res.sendStatus(404); // not found
 });
 
+app.post('/postVoiceMessage', function(req, res){
+
+	var voiceMessage = req.body;
+	var to = voiceMessage.to;
+	var from = voiceMessage.from;
+	var timeStamp = voiceMessage.timeStamp;
+	var data = voiceMessage.audioData;
+	// makes directory for files if none exist.
+	var path = USER_PATH;
+	ensureDirExists(path);
+	path += from + "/";
+	ensureDirExists(path);
+	path += "Voice Message/";
+	ensureDirExists(path);
+	path += to + "/";
+	ensureDirExists(path);
+	var audioPath = path +"voices/";
+	ensureDirExists(audioPath);
+
+	var toPath = USER_PATH;
+	ensureDirExists(toPath);
+	toPath += to + "/";
+	ensureDirExists(toPath);
+	toPath += "Voice Message/";
+	ensureDirExists(toPath);
+	toPath += from + "/";
+	ensureDirExists(toPath);
+	var audioToPath = toPath +"voices/";
+	ensureDirExists(audioToPath);
+
+
+			var audioFileName = to+ timeStamp+ ".wav";
+			var fileReceiverName = from + timeStamp+ ".wav";
+
+			var filePath = path+audioFileName;
+			var audioFilePath = audioPath+audioFileName;
+			//voiceMessage.audioURL = audioFilePath;
+			fs.writeFileSync(audioFilePath, new Buffer(data, "binary"));
+
+			var fileReceiverPath = toPath+fileReceiverName;
+			var audioFileReceiverPath = audioToPath+fileReceiverName;
+			//voiceMessage.audioURL = audioFileReceiverPath;
+			fs.writeFileSync(audioFileReceiverPath, new Buffer(data, "binary"));
+
+
+			var fileName = to  + ".json";
+			var audioFileName = to  +timeStamp+ ".json";
+			var filePath = path + fileName;
+
+			var audioMessageFiles = fs.readdirSync(path);
+			var findFile = false;
+			for (var i = 0; i < audioMessageFiles.length; i++){
+				var fname = audioMessageFiles[i];
+				if(fileName===fname){
+					findFile = true;
+					var messages= [];
+					var inputMessage = JSON.parse(fs.readFileSync(filePath));
+					for(var i =0; i<inputMessage.length; i++){
+						messages.push(inputMessage[i]);
+					}
+					voiceMessage.audioData = audioPath + audioFileName;
+					messages.push(voiceMessage);
+					fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
+					fileName = from  + ".json";
+					filePath = toPath + fileName;
+					audioFileName = from +timeStamp+ ".json";
+					messages[messages.length-1].audioData = audioToPath + audioFileName;
+					fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
+
+					console.log("wrote audio message file \"" + fileName + "\"");
+					res.sendStatus(200); // success code
+					return;
+				}
+			}
+			if(!findFile){
+				var m = [];
+				fileName = to  + ".json";
+				audioFileName = to  +timeStamp+ ".json";
+
+				voiceMessage.audioData = audioPath + audioFileName;
+				m.push(voiceMessage);
+				fs.writeFileSync(filePath, JSON.stringify(m, null, 4));
+				fileName = from  + ".json";
+				var fileToPath = toPath + fileName;
+				audioFileName = from +timeStamp+ ".json";
+				m[0].audioData = audioToPath + audioFileName;
+				fs.writeFileSync(fileToPath, JSON.stringify(m, null, 4));
+				console.log("wrote audio message file \"" + fileName + "\"");
+				res.sendStatus(200); // success code
+			}
+});
+
+//retrieves and sends all audio message for a current user
+app.get("/getAudioMessages", function(req, res){
+
+	var userName = req._parsedUrl.query; // data is appended to the URL
+	var path = USER_PATH;
+	ensureDirExists(path);
+	path += userName + "/";
+	ensureDirExists(path);
+	path += "Voice Message/";
+	ensureDirExists(path);
+	var messages = [];
+	var voiceMessageFoldersForDifferentSender= fs.readdirSync(path);
+
+	voiceMessageFoldersForDifferentSender.forEach(function(filename, index){
+		console.log(filename)
+		var msgForSender = fs.readdirSync(path+filename+"/");
+		msgForSender.forEach(function(fname,index){
+			console.log(fname)
+			console.log(fs.lstatSync(path+filename+"/"+fname).isDirectory())
+			if(!fs.lstatSync(path+filename+"/"+fname).isDirectory()){
+				var msg = JSON.parse(fs.readFileSync(path+filename+"/"+fname));
+				messages.push(msg);
+			}
+		})
+	});
+
+	res.send(JSON.stringify(messages));
+
+});
