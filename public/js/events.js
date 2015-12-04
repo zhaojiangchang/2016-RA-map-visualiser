@@ -241,21 +241,18 @@ el("submit-shared-file").addEventListener('click',function(){
 	case "exploration":
 		if(!selectedExploration)return;
 		shareExplFile(selectedExploration, userLabelValue);
+		break;
 	case "text":
-		if(el("text-message-input").value == ''){
-			return;
-		}
+		if(el("text-message-input").value == '') return;
 		shareTextMessage(userLabelValue);
+		break;
 	case "voice":
-		if(el("record-voice").value=="Stop Recording" || voiceMessageData == null){
-			return;
-		}
-		else{
-			shareVoiceMessage(userLabelValue);
-		}
+		if(el("record-voice").value=="Stop Recording" || voiceMessageData == null) return;
+		else shareVoiceMessage(userLabelValue);
+		break;
 
 
-}
+	}
 	el("sendOption").value = "select";
 
 
@@ -277,24 +274,24 @@ function selectedSendInfoOption() {
 	el("record-voice").style.display = "none";
 	var sendOptionValue = el("sendOption").value;
 	switch(sendOptionValue){
-		case "exploration":
-			if(!selectedExploration)return;
-			var p = document.createElement("p");
-			p.id = "selectedExplName";
-			p.className = "selectedExplName";
-			var div = el("selectedExplNameDivId");
-			div.appendChild(p);
-			p.innerHTML= "Selected: "+selectedExploration.name;
-			break;
-		case "text":
-			el("text-message-input-div").style.display = "block";
-			break;
-		case "voice":
-			if(explRecording)
-				window.alert('Can Not Record Exploration and Voice Message At Same Time!')
+	case "exploration":
+		if(!selectedExploration)return;
+		var p = document.createElement("p");
+		p.id = "selectedExplName";
+		p.className = "selectedExplName";
+		var div = el("selectedExplNameDivId");
+		div.appendChild(p);
+		p.innerHTML= "Selected: "+selectedExploration.name;
+		break;
+	case "text":
+		el("text-message-input-div").style.display = "block";
+		break;
+	case "voice":
+		if(explRecording)
+			window.alert('Can Not Record Exploration and Voice Message At Same Time!')
 			else
 				el("record-voice").style.display = "block";
-			break;
+		break;
 
 	}
 }
@@ -341,36 +338,113 @@ function stopRecordVoiceMessage(){
 	stopAudioRecording();
 }
 //=====================================================
-//=========== show text messages from all senders  ====
+//=========== show messages from all other senders  ===
+
+//show text messages
 function selectedMessageSenderOption(){
 	var messageFromOption = el("messageFromOption");
 	el("showTextArea").innerHTML = '';
 	var selectedName = el("messageFromOption").value;
 
-		var messagesFromSender = currentUser.getMessagesBySender(selectedName);
-			for(var i = 0; i<messagesFromSender.length; i++){
-				el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
-				if(messagesFromSender[i].isNew){
-					el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+"(New Message) " + ": "+messagesFromSender[i].message;
+	var messagesFromSender = currentUser.getMessagesBySender(selectedName);
+	for(var i = 0; i<messagesFromSender.length; i++){
+		el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
+		if(messagesFromSender[i].isNew){
+			el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+"(New Message) " + ": "+messagesFromSender[i].message;
 
-				}
-				else{
-					el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+": "+messagesFromSender[i].message;
-
-				}
-
-				el("showTextArea").innerHTML += "\n";
-			}
-			//updateNotifications();
-
+		}
+		else{
+			el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+": "+messagesFromSender[i].message;
 
 		}
 
+		el("showTextArea").innerHTML += "\n";
+	}
+	//updateNotifications();
 
 
+}
 
 
+//show audio messages
+function selectedAudioMessageSenderOption(){
+	var messageFromOption = el("audioMessageFromOption");
+	var selectedName = el("audioMessageFromOption").value;
+	if(selectedName == "select"){
+		el("audio-messages-list").parentNode.removeChild(el("audio-messages-list"));
 
+	}
+	else{
+		while(el("audio-messages-list").firstChild){
+			el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
+		}
+		appendAudioMessageOnSideBar(selectedName);
+	}
+
+}
+function appendAudioMessageOnSideBar(selectedName){
+	var newAudioMessages = [];
+	//currentUser.audioMessages.forEach(function(message){
+	for(var i = 0; i <currentUser.audioMessages.length; i++){
+		var message = currentUser.audioMessages[i];
+		console.log(message.to+"         "+selectedName);
+		if(message.from===selectedName ||message.to===selectedName) {
+			//removegroupElem("audio-messages-list");
+			var sender = message.from;
+			var receiver = message.to;
+			var timeStamp = new Date(message.timeStamp);
+			// h:mm format
+			var time = 	makeShortTimeFormat(timeStamp);
+			// make necessary DOM elements
+			var rowDiv = document.createElement("div");
+			var textDiv = document.createElement("div");
+			var controlsDiv = document.createElement("div");
+			var info = document.createElement("p");
+
+			// set class (styles are applied in styles.css)
+			info.className = "annotation-text annotation-info";
+			info.id = sender+timeStamp+"wav";
+			controlsDiv.className = "annotation-inner-container annotation-controls";
+			textDiv.className ="annotation-inner-container annotation-text-container";
+			rowDiv.className = "annotation-row";
+
+
+			info.innerHTML = sender+" "+time;
+			info.onclick = function(){
+				console.log("clicked to play");
+				console.log(message)
+				playAudioMessage(message);
+
+			}
+			function playAudioMessage(message){
+				var audioBlob = message.audioData;
+				audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
+				audioElem.play();
+			}
+
+			// display delete button if user owns the annotation
+			// TODO: more reliable equality check
+			if (currentUser != null){
+				var deleteButton = document.createElement("input");
+				deleteButton.type = "image";
+				deleteButton.src = IMAGE_PATH + "delete.png";
+				deleteButton.id = "delete-button";
+				deleteButton.onclick = function () { deleteAudioMessage(message); }
+				controlsDiv.appendChild(deleteButton);
+			}
+
+			textDiv.appendChild(info);
+
+			rowDiv.appendChild(textDiv);
+			rowDiv.appendChild(controlsDiv);
+			var div = document.createElement('div');
+			div.id = "audio-messages-list";
+			el("audio-message-div").appendChild(div);
+			el("audio-messages-list").appendChild(rowDiv);
+		}
+	}
+	currentUser.setNewAudioMessages(newAudioMessages);
+}
 //=====================================================
 //=========== functions ===============================
 
