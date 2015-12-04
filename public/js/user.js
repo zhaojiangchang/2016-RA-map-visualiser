@@ -28,7 +28,7 @@ function User(name, explorations){
 	this.getAudioMessages = function(){
 		return this.audioMessage;
 	}
-	this.setIsOld = function(message){
+	this.setTextMessageIsOld = function(message){
 		for (var i = 0; i<this.messages.length; i++){
 			for (var j = 0; j<this.messages[i].length; j++){
 				if(this.messages[i][j]===message){

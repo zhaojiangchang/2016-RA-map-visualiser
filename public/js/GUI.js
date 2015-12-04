@@ -187,9 +187,12 @@ function updateNotifications(){
 
 	var sharedExpl = currentUser.getSharedExploration();
 	var newMessages = currentUser.newMessages;
+	var newAudioMessages = currentUser.newAudioMessages;
 	// newCount == the number of nonplayed shared exploration in current user folder
 	var newExplCount = 0;
 	var newMessageCount = 0;
+	var newAudioMessageCount = 0;
+
 
 	sharedExpl.forEach(function(expl){
 		if(expl.isNew)
@@ -199,31 +202,39 @@ function updateNotifications(){
 	newMessages.forEach(function(message){
 		if(message.isNew)
 			newMessageCount++;
-
-
 	});
+	newAudioMessages.forEach(function(message){
+		if(message.isNew)
+			newAudioMessageCount++;
+	})
+
 
 	// show notification message
-	if(newExplCount>0 && newMessageCount==0){
+	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newExplCount + " new expls.");
+		$("#notification-container").html( "Have new notificaiton.");
 		notificationContainer.style.cursor = "pointer";
 	}
-	else if(newExplCount>0 && newMessageCount>0){
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
-		notificationContainer.style.cursor = "pointer";
-	}
-	else if(newExplCount==0 && newMessageCount>0){
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newMessageCount + " new msgs.");
-		notificationContainer.style.cursor = "pointer";
-	}
-	else{
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(" No new notification.");
-		notificationContainer.style.cursor = "not-allowed";
-	}
+//	if(newExplCount>0 && newMessageCount==0){
+//		resetVisibility(notificationContainer,"visible");
+//		$("#notification-container").html(newExplCount + " new expls.");
+//		notificationContainer.style.cursor = "pointer";
+//	}
+//	else if(newExplCount>0 && newMessageCount>0){
+//		resetVisibility(notificationContainer,"visible");
+//		$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
+//		notificationContainer.style.cursor = "pointer";
+//	}
+//	else if(newExplCount==0 && newMessageCount>0){
+//		resetVisibility(notificationContainer,"visible");
+//		$("#notification-container").html(newMessageCount + " new msgs.");
+//		notificationContainer.style.cursor = "pointer";
+//	}
+//	else{
+//		resetVisibility(notificationContainer,"visible");
+//		$("#notification-container").html(" No new notification.");
+//		notificationContainer.style.cursor = "not-allowed";
+//	}
 	showListNotifications();
 }
 //function triggered when notification container clicked
@@ -235,19 +246,23 @@ function showListNotifications(){
 	var newSharedExpls = currentUser.getSharedExploration();
 	var hasNewNoti = false;
 	var newMessages = [];
+	var newAudioMessages = [];
 	if(currentUser.haveNewMessages()) {
 		newMessages = currentUser.newMessages;
 	}
+	if(currentUser.haveNewAudioMessages()){
+		newAudioMessages = currentUser.newAudioMessages;
+	}
 
 	// if has new shared exploration append to notificationSelector
-	if(newSharedExpls.length>0 || newMessages.length>0){
+	if(newSharedExpls.length>0 || newMessages.length>0 ||newAudioMessages.length>0){
 
 		if(newMessages.length>0){
 			newMessages.forEach(function(message, index){
 				var newOption = document.createElement('option');
-				newOption.setAttribute("id", currentUser.name+"message"+ index);
+				newOption.setAttribute("id", currentUser.name+"Message"+ index);
 				newOption.value = index;
-				messageName = "Message: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				messageName = "Txt Msg: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
 					//TODO: show message
@@ -278,6 +293,23 @@ function showListNotifications(){
 
 			);
 		}
+		if(newAudioMessages.length>0){
+			newAudioMessages.forEach(function(message, index){
+				var newOption = document.createElement('option');
+				newOption.setAttribute("id", currentUser.name+"AudioMessage"+ index);
+				newOption.value = index;
+				messageName = "Audio Msgs: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				newOption.innerHTML = messageName;
+				newOption.onclick  = function(){
+					//TODO: show message
+					setNewAudioMessageIsOld(message);
+					playAudioMessage(message);
+				};
+				notificationSelector.appendChild(newOption);
+				hasNewNoti = true;
+			});
+		}
+
 	}
 	return hasNewNoti;
 
@@ -581,10 +613,27 @@ function checkTextMessages(){
 }
 
 function setMessageIsOld(m){
-	currentUser.setIsOld(m);
+	currentUser.setTextMessageIsOld(m);
 	$.ajax({
 		type: 'POST',
 		url: "setMessageIsOld",
+		data: JSON.stringify({
+			mObject: m,
+			sender:m.from,
+			currentUser:m.to, // the user who made the exploration
+			timeStamp: m.timeStamp,
+			messageDetial: m.message
+
+		}),
+		contentType: "application/json"
+	});
+}
+
+function setNewAudioMessageIsOld(m){
+	currentUser.setAudioMessageIsOld(m);
+	$.ajax({
+		type: 'POST',
+		url: "setAudioMessageIsOld",
 		data: JSON.stringify({
 			mObject: m,
 			sender:m.from,

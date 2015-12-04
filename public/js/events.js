@@ -416,11 +416,7 @@ function appendAudioMessageOnSideBar(selectedName){
 				playAudioMessage(message);
 
 			}
-			function playAudioMessage(message){
-				var audioBlob = message.audioData;
-				audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
-				audioElem.play();
-			}
+
 
 			// display delete button if user owns the annotation
 			// TODO: more reliable equality check
@@ -457,6 +453,12 @@ function removegroupElem(classname) {
 			elem.parentNode.removeChild(elem);
 		}
 	}
+}
+
+function playAudioMessage(message){
+	var audioBlob = message.audioData;
+	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
+	audioElem.play();
 }
 //---- INIT
 resetExplorations();
