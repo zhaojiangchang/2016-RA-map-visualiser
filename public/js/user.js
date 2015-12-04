@@ -12,6 +12,7 @@ function User(name, explorations){
 	this.audioMessages = [];
 	this.newMessages = [];
 	this.newAudioMessages = [];
+	this.selectedAudioMessage = null;
 	this.setMessages = function(messages){
 		this.messages = messages;
 	};
@@ -101,6 +102,18 @@ function User(name, explorations){
 			}
 		}
 		return audioMessagesForSelectedSender;
+	}
+
+	this.removeAudioMessageByMessage = function(message){
+		var index = this.audioMessages.indexOf(message);
+		if(index>-1){
+			this.audioMessages.splice(index,1);
+		}
+		index = this.newAudioMessages.indexOf(message);
+		if(index>-1){
+			this.newAudioMessages.splice(index,1);
+		}
+
 	}
 	// add an exploration
 	this.addExploration = function (expl){
@@ -380,6 +393,9 @@ function resetShareDiv(){
 		//if(el("messageFromOption").value!='select')
 			el("messageFromOption").removeChild(el("messageFromOption").firstChild);
 	}
+	while(el("audio-messages-list").firstChild){
+		el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
+	}
 }
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
@@ -400,7 +416,7 @@ function shareVoiceMessage(userLabelValue){
 				audioData: newFormetVoice,
 				isNew: true
 		}
-
+		console.log(VoiceMessage.from)
 		$.ajax({
 			type: 'POST',
 			url: "/postVoiceMessage",
@@ -413,4 +429,30 @@ function shareVoiceMessage(userLabelValue){
 		});
 	}
 
+}
+
+//delete voice message
+function deleteAudioMessage(message){
+	$.ajax({
+		type: 'POST',
+		url: "deleteAudioMessage",
+		data: JSON.stringify({
+			message: message,
+			currentUser: currentUser.name }),
+		contentType: "application/json",
+		success: deletedVoiceMessageFromCurrentUser
+	});
+
+	function deletedVoiceMessageFromCurrentUser(response){
+			currentUser.removeAudioMessageByMessage(message);
+			while(el("audio-messages-list").firstChild){
+				el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
+			}
+			if(currentUser.audioMessages.length>0)
+				appendAudioMessageOnSideBar();
+			else{
+
+				addAudioMessageDropDownNameList();
+			}
+	}
 }

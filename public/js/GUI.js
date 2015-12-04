@@ -283,7 +283,7 @@ function showListNotifications(){
 
 }
 function addOptions(message){
-	resetVisibility(el("show-messages-div"), "visible");
+	resetVisibility(el("text-message-div"), "visible");
 	el("showTextArea").innerHTML = '';
 	for(var i = 0; i<currentUser.messages.length; i++){
 		for(var j = 0; j<currentUser.messages[i].length; j++){
@@ -518,7 +518,6 @@ var messageFromNameList = [];
 //check local server  - messages
 function checkTextMessages(){
 	if(currentUser==null) return;
-
 	$.ajax({
 		type: 'GET',
 		url: "/getMessages",
@@ -541,8 +540,9 @@ function checkTextMessages(){
 		}
 		currentUser.newMessages = newMessages;
 		updateNotifications();
+
 		if(messageFromNameList.length!=0){
-			el("show-messages-div").style.display = "block";
+			var showMessageBox = false;
 			if(el("messageFrom1")==null){
 				var option = document.createElement('option');
 				option.setAttribute("id", "messageFrom1");
@@ -551,11 +551,11 @@ function checkTextMessages(){
 				option.value = "select";
 				el("messageFromOption").appendChild(option);
 			}
-
-			resetVisibility(el("show-messages-div"), "visible");
 			for(var j = 0; j<messageFromNameList.length;j++){
 				var name = messageFromNameList[j];
+				console.log(name+"  "+currentUser.name)
 				if(el(name+"Message")==null && name!=currentUser.name){
+					showMessageBox = true;
 					console.log(name +"    "+currentUser.name)
 					option = document.createElement('option');
 					option.setAttribute("id", name+"Message");
@@ -563,10 +563,19 @@ function checkTextMessages(){
 					option.value = name;
 					el("messageFromOption").appendChild(option);
 				}
+				else if(el(name+"Message")!=null && name!=currentUser.name){
+					showMessageBox = true;
+				}
+			}
+			if(showMessageBox){
+				el("text-message-div").style.visibility = "visible";
+			}
+			else{
+				el("text-message-div").style.visibility = "hidden";
 			}
 		}
 		else{
-			el("show-messages-div").style.display = "none";
+			el("text-message-div").style.visibility = "hidden";
 		}
 	}
 }
@@ -601,8 +610,23 @@ function checkAudioMessages(){
 	});
 	function setMessage(messages){
 		console.log(messages)
+		if(messages.length ==0)return;
 		audioMessageFromNameList = [];
 		currentUser.setAudioMessages(messages);
+		currentUser.audioMessages.forEach(function(message){
+			if(message.audioData==null) return;
+			var audioASCII = message.audioData;
+			var byteCharacters = atob(audioASCII);
+			var byteNumbers = new Array(byteCharacters.length);
+			for (var i = 0; i < byteCharacters.length; i++) {
+				byteNumbers[i] = byteCharacters.charCodeAt(i);
+			}
+			var byteArray = new Uint8Array(byteNumbers);
+			message.audioData = new Blob([byteArray], {type: "audio/wav"});
+
+
+
+		});
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
 			if(messages[i].isNew==true && messages[i].from!=currentUser.name){
@@ -618,36 +642,39 @@ function checkAudioMessages(){
 		currentUser.newAudioMessages = newAudioMessages;
 		updateNotifications();
 
-		if(audioMessageFromNameList.length!=0){
-			el("audio-messages-list").style.display = "block";
-			if(el("audio-message-from")==null){
-				var option = document.createElement('option');
-				option.setAttribute("id", "audio-message-from");
-				var name = "Select a sender";
-				option.innerHTML = name;
-				option.value = "select";
-				el("audioMessageFromOption").appendChild(option);
-			}
-
-			resetVisibility(el("show-messages-div"), "visible");
-			for(var j = 0; j<audioMessageFromNameList.length;j++){
-				var name = audioMessageFromNameList[j];
-
-				if(el(name+"VoiceMessage")==null){
-					option = document.createElement('option');
-					option.setAttribute("id", name+"VoiceMessage");
-					option.innerHTML = name;
-					option.value = name;
-					el("audioMessageFromOption").appendChild(option);
-				}
-			}
-		}
-		else{
-			el("audio-messages-list").style.display = "none";
-		}
+		addAudioMessageDropDownNameList(audioMessageFromNameList);
 	}
 }
+function addAudioMessageDropDownNameList(audioMessageFromNameList){
+	while(el("audioMessageFromOption").firstChild){
+		el("audioMessageFromOption").removeChild(el("audioMessageFromOption").firstChild);
+	}
+		if(el("audio-message-from")==null){
+			var option = document.createElement('option');
+			option.setAttribute("id", "audio-message-from");
+			var name = "Select a sender";
+			option.innerHTML = name;
+			option.value = "select";
+			el("audioMessageFromOption").appendChild(option);
+		}
+		el("audio-message-div").style.display = "block";
+		if(audioMessageFromNameList.length!=0){
+		for(var j = 0; j<audioMessageFromNameList.length;j++){
+			var name = audioMessageFromNameList[j];
 
+			if(el(name+"VoiceMessage")==null && name!=currentUser.name){
+				option = document.createElement('option');
+				option.setAttribute("id", name+"VoiceMessage");
+				option.innerHTML = name;
+				option.value = name;
+				el("audioMessageFromOption").appendChild(option);
+			}
+		}
+	}
+	else{
+		el("audio-message-div").style.display = "none";
+	}
+}
 function setVoiceMessageIsOld(m){
 	currentUser.setIsOld(m);
 	$.ajax({
@@ -722,10 +749,7 @@ window.setInterval(function(){
 		loadAllExplorations(currentUser.name, gotExplorations);
 		enableAction(["delete"]);
 		updateExplorationChooser();
-
-
 	}
-
 	if(selectedLocation!=null){
 		getAnnotationFromLocalServer(selectedLocation);
 	}

@@ -241,18 +241,15 @@ el("submit-shared-file").addEventListener('click',function(){
 	case "exploration":
 		if(!selectedExploration)return;
 		shareExplFile(selectedExploration, userLabelValue);
+		break;
 	case "text":
-		if(el("text-message-input").value == ''){
-			return;
-		}
+		if(el("text-message-input").value == '') return;
 		shareTextMessage(userLabelValue);
+		break;
 	case "voice":
-		if(el("record-voice").value=="Stop Recording" || voiceMessageData == null){
-			return;
-		}
-		else{
-			shareVoiceMessage(userLabelValue);
-		}
+		if(el("record-voice").value=="Stop Recording" || voiceMessageData == null) return;
+		else shareVoiceMessage(userLabelValue);
+		break;
 
 
 	}
@@ -378,9 +375,21 @@ function selectedAudioMessageSenderOption(){
 
 	}
 	else{
-		var newAudioMessages = [];
-		currentUser.audioMessages.forEach(function(message){
-			removegroupElem("audio-messages-list");
+		while(el("audio-messages-list").firstChild){
+			el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
+		}
+		appendAudioMessageOnSideBar(selectedName);
+	}
+
+}
+function appendAudioMessageOnSideBar(selectedName){
+	var newAudioMessages = [];
+	//currentUser.audioMessages.forEach(function(message){
+	for(var i = 0; i <currentUser.audioMessages.length; i++){
+		var message = currentUser.audioMessages[i];
+		console.log(message.to+"         "+selectedName);
+		if(message.from===selectedName ||message.to===selectedName) {
+			//removegroupElem("audio-messages-list");
 			var sender = message.from;
 			var receiver = message.to;
 			var timeStamp = new Date(message.timeStamp);
@@ -394,6 +403,7 @@ function selectedAudioMessageSenderOption(){
 
 			// set class (styles are applied in styles.css)
 			info.className = "annotation-text annotation-info";
+			info.id = sender+timeStamp+"wav";
 			controlsDiv.className = "annotation-inner-container annotation-controls";
 			textDiv.className ="annotation-inner-container annotation-text-container";
 			rowDiv.className = "annotation-row";
@@ -401,7 +411,15 @@ function selectedAudioMessageSenderOption(){
 
 			info.innerHTML = sender+" "+time;
 			info.onclick = function(){
+				console.log("clicked to play");
+				console.log(message)
+				playAudioMessage(message);
 
+			}
+			function playAudioMessage(message){
+				var audioBlob = message.audioData;
+				audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
+				audioElem.play();
 			}
 
 			// display delete button if user owns the annotation
@@ -421,15 +439,12 @@ function selectedAudioMessageSenderOption(){
 			rowDiv.appendChild(controlsDiv);
 			var div = document.createElement('div');
 			div.id = "audio-messages-list";
-			el("show-messages-div").appendChild(div);
+			el("audio-message-div").appendChild(div);
 			el("audio-messages-list").appendChild(rowDiv);
-		});
-		currentUser.setNewAudioMessages(newAudioMessages);
+		}
 	}
-
+	currentUser.setNewAudioMessages(newAudioMessages);
 }
-
-
 //=====================================================
 //=========== functions ===============================
 
