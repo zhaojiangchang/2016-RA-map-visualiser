@@ -46,8 +46,7 @@ function updateSideBar(){
 	updateExplorationChooser();
 	updateLocationInfo();
 	updateExplorationControls();
-	//updateNotifications();
-	checkMessages();
+	checkNotifications();
 	updateLogonElements();
 	updateShareExplElements();
 }
@@ -77,6 +76,46 @@ function updateExplorationChooser(){
 	ensureExplorationSelected();
 }
 
+//updates the state of the buttons (record, play, pause, stop, save, delete, reset)
+function updateExplorationControls(specialCase){
+	if (!selectedExploration){
+		disableAction(["save","play","stop","pause","reset","delete"]);
+		if (userLoggedOn()){
+			enableAction(["record"]);
+		}
+		else {
+			disableAction(["record"]);
+		}
+	}
+	else if (!playing){
+		enableAction(["record","play","reset","delete"]);
+		disableAction(["stop","pause"]);
+
+		changeButtonColour("record", false);
+	}
+	else if (playing){
+		enableAction(["stop","pause"]);
+		disableAction(["record","play","delete"]);
+	}
+	if (explRecording){
+		disableAction(["save","play","stop","pause","delete"]);
+		enableAction(["record"]);
+		changeButtonColour("record", true);
+	}
+
+	if (specialCase){
+		if (specialCase === "stopped-recording"){
+			enableAction(["record","play","reset","save"]);
+			disableAction(["stop","pause","delete"]);
+			changeButtonColour("record", false);
+			enableAction(["save"]);
+		}
+		if (specialCase === "saved"){
+			disableAction(["save","delete"]);
+		}
+	}
+}
+
 //updates the user buttons to show who is logged in
 function updateUserButtons(currentUser){
 	var userButtons = document.getElementsByClassName("user-button");
@@ -90,15 +129,55 @@ function updateUserButtons(currentUser){
 		}
 	});
 }
+//userLoggedOn funciton return currentUser object
+//user loggedOn if not null
+function updateLogonElements(){
+	// if user is currently logged on, disable all userImage button
+	if (userLoggedOn()){
+		toggleLogon(true,"not-allowed");
+	}
+	else
+		toggleLogon(false, "default" , "pointer");
+
+}
+
+function toggleLogon(loggedOn, cursorD, cursorP){
+	// update logon button and username / password
+	logonButton.value = loggedOn ? "Log off" : "Log on";
+	userNameInput.disabled = loggedOn;
+	passwordInput.disabled = loggedOn;
+	userNameInput.style.cursor = cursorD;
+	passwordInput.style.cursor = cursorD;
+	// update user image
+	var elems = document.getElementsByClassName("user-button");
+	for(var i = 0; i<elems.length; i++){
+
+		elems[i].disabled = loggedOn;
+		if (!loggedOn)
+			elems[i].style.cursor = cursorP;
+		else
+			elems[i].style.cursor = cursorD;
+	}
+	// logoff set value to default
+	if (!loggedOn){
+		userNameInput.value = "";
+		passwordInput.value = "";
+	}
+}
+
+//=====================================================
+//=========== Notification ============================
+
+function checkNotifications(){
+	checkTextMessages();
+	checkAudioMessages();
+}
 
 //updates the notification GUI elements
 function updateNotifications(){
 
 	//set visibility to all notification buttons/labels hidden when log on.
 	resetVisibility(notificationContainer,"hidden");
-
-	//resetVisibility(el("file-browse"), "hidden");
-
 	hideNotificationButtons();
 	if (!userLoggedOn()){
 		return;
@@ -147,139 +226,6 @@ function updateNotifications(){
 	}
 	showListNotifications();
 }
-
-//updates the state of the buttons (record, play, pause, stop, save, delete, reset)
-function updateExplorationControls(specialCase){
-	if (!selectedExploration){
-		disableAction(["save","play","stop","pause","reset","delete"]);
-		if (userLoggedOn()){
-			enableAction(["record"]);
-		}
-		else {
-			disableAction(["record"]);
-		}
-	}
-	else if (!playing){
-		enableAction(["record","play","reset","delete"]);
-		disableAction(["stop","pause"]);
-
-		changeButtonColour("record", false);
-	}
-	else if (playing){
-		enableAction(["stop","pause"]);
-		disableAction(["record","play","delete"]);
-	}
-	if (recording){
-		disableAction(["save","play","stop","pause","delete"]);
-		enableAction(["record"]);
-		changeButtonColour("record", true);
-	}
-
-	if (specialCase){
-		if (specialCase === "stopped-recording"){
-			enableAction(["record","play","reset","save"]);
-			disableAction(["stop","pause","delete"]);
-			changeButtonColour("record", false);
-			enableAction(["save"]);
-		}
-		if (specialCase === "saved"){
-			disableAction(["save","delete"]);
-		}
-	}
-}
-
-//userLoggedOn funciton return currentUser object
-//user loggedOn if not null
-function updateLogonElements(){
-	// if user is currently logged on, disable all userImage button
-	if (userLoggedOn()){
-		toggleLogon(true,"not-allowed");
-	}
-	else
-		toggleLogon(false, "default" , "pointer");
-
-}
-
-function toggleLogon(loggedOn, cursorD, cursorP){
-	// update logon button and username / password
-	logonButton.value = loggedOn ? "Log off" : "Log on";
-	userNameInput.disabled = loggedOn;
-	passwordInput.disabled = loggedOn;
-	userNameInput.style.cursor = cursorD;
-	passwordInput.style.cursor = cursorD;
-	// update user image
-	var elems = document.getElementsByClassName("user-button");
-	for(var i = 0; i<elems.length; i++){
-
-		elems[i].disabled = loggedOn;
-		if (!loggedOn)
-			elems[i].style.cursor = cursorP;
-		else
-			elems[i].style.cursor = cursorD;
-	}
-	// logoff set value to default
-	if (!loggedOn){
-		userNameInput.value = "";
-		passwordInput.value = "";
-	}
-}
-
-//this function called once showPathButton clicked (event.js)
-function toggleVisiblePath(){
-	if(!selectedExploration) return;
-	if(selectedExploration.hasCityEvents()){
-		if(showPathButton.innerHTML=="Show Path"){
-			pathView.showPathElems();
-		}
-		else if(showPathButton.innerHTML=="Hide Path"){
-			pathView.hidePathElems();
-		}
-	}
-}
-
-//init shared element value
-function updateShareExplElements(){
-	el("shared-with").value = "";
-	el("expl-sent-message").innerHTML = "";
-}
-
-//adds graphics to the map to show that recording is in progress.
-function addRecordingGraphics(){
-	// var points = [0, 0, width, height];
-	var borderWidth = 10;
-	var circleRadius = 20;
-	var padding = 10;
-	var bottomPadding = 10;
-	var circleCX = borderWidth + circleRadius;
-	var circleCY = borderWidth + circleRadius;
-
-	svg.append("rect")
-	.attr({
-		id:    "record-border",
-		x:     0 + borderWidth/2,
-		y:     0 + borderWidth/2,
-		width: width - borderWidth*2,
-		height:height - bottomPadding - borderWidth*2})
-		.style("stroke", "red")
-		.style("fill", "none")
-		.style("stroke-width", borderWidth);
-
-	svg.append('circle')
-	.attr({
-		id: "record-circle",
-		cx:  circleCX + borderWidth/2,
-		cy:  circleCY + borderWidth/2,
-		r: 	 circleRadius})
-		.style('fill', 'red')
-		.transition().duration();
-}
-
-//remove recording related graphics
-function removeRecordingGraphics(){
-	d3.select("#record-border").remove();
-	d3.select("#record-circle").remove();
-}
-
 //function triggered when notification container clicked
 //return true - when has new shared exploration
 function showListNotifications(){
@@ -290,7 +236,6 @@ function showListNotifications(){
 	var hasNewNoti = false;
 	var newMessages = [];
 	if(currentUser.haveNewMessages()) {
-		console.log(currentUser.newMessages)
 		newMessages = currentUser.newMessages;
 	}
 
@@ -338,18 +283,18 @@ function showListNotifications(){
 
 }
 function addOptions(message){
-	resetVisibility(el("show-messages-div"), "visible");
+	resetVisibility(el("text-message-div"), "visible");
 	el("showTextArea").innerHTML = '';
 	for(var i = 0; i<currentUser.messages.length; i++){
 		for(var j = 0; j<currentUser.messages[i].length; j++){
 			if(currentUser.messages[i][j].from==message.from){
-				el("showTextArea").innerHTML += "\nTime: " + currentUser.messages[i][j].timeStamp;
+				el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(currentUser.messages[i][j].timeStamp));
 				if(currentUser.messages[i][j].isNew){
-					el("showTextArea").innerHTML += "\n(New Message): "+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
+					el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+"(New Message): " + currentUser.messages[i][j].message;
 
 				}
 				else{
-					el("showTextArea").innerHTML += currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
+					el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
 
 				}
 				el("showTextArea").innerHTML += "\n";
@@ -359,19 +304,7 @@ function addOptions(message){
 	}
 	updateNotifications();
 }
-function divHideShow(div){
-	if (div.style.visibility==="visible"){
-		div.style.visibility= "hidden";
-	}
-	else{
-		div.style.visibility = "visible";
-		//setTimeout(function () {div.style.display = "none";}, 3000);
-	}
-}
-//reset notifications lable when logoff
-function resetVisibility(idVar, state){
-	idVar.style.visibility = state;
-}
+
 
 function hideNotificationButtons(){
 	resetVisibility(notificationSelector, "hidden");
@@ -383,11 +316,74 @@ function showNotificationButtons(){
 	resetVisibility(removeNotification, "visible");
 	resetVisibility(quickplayNotification, "visible");
 }
+
+//this function called once showPathButton clicked (event.js)
+function toggleVisiblePath(){
+	if(!selectedExploration) return;
+	if(selectedExploration.hasCityEvents()){
+		if(showPathButton.innerHTML=="Show Path"){
+			pathView.showPathElems();
+		}
+		else if(showPathButton.innerHTML=="Hide Path"){
+			pathView.hidePathElems();
+		}
+	}
+}
+
+//init shared element value
+function updateShareExplElements(){
+	el("shared-with").value = "";
+	el("expl-sent-message").innerHTML = "";
+}
+
+//=====================================================
+//=========== GUI  ====================================
+
+//adds graphics to the map to show that recording is in progress.
+function addRecordingGraphics(){
+	// var points = [0, 0, width, height];
+	var borderWidth = 10;
+	var circleRadius = 20;
+	var padding = 10;
+	var bottomPadding = 10;
+	var circleCX = borderWidth + circleRadius;
+	var circleCY = borderWidth + circleRadius;
+
+	svg.append("rect")
+	.attr({
+		id:    "record-border",
+		x:     0 + borderWidth/2,
+		y:     0 + borderWidth/2,
+		width: width - borderWidth*2,
+		height:height - bottomPadding - borderWidth*2})
+		.style("stroke", "red")
+		.style("fill", "none")
+		.style("stroke-width", borderWidth);
+
+	svg.append('circle')
+	.attr({
+		id: "record-circle",
+		cx:  circleCX + borderWidth/2,
+		cy:  circleCY + borderWidth/2,
+		r: 	 circleRadius})
+		.style('fill', 'red')
+		.transition().duration();
+}
+
+//remove recording related graphics
+function removeRecordingGraphics(){
+	d3.select("#record-border").remove();
+	d3.select("#record-circle").remove();
+}
+
+//=====================================================
+//=========== Annotation  =============================
+
 //displays information about the location selected
 function displayLocationInfo(city){
 
+
 	el("location-title").innerHTML = city.properties.NAME;
-	resetVisibility(el("file-browse"), "visible");
 
 
 	var annotations = el("annotation-container");
@@ -400,8 +396,8 @@ function displayLocationInfo(city){
 		makeAnnotationInput(annotationInputCont);
 
 	getAnnotationFromLocalServer(city);
-
 }
+
 function getAnnotationFromLocalServer(city){
 	// get annotations for this location
 	$.ajax({
@@ -418,6 +414,7 @@ function getAnnotationFromLocalServer(city){
 			el("annotation-container").removeChild(el("annotation-container").firstChild);
 		// if response is "no_annotations", no annotations were found, so do nothing
 		if (annotations === "no_annotations") return;
+		el("file-browse").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
 		var container = document.createElement("div");
 		container.className["annotation-container-2"];
@@ -457,6 +454,8 @@ function getAnnotationFromLocalServer(city){
 				image.height = 50;
 				imgDiv.appendChild(image);
 				image.onclick = function(){
+					while(el("preview-city-img").firstChild)//remove old labels
+						el("preview-city-img").removeChild(el("preview-city-img").firstChild);
 					var img = new Image();
 					img.src = annotation.imageData;
 					img.width = 250;
@@ -491,7 +490,6 @@ function getAnnotationFromLocalServer(city){
 		// TODO: load all annotations at once
 		el("annotation-container")
 		.appendChild(container);
-		resetVisibility(el("file-browse"), "visible");
 
 	}
 
@@ -513,6 +511,193 @@ function makeAnnotationInput(container){
 	container.appendChild(annInput);
 	annInput.focus();
 }
+
+//=====================================================
+//=========== Messages  ==========================
+var messageFromNameList = [];
+//check local server  - messages
+function checkTextMessages(){
+	if(currentUser==null) return;
+	$.ajax({
+		type: 'GET',
+		url: "/getMessages",
+		data: currentUser.name,
+		success: setMessage,
+		dataType: "json",
+	});
+	function setMessage(messages){
+		messageFromNameList = [];
+		currentUser.setMessages(messages);
+		var newMessages = [];
+		for (var i = 0; i < messages.length; i++){
+			messageFromNameList[i] = messages[i][0].from;
+			for(var j = 0; j< messages[i].length; j++){
+				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
+					newMessages.push(messages[i][j]);
+				}
+
+			}
+		}
+		currentUser.newMessages = newMessages;
+		updateNotifications();
+
+		if(messageFromNameList.length!=0){
+			var showMessageBox = false;
+			if(el("messageFrom1")==null){
+				var option = document.createElement('option');
+				option.setAttribute("id", "messageFrom1");
+				var name = "Select a sender";
+				option.innerHTML = name;
+				option.value = "select";
+				el("messageFromOption").appendChild(option);
+			}
+			for(var j = 0; j<messageFromNameList.length;j++){
+				var name = messageFromNameList[j];
+				console.log(name+"  "+currentUser.name)
+				if(el(name+"Message")==null && name!=currentUser.name){
+					showMessageBox = true;
+					console.log(name +"    "+currentUser.name)
+					option = document.createElement('option');
+					option.setAttribute("id", name+"Message");
+					option.innerHTML = name;
+					option.value = name;
+					el("messageFromOption").appendChild(option);
+				}
+				else if(el(name+"Message")!=null && name!=currentUser.name){
+					showMessageBox = true;
+				}
+			}
+			if(showMessageBox){
+				el("text-message-div").style.visibility = "visible";
+			}
+			else{
+				el("text-message-div").style.visibility = "hidden";
+			}
+		}
+		else{
+			el("text-message-div").style.visibility = "hidden";
+		}
+	}
+}
+
+function setMessageIsOld(m){
+	currentUser.setIsOld(m);
+	$.ajax({
+		type: 'POST',
+		url: "setMessageIsOld",
+		data: JSON.stringify({
+			mObject: m,
+			sender:m.from,
+			currentUser:m.to, // the user who made the exploration
+			timeStamp: m.timeStamp,
+			messageDetial: m.message
+
+		}),
+		contentType: "application/json"
+	});
+}
+
+var voiceMessageFromNameList = [];
+//check local server  - messages
+function checkAudioMessages(){
+	if(currentUser==null) return;
+	$.ajax({
+		type: 'GET',
+		url: "/getAudioMessages",
+		data: currentUser.name,
+		success: setMessage,
+		dataType: "json",
+	});
+	function setMessage(messages){
+		console.log(messages)
+		if(messages.length ==0)return;
+		audioMessageFromNameList = [];
+		currentUser.setAudioMessages(messages);
+		currentUser.audioMessages.forEach(function(message){
+			if(message.audioData==null) return;
+			var audioASCII = message.audioData;
+			var byteCharacters = atob(audioASCII);
+			var byteNumbers = new Array(byteCharacters.length);
+			for (var i = 0; i < byteCharacters.length; i++) {
+				byteNumbers[i] = byteCharacters.charCodeAt(i);
+			}
+			var byteArray = new Uint8Array(byteNumbers);
+			message.audioData = new Blob([byteArray], {type: "audio/wav"});
+
+
+
+		});
+		var newAudioMessages = [];
+		for (var i = 0; i < messages.length; i++){
+			if(messages[i].isNew==true && messages[i].from!=currentUser.name){
+				if(messages[i].from!=currentUser.name)
+					newAudioMessages.push(messages[i]);
+				if($.inArray(messages[i].from,audioMessageFromNameList )==-1)
+					audioMessageFromNameList.push(messages[i].from);
+
+				}
+			}
+		console.log(audioMessageFromNameList)
+
+		currentUser.newAudioMessages = newAudioMessages;
+		updateNotifications();
+
+		addAudioMessageDropDownNameList(audioMessageFromNameList);
+	}
+}
+function addAudioMessageDropDownNameList(audioMessageFromNameList){
+	while(el("audioMessageFromOption").firstChild){
+		el("audioMessageFromOption").removeChild(el("audioMessageFromOption").firstChild);
+	}
+		if(el("audio-message-from")==null){
+			var option = document.createElement('option');
+			option.setAttribute("id", "audio-message-from");
+			var name = "Select a sender";
+			option.innerHTML = name;
+			option.value = "select";
+			el("audioMessageFromOption").appendChild(option);
+		}
+		el("audio-message-div").style.display = "block";
+		if(audioMessageFromNameList.length!=0){
+		for(var j = 0; j<audioMessageFromNameList.length;j++){
+			var name = audioMessageFromNameList[j];
+
+			if(el(name+"VoiceMessage")==null && name!=currentUser.name){
+				option = document.createElement('option');
+				option.setAttribute("id", name+"VoiceMessage");
+				option.innerHTML = name;
+				option.value = name;
+				el("audioMessageFromOption").appendChild(option);
+			}
+		}
+	}
+	else{
+		el("audio-message-div").style.display = "none";
+	}
+}
+function setVoiceMessageIsOld(m){
+	currentUser.setIsOld(m);
+	$.ajax({
+		type: 'POST',
+		url: "setMessageIsOld",
+		data: JSON.stringify({
+			mObject: m,
+			sender:m.from,
+			currentUser:m.to, // the user who made the exploration
+			timeStamp: m.timeStamp,
+			messageDetial: m.message
+
+		}),
+		contentType: "application/json"
+	});
+}
+
+
+
+
+
+//=====================================================
+//=========== functions  ==============================
 
 function changeButtonColour(name, state){
 	var button = el(name + "-exploration-button");
@@ -541,78 +726,6 @@ function removeAudioGraphic(){
 	svg.select("#microphone-graphic")
 	.remove();
 }
-var messageFromNameList = [];
-//check local server  - messages
-function checkMessages(){
-	if(currentUser==null) return;
-	$.ajax({
-		type: 'GET',
-		url: "/getMessages",
-		data: currentUser.name,
-		success: setMessage,
-		dataType: "json",
-	});
-	function setMessage(messages){
-		messageFromNameList = [];
-		currentUser.setMessages(messages);
-		var newMessages = [];
-		for (var i = 0; i < messages.length; i++){
-			messageFromNameList[i] = messages[i][0].from;
-			for(var j = 0; j< messages[i].length; j++){
-				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
-					newMessages.push(messages[i][j]);
-				}
-
-			}
-		}
-		currentUser.newMessages = newMessages;
-		updateNotifications();
-		if(messageFromNameList.length!=0){
-//			for(var h = 0; h<el("messageFromOption").options.length; h++){
-//				el("messageFromOption").removeChild(el("messageFromOption").options[h]);
-//			}
-			if(el("messageFrom1")==null){
-				var option = document.createElement('option');
-				option.setAttribute("id", "messageFrom1");
-				var name = "Select a sender";
-				option.innerHTML = name;
-				option.value = "select";
-				el("messageFromOption").appendChild(option);
-			}
-
-			resetVisibility(el("show-messages-div"), "visible");
-			for(var j = 0; j<messageFromNameList.length;j++){
-				var name = messageFromNameList[j];
-				console.log(el(name+"Message"))
-
-				if(el(name+"Message")==null){
-					option = document.createElement('option');
-					option.setAttribute("id", name+"Message");
-					option.innerHTML = name;
-					option.value = name;
-					el("messageFromOption").appendChild(option);
-				}
-			}
-		}
-	}
-}
-
-function setMessageIsOld(m){
-	currentUser.setIsOld(m);
-	$.ajax({
-		type: 'POST',
-		url: "setMessageIsOld",
-		data: JSON.stringify({
-			mObject: m,
-			sender:m.from,
-			currentUser:m.to, // the user who made the exploration
-			timeStamp: m.timeStamp,
-			messageDetial: m.message
-
-		}),
-		contentType: "application/json"
-	});
-}
 
 function el(id){
 	return document.getElementById(id);
@@ -621,16 +734,15 @@ function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
 	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
-	seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
-	day = date.getDate(),
-	month = monthAsString(date.getMonth());
+			seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
+					day = date.getDate(),
+					month = monthAsString(date.getMonth());
 
-	return hours + ":" + minutes + " -" + day + "th " + month;
-	function monthAsString(monthIndex){
-		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-	}
+			return hours + ":" + minutes + " -" + day + "th " + month;
+			function monthAsString(monthIndex){
+				return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+			}
 }
-
 
 window.setInterval(function(){
 	if(currentUser!=null){
@@ -638,13 +750,11 @@ window.setInterval(function(){
 		enableAction(["delete"]);
 		updateExplorationChooser();
 	}
-
 	if(selectedLocation!=null){
 		getAnnotationFromLocalServer(selectedLocation);
 	}
 	//updateShareExplElements();
-	console.log(notificationSelector.style.visibility)
-	checkMessages();
+	checkTextMessages();
 }, 10000);
 
 
@@ -655,4 +765,18 @@ function gotExplorations(allExplorations){
 
 $("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
 	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1
-	}))
+}))
+
+function divHideShow(div){
+	if (div.style.visibility==="visible"){
+		div.style.visibility= "hidden";
+	}
+	else{
+		div.style.visibility = "visible";
+		//setTimeout(function () {div.style.display = "none";}, 3000);
+	}
+}
+//reset notifications lable when logoff
+function resetVisibility(idVar, state){
+	idVar.style.visibility = state;
+}

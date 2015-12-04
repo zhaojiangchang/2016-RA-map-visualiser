@@ -14,7 +14,7 @@
 
 
 // if the user is currently recording, playing ...
-var recording = false,
+var explRecording = false,
 	playing = false,
 	paused = false,
 	inserting = false;
@@ -207,7 +207,7 @@ function startRecording() {
 
 	// shows that recording is in progess
 	addRecordingGraphics();
-	recording = true;
+	explRecording = true;
 	updateExplorationControls();
 }
 
@@ -215,7 +215,7 @@ function startRecording() {
 function stopRecording(audioCB) {
 	var recordedExpl = currentUser.currentExpl;
 	// if there is no recording, do nothing
-	if (!recordedExpl || !recording)
+	if (!recordedExpl || !explRecording)
 		return;
 
 	// removes event listeners which are recording user navigation.
@@ -241,8 +241,7 @@ function stopRecording(audioCB) {
 		stopAudioRecording(audioCB);
 
 	removeRecordingGraphics();
-
-	recording = false;
+	explRecording = false;
 	updateExplorationControls("stopped-recording");
 	progressBar.load(currentUser.getCurrentExploration());
 }
@@ -561,7 +560,7 @@ function deselectExploration(){
 function resetExplorations() {
 	if (playing || paused)
 		stopPlayback(selectedExploration);
-	if (recording)
+	if (explRecording)
 		stopRecording();
 	if (currentUser)
 		currentUser.resetCurrentExploration();

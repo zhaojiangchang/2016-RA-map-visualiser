@@ -104,65 +104,80 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				<select id="exploration-selector" size="0" placeholder="Username"></select>
 			</div>
 		</div>
-		<div id="share-file">
+		<div id="share-file" style="display: none;">
 			<h3>
 				<label for="user-input" id="to-label">Send to:</label>
 			</h3>
 			<p></p>
 			<input type="text" id="shared-with" name="user"
-				placeholder="Username" />
-			<select id="sendOption" size="0"
-				style="display: inline-block;" onchange="selectedOption();">
-				<option id="sendExpl" value = "select">Select an option to send</option>
+				placeholder="Username" /> <select id="sendOption" size="0"
+				style="display: inline-block;" onchange="selectedSendInfoOption();">
+				<option id="sendExpl" value="select">Enter Username First</option>
 				<option id="sendExpl" value="exploration">Send Exploration</option>
 				<option id="sendExpl" value="text">Send Text</option>
 				<option id="sendExpl" value="voice">Send Voice</option>
 			</select>
-			<div id = "text-message-input-div"  style = "display: none;">
-				<textarea id="text-message-input" cols = "40" rows = "5"></textarea>
+			<div id="text-message-input-div" style="display: none;">
+				<textarea id="text-message-input" cols="40" rows="5"></textarea>
 			</div>
-			<div id = "selectedExplNameDivId">
-				</div>
+			<div id="selectedExplNameDivId"></div>
+			<input type="submit" id="record-voice" style="display: none;"
+				value="Start Recording">
 			<button type='button' id="submit-shared-file">Send</button>
 			<p id="expl-sent-message"></p>
+
+			<div id="location-div" class="location-pane">
+				<h2 id="location-title"></h2>
+				<ul id="location-info">
+					<!-- script will insert elements here -->
+				</ul>
+				<div id="annotation-container" display="table">
+					<!-- will be populated by user annotations -->
+				</div>
+				<div id="annotation-input-container">
+					<!-- input will be added -->
+				</div>
+				<p></p>
+				<div id="file-browse">
+					<input type="file" onchange="onFileSelected(event)">
+					<button id="save-ann-button">Save Annotation</button>
+					<button id="remove-img-button">Remove Preview Image</button>
+					<div id="display-city-image"></div>
+
+					<div id="preview-city-img"></div>
+				</div>
+
+			</div>
+			<div id="show-messages-div">
+				<div id = "text-message-div">
+				<h3>
+					<label for="user-messages">Messages From:</label>
+				</h3>
+				<select id="messageFromOption" size="0"
+					onchange="selectedMessageSenderOption();">
+					<option id="messageFrom1" value="select">Select a sender</option>
+				</select>
+				<textarea id="showTextArea" cols="40" rows="5"
+					style="overflow-y: scroll;" readonly></textarea>
+					</div>
+				<div id="audio-message-div">
+					<h3>
+						<label for="user-audio-messages">Audio Messages From:</label>
+					</h3>
+					<select id="audioMessageFromOption" size="0"
+						onchange="selectedAudioMessageSenderOption();">
+						<option id="audio-message-from" value="select">Select a
+							sender</option>
+					</select>
+					<div id="audio-messages-list"></div>
+				</div>
+			</div>
 		</div>
 		<div class='select-device'>
 			<label for='audio-source'>Audio source: </label> <select
 				id='audio-source'></select>
 		</div>
 
-		<div id="location-div" class="location-pane">
-			<h2 id="location-title"></h2>
-			<ul id="location-info">
-				<!-- script will insert elements here -->
-			</ul>
-			<div id="annotation-container" display="table">
-				<!-- will be populated by user annotations -->
-			</div>
-			<div id="annotation-input-container">
-				<!-- input will be added -->
-			</div>
-			<p></p>
-			<div id="display-city-image"></div>
-			<div id="file-browse">
-				<input type="file" onchange="onFileSelected(event)">
-				<button id="save-ann-button">Save Annotation</button>
-				<button id="remove-img-button">Remove Preview Image</button>
-
-				<div id="preview-city-img"></div>
-			</div>
-
-		</div>
-		<div id = "show-messages-div">
-			<h3>
-				<label for="user-messages">Messages From:</label>
-			</h3>
-			<select id="messageFromOption" size="0"
-				style="display: inline-block;" onchange="selectedMessageSenderOption();">
-				<option id="messageFrom1" value = "">Select a sender</option>
-			</select>
-			<textarea id="showTextArea" cols = "40" rows = "5" style="overflow-y: scroll;" readonly></textarea>
-		</div>
 	</div>
 	<button id="show-path">Show Path</button>
 	<div id="notification-container" class="notification-container"></div>
