@@ -360,7 +360,7 @@ function selectedMessageSenderOption(){
 
 		el("showTextArea").innerHTML += "\n";
 	}
-	//updateNotifications();
+	updateNotifications();
 
 
 }
@@ -387,8 +387,8 @@ function appendAudioMessageOnSideBar(selectedName){
 	//currentUser.audioMessages.forEach(function(message){
 	for(var i = 0; i <currentUser.audioMessages.length; i++){
 		var message = currentUser.audioMessages[i];
-		console.log(message.to+"         "+selectedName);
 		if(message.from===selectedName ||message.to===selectedName) {
+
 			//removegroupElem("audio-messages-list");
 			var sender = message.from;
 			var receiver = message.to;
@@ -408,8 +408,12 @@ function appendAudioMessageOnSideBar(selectedName){
 			textDiv.className ="annotation-inner-container annotation-text-container";
 			rowDiv.className = "annotation-row";
 
-
-			info.innerHTML = sender+" "+time;
+			if(message.isNew && message.to === currentUser.name){
+				newAudioMessages.push(message);
+				info.innerHTML = "(New) "+ sender+" "+time;
+			}
+			else
+				info.innerHTML = sender+" "+time;
 			info.onclick = function(){
 				console.log("clicked to play");
 				console.log(message)
@@ -439,7 +443,7 @@ function appendAudioMessageOnSideBar(selectedName){
 			el("audio-messages-list").appendChild(rowDiv);
 		}
 	}
-	currentUser.setNewAudioMessages(newAudioMessages);
+	resetVisibility(el("audio-messages-list"), "visible");
 }
 //=====================================================
 //=========== functions ===============================

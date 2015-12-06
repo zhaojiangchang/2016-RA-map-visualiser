@@ -685,43 +685,45 @@ app.post("/deleteAudioMessage", function(req, res){
 
 });
 //set the "isOld" property of a message to true
-//app.post("/setAudioMessageIsOld", function(req, res){
-//	console.log("setting audio message isOld");
-//	var update = req.body;
-//	var mObject = update.mObject;
-//	var currentUserName = update.currentUser;
-//	var senderName = update.sender;
-//	var timeStamp = update.timeStamp;
-//	var messageDetial = update.messageDetial;
-//
-//	var path = USER_PATH;
-//	// ensure both dirs exist.
-//	path += currentUserName + "/";
-//	ensureDirExists(path);
-//	path += "Voice Message/";
-//	ensureDirExists(path);
-//
-//	// find the exploration with the right user and timeStamp, and change the isNew property
-//	var msgFiles = fs.readdirSync(path);
-//	var found;
-//
-//	msgFiles.forEach(function(filename, index){
-//		var filePath = path + filename;
-//		if (fs.lstatSync(filePath).isDirectory())
-//			return; // if the file is a directory
-//		var messages = JSON.parse(fs.readFileSync(filePath));
-//		for(var i = 0; i<messages.length; i++){
-//			if(messages[i].from==senderName && messages[i].timeStamp==timeStamp &&
-//					messages[i].message == messageDetial){
-//				messages[i].isNew = false;
-//				fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
-//				res.sendStatus(200);
-//				found = true;
-//				return;
-//			}
-//		}
-//
-//	});
-//	if (!found)
-//		res.sendStatus(404); // not found
-//});
+app.post("/setAudioMessageIsOld", function(req, res){
+	console.log("setting audio message isOld");
+	var update = req.body;
+	var mObject = update.mObject;
+	var currentUserName = update.currentUser;
+	var senderName = update.sender;
+	var timeStamp = update.timeStamp;
+	var messageDetial = update.messageDetial;
+
+	var path = USER_PATH;
+	// ensure both dirs exist.
+	path += currentUserName + "/";
+	ensureDirExists(path);
+	path += "Voice Message/";
+	ensureDirExists(path);
+	path += senderName +"/";
+	ensureDirExists(path);
+
+	// find the exploration with the right user and timeStamp, and change the isNew property
+	var msgFiles = fs.readdirSync(path);
+	var found = false;
+
+	msgFiles.forEach(function(filename, index){
+		var filePath = path + filename;
+		if (filename=== senderName+".json"){
+			var messages = JSON.parse(fs.readFileSync(filePath));
+			for(var i = 0; i<messages.length; i++){
+				if(messages[i].from==senderName && messages[i].timeStamp==timeStamp && messages[i].to == currentUserName
+						&& messages[i].message == messageDetial){
+					messages[i].isNew = false;
+					fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
+					res.sendStatus(200);
+					found = true;
+					return;
+				}
+			}
+		}
+
+	});
+	if (!found)
+		res.sendStatus(404); // not found
+});

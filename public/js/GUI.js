@@ -178,6 +178,9 @@ function updateNotifications(){
 
 	//set visibility to all notification buttons/labels hidden when log on.
 	resetVisibility(notificationContainer,"hidden");
+	el("audioMessageFromOption").value = "select";
+	resetVisibility(el("audio-messages-list"), "hidden");
+
 	hideNotificationButtons();
 	if (!userLoggedOn()){
 		return;
@@ -208,7 +211,7 @@ function updateNotifications(){
 			newAudioMessageCount++;
 	})
 
-
+	console.log(newExplCount+"   "+newMessageCount+"    "+newAudioMessageCount)
 	// show notification message
 	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
 		resetVisibility(notificationContainer,"visible");
@@ -216,25 +219,25 @@ function updateNotifications(){
 		notificationContainer.style.cursor = "pointer";
 	}
 //	if(newExplCount>0 && newMessageCount==0){
-//		resetVisibility(notificationContainer,"visible");
-//		$("#notification-container").html(newExplCount + " new expls.");
-//		notificationContainer.style.cursor = "pointer";
+//	resetVisibility(notificationContainer,"visible");
+//	$("#notification-container").html(newExplCount + " new expls.");
+//	notificationContainer.style.cursor = "pointer";
 //	}
 //	else if(newExplCount>0 && newMessageCount>0){
-//		resetVisibility(notificationContainer,"visible");
-//		$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
-//		notificationContainer.style.cursor = "pointer";
+//	resetVisibility(notificationContainer,"visible");
+//	$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
+//	notificationContainer.style.cursor = "pointer";
 //	}
 //	else if(newExplCount==0 && newMessageCount>0){
-//		resetVisibility(notificationContainer,"visible");
-//		$("#notification-container").html(newMessageCount + " new msgs.");
-//		notificationContainer.style.cursor = "pointer";
+//	resetVisibility(notificationContainer,"visible");
+//	$("#notification-container").html(newMessageCount + " new msgs.");
+//	notificationContainer.style.cursor = "pointer";
 //	}
-//	else{
-//		resetVisibility(notificationContainer,"visible");
-//		$("#notification-container").html(" No new notification.");
-//		notificationContainer.style.cursor = "not-allowed";
-//	}
+	else{
+		resetVisibility(notificationContainer,"visible");
+		$("#notification-container").html(" No new notification.");
+		notificationContainer.style.cursor = "not-allowed";
+	}
 	showListNotifications();
 }
 //function triggered when notification container clicked
@@ -302,8 +305,9 @@ function showListNotifications(){
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
 					//TODO: show message
-					setNewAudioMessageIsOld(message);
 					playAudioMessage(message);
+					setNewAudioMessageIsOld(message);
+
 				};
 				notificationSelector.appendChild(newOption);
 				hasNewNoti = true;
@@ -630,7 +634,7 @@ function setMessageIsOld(m){
 }
 
 function setNewAudioMessageIsOld(m){
-	currentUser.setAudioMessageIsOld(m);
+	console.log(m.isNew)
 	$.ajax({
 		type: 'POST',
 		url: "setAudioMessageIsOld",
@@ -642,11 +646,15 @@ function setNewAudioMessageIsOld(m){
 			messageDetial: m.message
 
 		}),
+		success:setMessageToOld,
 		contentType: "application/json"
 	});
+	function setMessageToOld(){
+		//currentUser.setAudioMessageIsOld(m);
+		checkAudioMessages();
+	}
 }
-
-var voiceMessageFromNameList = [];
+var audioMessageFromNameList = [];
 //check local server  - messages
 function checkAudioMessages(){
 	if(currentUser==null) return;
@@ -658,7 +666,6 @@ function checkAudioMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
-		console.log(messages)
 		if(messages.length ==0)return;
 		audioMessageFromNameList = [];
 		currentUser.setAudioMessages(messages);
@@ -672,42 +679,40 @@ function checkAudioMessages(){
 			}
 			var byteArray = new Uint8Array(byteNumbers);
 			message.audioData = new Blob([byteArray], {type: "audio/wav"});
-
+			if($.inArray(message.from,audioMessageFromNameList )==-1)
+				audioMessageFromNameList.push(message.from);
 
 
 		});
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			if(messages[i].isNew==true && messages[i].from!=currentUser.name){
+			console.log(messages)
+			if(messages[i].from!=currentUser.name && messages[i].isNew){
 				if(messages[i].from!=currentUser.name)
 					newAudioMessages.push(messages[i]);
-				if($.inArray(messages[i].from,audioMessageFromNameList )==-1)
-					audioMessageFromNameList.push(messages[i].from);
 
-				}
 			}
-		console.log(audioMessageFromNameList)
+		}
 
 		currentUser.newAudioMessages = newAudioMessages;
-		updateNotifications();
-
 		addAudioMessageDropDownNameList(audioMessageFromNameList);
+		updateNotifications();
 	}
 }
 function addAudioMessageDropDownNameList(audioMessageFromNameList){
 	while(el("audioMessageFromOption").firstChild){
 		el("audioMessageFromOption").removeChild(el("audioMessageFromOption").firstChild);
 	}
-		if(el("audio-message-from")==null){
-			var option = document.createElement('option');
-			option.setAttribute("id", "audio-message-from");
-			var name = "Select a sender";
-			option.innerHTML = name;
-			option.value = "select";
-			el("audioMessageFromOption").appendChild(option);
-		}
-		el("audio-message-div").style.display = "block";
-		if(audioMessageFromNameList.length!=0){
+	if(el("audio-message-from")==null){
+		var option = document.createElement('option');
+		option.setAttribute("id", "audio-message-from");
+		var name = "Select a sender";
+		option.innerHTML = name;
+		option.value = "select";
+		el("audioMessageFromOption").appendChild(option);
+	}
+	el("audio-message-div").style.display = "block";
+	if(audioMessageFromNameList.length!=0){
 		for(var j = 0; j<audioMessageFromNameList.length;j++){
 			var name = audioMessageFromNameList[j];
 

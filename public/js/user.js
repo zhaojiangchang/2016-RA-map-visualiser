@@ -47,11 +47,9 @@ function User(name, explorations){
 	}
 	this.setAudioMessageIsOld = function(message){
 		for (var i = 0; i<this.audioMessages.length; i++){
-			for (var j = 0; j<this.audioMessages[i].length; j++){
-				if(this.audioMessages[i][j]===message){
-					this.audioMessages[i][j].isNew = false;
+			if(this.audioMessages[i]===message){
+				this.audioMessages[i].isNew = false;
 
-				}
 			}
 		}
 		for (var a = 0; a<this.newAudioMessages.length; a++){
@@ -391,7 +389,7 @@ function resetShareDiv(){
 	el("location-div").style.display = "none";
 	while(el("messageFromOption").firstChild){//remove old labels
 		//if(el("messageFromOption").value!='select')
-			el("messageFromOption").removeChild(el("messageFromOption").firstChild);
+		el("messageFromOption").removeChild(el("messageFromOption").firstChild);
 	}
 	while(el("audio-messages-list").firstChild){
 		el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
@@ -439,20 +437,20 @@ function deleteAudioMessage(message){
 		data: JSON.stringify({
 			message: message,
 			currentUser: currentUser.name }),
-		contentType: "application/json",
-		success: deletedVoiceMessageFromCurrentUser
+			contentType: "application/json",
+			success: deletedVoiceMessageFromCurrentUser
 	});
 
 	function deletedVoiceMessageFromCurrentUser(response){
-			currentUser.removeAudioMessageByMessage(message);
-			while(el("audio-messages-list").firstChild){
-				el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
-			}
-			if(currentUser.audioMessages.length>0)
-				appendAudioMessageOnSideBar();
-			else{
+		currentUser.removeAudioMessageByMessage(message);
+		while(el("audio-messages-list").firstChild){
+			el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
+		}
+		if(currentUser.audioMessages.length>0)
+			appendAudioMessageOnSideBar();
+		else{
 
-				addAudioMessageDropDownNameList();
-			}
+			addAudioMessageDropDownNameList();
+		}
 	}
 }
