@@ -43,8 +43,7 @@ app.post("/checkAuthentication", function(req, res){
 	var authenticated = false;
 
 	users.forEach(function(user){
-		if (user.userName === userName
-				&& user.password === pw){
+		if (user.userName === userName && user.password === pw){
 			authenticated = true;
 			console.log("logged in with un: " + user.userName + "\npw: " + user.password);
 		}
@@ -154,7 +153,7 @@ app.post("/deleteExploration", function(req, res){
 		var exploration = JSON.parse(fs.readFileSync(filePath));
 
 		// found match
-		if (timeStamp.localeCompare(exploration.timeStamp)==0){
+		if (timeStamp.localeCompare(exploration.timeStamp)===0){
 			// delete exploration file.
 			fs.unlinkSync(filePath);
 			// delete audio file if there is one
@@ -254,16 +253,16 @@ app.post("/checkUsersFile", function(req, res){
 	console.log("checking matching user name");
 	var fields = req.body;
 	var userName = fields.userName;
-	var json = fs.readFileSync(USER_PATH + USER_INFO_FILE_NAME);
-	eval("var info = "+json);
-	var send = 1;
-	info.forEach(function(user){
+	var json = JSON.parse(fs.readFileSync(USER_PATH + USER_INFO_FILE_NAME));
+	var send = false;
+	json.forEach(function(user){
 		if (user.userName === userName){
-			send = 0;
+			send = true;
 			res.send(JSON.stringify(true));
+
 		}
 	});
-	if(send===1){
+	if(!send){
 		res.send(JSON.stringify(false));
 	}
 });
@@ -273,15 +272,25 @@ app.post("/createAccount", function(req, res){
 	var fields = req.body;
 	var userName = fields.userName;
 	var password = fields.password;
+	var saved = false;
 	console.log("adding new user name and password to logonInfo file: "+ userName +"  "+ password);
-	var json = fs.readFileSync(USER_PATH + USER_INFO_FILE_NAME);
-	eval("var info = "+json);
+	var json = JSON.parse(fs.readFileSync(USER_PATH + USER_INFO_FILE_NAME));
+	//eval("var info = "+json);
 	var newUser = {"userName":userName, "password":password};
-	info.push(newUser);
-	fs.writeFileSync(USER_PATH + USER_INFO_FILE_NAME, JSON.stringify(info, null, 4), function(err) {
-		if (err){ console.log("errooor: "+err); }
-	});
-	res.sendStatus(200); // success code
+	json.push(newUser);
+	fs.writeFileSync(USER_PATH + USER_INFO_FILE_NAME, JSON.stringify(json, null, 4));
+	if(json[json.length-1]===newUser){
+		saved = true;
+		console.log("saved");
+		res.sendStatus(200); // success code
+		return;
+	}
+	else{
+		console.log("not saved");
+		res.sendStatus(404);
+	}
+
+
 });
 
 //saves a new annotation to file
@@ -298,18 +307,17 @@ app.post('/postAnnotation', function(req, res){
 	path += location.properties.NAME + "/";
 	ensureDirExists(path);
 
-	var fileName = path + userName + " " + timeStamp.getHours() + ":"
-	+ timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
+	var fileName = path + userName + " " + timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
 	fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
 		if (err){ console.log("errooor: "+err); }
 	});
-	console.log(annotation.imageData)
+	console.log(annotation.imageData);
 	res.sendStatus(200); // success code
 });
 
 //retrieves and sends all annotations for a specified location
 app.get("/getAnnotations", function(req, res){
-	console.log("get")
+	console.log("get");
 
 	var locationName = req._parsedUrl.query; // data is appended to the URL
 	console.log("retrieving annotations for: " + locationName);
@@ -349,9 +357,7 @@ app.post("/deleteAnnotation", function(req, res){
 		var inputAnnotation = JSON.parse(fs.readFileSync(path + filename));
 
 		// if annotations are equal, delete the file
-		if (annotation.userName === inputAnnotation.userName
-				&& annotation.timeStamp === inputAnnotation.timeStamp
-				&& annotation.text === inputAnnotation.text){
+		if (annotation.userName === inputAnnotation.userName && annotation.timeStamp === inputAnnotation.timeStamp && annotation.text === inputAnnotation.text){
 			fs.unlinkSync(path + filename);
 			res.sendStatus(200); // success code
 			return;
@@ -417,8 +423,8 @@ app.post('/postMessage', function(req, res){
 			findFile = true;
 			var messages= [];
 			var inputMessage = JSON.parse(fs.readFileSync(path + fileName));
-			for(var i =0; i<inputMessage.length; i++){
-				messages.push(inputMessage[i]);
+			for(var j =0; j<inputMessage.length; j++){
+				messages.push(inputMessage[j]);
 			}
 			messages.push(Message);
 
@@ -563,27 +569,27 @@ app.post('/postVoiceMessage', function(req, res){
 
 
 
-	var fileName = from  + ".json";
+	fileName = from  + ".json";
 	var fileToPath = toPath + fileName;
 
 	var audioMessageReceiverFiles = fs.readdirSync(toPath);
 	var findFile2 = false;
-	for (var i = 0; i < audioMessageReceiverFiles.length; i++){
-		var fname = audioMessageReceiverFiles[i];
-		if(fileName===fname){
+	for (var k = 0; k < audioMessageReceiverFiles.length; k++){
+		var name = audioMessageReceiverFiles[k];
+		if(fileName===name){
 			findFile2 = true;
 
 			var inputMessage2 = JSON.parse(fs.readFileSync(fileToPath));
-			voiceMessage.audioData = receiverAudioFolder
-			inputMessage2.push(voiceMessage)
+			voiceMessage.audioData = receiverAudioFolder;
+			inputMessage2.push(voiceMessage);
 			fs.writeFileSync(fileToPath, JSON.stringify(inputMessage2, null, 4));
 		}
 	}
 	if(!findFile2){
-		var m = [];
+		var msg = [];
 		voiceMessage.audioData = receiverAudioFolder;
-		m.push(voiceMessage);
-		fs.writeFileSync(fileToPath, JSON.stringify(m, null, 4));
+		msg.push(voiceMessage);
+		fs.writeFileSync(fileToPath, JSON.stringify(msg, null, 4));
 
 	}
 
@@ -614,19 +620,19 @@ app.get("/getAudioMessages", function(req, res){
 			if (fs.lstatSync(path+filename+"/"+msgForSender[i]).isDirectory())
 				continue; // if the file is a directory
 			var msg = JSON.parse(fs.readFileSync(path+filename+"/"+msgForSender[i]));
-			if(msg.length==0){
+			if(msg.length===0){
 				res.send(null);
 				return;
 			}
-			for(var i = 0; i<msg.length; i++){
-				if (msg[i].audioData){
-					var audioPath = msg[i].audioData;
+			for(var j = 0; j<msg.length; j++){
+				if (msg[j].audioData){
+					var audioPath = msg[j].audioData;
 					var fd = fs.readFileSync(audioPath, "binary");
 					var ascii = btoa(fd);
-					msg[i].audioData = ascii;
+					msg[j].audioData = ascii;
 				}
 
-				messages.push(msg[i]);
+				messages.push(msg[j]);
 			}
 		}
 
@@ -647,7 +653,7 @@ app.post("/deleteAudioMessage", function(req, res){
 	var fileToDel = function(){
 		if(userName==message.from) return message.to;
 		else return message.from;
-	}
+	};
 
 
 	var path = USER_PATH;
@@ -668,13 +674,13 @@ app.post("/deleteAudioMessage", function(req, res){
 			var filePath = path + filename;
 			var audioMessages = JSON.parse(fs.readFileSync(filePath));
 			// found match
-			for(var i = 0; i<audioMessages.length; i++){
-				if (timeStamp.localeCompare(audioMessages[i].timeStamp)==0){
+			for(var j = 0; j<audioMessages.length; j++){
+				if (timeStamp.localeCompare(audioMessages[j].timeStamp)===0){
 					// delete audio message file.
-					if (audioMessages[i].audioData!=null){
-						fs.unlinkSync(audioMessages[i].audioData);
+					if (audioMessages[j].audioData!==null){
+						fs.unlinkSync(audioMessages[j].audioData);
 					}
-					audioMessages.splice(i,1);
+					audioMessages.splice(j,1);
 					fs.writeFileSync(filePath, JSON.stringify(audioMessages, null, 4));
 					res.sendStatus(200);
 					return;
@@ -712,8 +718,7 @@ app.post("/setAudioMessageIsOld", function(req, res){
 		if (filename=== senderName+".json"){
 			var messages = JSON.parse(fs.readFileSync(filePath));
 			for(var i = 0; i<messages.length; i++){
-				if(messages[i].from==senderName && messages[i].timeStamp==timeStamp && messages[i].to == currentUserName
-						&& messages[i].message == messageDetial){
+				if(messages[i].from===senderName && messages[i].timeStamp===timeStamp && messages[i].to == currentUserName && messages[i].message === messageDetial){
 					messages[i].isNew = false;
 					fs.writeFileSync(filePath, JSON.stringify(messages, null, 4));
 					res.sendStatus(200);

@@ -1,3 +1,6 @@
+/* jshint undef: true, unused: true */
+/* globals MY_GLOBAL */
+
 var currentUser = null; // the user who is currently logged in
 
 //user object is created with their name and explorations
@@ -24,10 +27,10 @@ function User(name, explorations){
 	};
 	this.getMessages = function(){
 		return this.messages;
-	}
+	};
 	this.getAudioMessages = function(){
 		return this.audioMessage;
-	}
+	};
 	this.setTextMessageIsOld = function(message){
 		for (var i = 0; i<this.messages.length; i++){
 			for (var j = 0; j<this.messages[i].length; j++){
@@ -44,7 +47,7 @@ function User(name, explorations){
 
 		}
 
-	}
+	};
 	this.setAudioMessageIsOld = function(message){
 		for (var i = 0; i<this.audioMessages.length; i++){
 			if(this.audioMessages[i]===message){
@@ -59,26 +62,23 @@ function User(name, explorations){
 
 		}
 
-	}
+	};
 	this.haveMessages = function(){
-		if(this.messages.length == 0) return false;
-		else return true;
-	}
+		return this.messages.length === 0;
+	};
 	this.haveAudioMessages = function(){
-		if(this.audioMessages.length == 0) return false;
-		else return true;
-	}
+		return this.audioMessages.length > 0;
+	};
 	this.haveNewMessages = function(){
-		if(this.newMessages.length==0) return false;
-		else return true;
-	}
+		return this.newMessages.length > 0;
+	};
 	this.haveNewAudioMessages = function(){
-		if(this.newAudioMessages.length==0) return false;
-		else return true;
-	}
+		return this.newAudioMessages.length > 0;
+
+	};
 	this.setNewMessages = function(newMessages){
 		this.newMessages = newMessages;
-	}
+	};
 	this.getMessagesBySender = function(name){
 		var messagesForSelectedSender = [];
 		for (var i = 0; i<this.messages.length; i++){
@@ -89,7 +89,7 @@ function User(name, explorations){
 			}
 		}
 		return messagesForSelectedSender;
-	}
+	};
 	this.getAudioMessagesBySender = function(name){
 		var audioMessagesForSelectedSender = [];
 		for (var i = 0; i<this.audioMessages.length; i++){
@@ -100,7 +100,7 @@ function User(name, explorations){
 			}
 		}
 		return audioMessagesForSelectedSender;
-	}
+	};
 
 	this.removeAudioMessageByMessage = function(message){
 		var index = this.audioMessages.indexOf(message);
@@ -112,7 +112,7 @@ function User(name, explorations){
 			this.newAudioMessages.splice(index,1);
 		}
 
-	}
+	};
 	// add an exploration
 	this.addExploration = function (expl){
 		this.explorations.push(expl);
@@ -120,11 +120,11 @@ function User(name, explorations){
 
 	this.setExplorations = function(explorations){
 		this.explorations = explorations;
-	}
+	};
 
 	this.getCurrentExploration = function(){
 		return this.currentExpl;
-	}
+	};
 	this.setCurrentExploration = function(expl){
 		this.currentExpl = expl;
 	};
@@ -140,7 +140,7 @@ function User(name, explorations){
 	this.getExploration = function(timeStamp){
 		var userExpl = null;
 		this.explorations.forEach(function(expl){
-			if (expl.timeStamp.localeCompare(timeStamp)==0){
+			if (expl.timeStamp.localeCompare(timeStamp)===0){
 				userExpl = expl;
 			}
 		});
@@ -149,7 +149,7 @@ function User(name, explorations){
 	this.getSharedExploration = function(){
 		var sharedExpl = [];
 		this.explorations.forEach(function(expl){
-			if(expl.userName.localeCompare(name)!=0){
+			if(expl.userName.localeCompare(name)!==0){
 				sharedExpl.push(expl);
 			}
 		});
@@ -162,7 +162,7 @@ function User(name, explorations){
 
 	this.getExplorations = function(){
 		return this.explorations;
-	}
+	};
 
 	// gets all the explorations which are considered new
 	this.getNewExplorations = function(){
@@ -173,7 +173,7 @@ function User(name, explorations){
 			}
 		});
 		return newExplorations;
-	}
+	};
 
 	// removes the first exploration from the user
 	this.removeExploration = function(exploration){
@@ -182,11 +182,11 @@ function User(name, explorations){
 				this.explorations.splice(i, 1);
 			return true;
 		}
-	}
+	};
 	// has the user got any explorations?
 	this.hasExplorations = function(){
 		return this.explorations.length > 0;
-	}
+	};
 
 }
 
@@ -220,7 +220,7 @@ function login(name){
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
 	el("share-file").style.display = "block";
-	if(selectedLocation==null){
+	if(selectedLocation===null){
 		el("file-browse").style.display = "none";
 	}
 
@@ -253,9 +253,11 @@ function createAccount(name, pw){
 		url: "/createAccount",
 		data: JSON.stringify({userName: name, password: pw}),
 		contentType: "application/json",
-		success: window.document.write("new account created!"), //callback when ajax request finishes
-	});
-	window.close(1000);
+		success: newAccountCreated});
+
+	function newAccountCreated(){
+		window.document.write("new account created!"); //callback when ajax request finishes
+	}
 }
 
 //attempts to create an account. Alerts user if name and pw are unacceptable
@@ -297,7 +299,7 @@ function loadAllExplorations(userName, cb){
 		var allExplorationsData = JSON.parse(explorations);
 		var explorationCount = allExplorationsData.length;
 
-		if (explorationCount == 0){
+		if (explorationCount === 0){
 			$("#noOfFilesLoaded").html("no notification loaded");
 		}
 		else {
@@ -334,7 +336,7 @@ function loadAllExplorations(userName, cb){
 //shares the exploration with the user
 function shareExplFile(exploration, userName){
 	if(userName==currentUser.name) return;
-	if(selectedExploration==null) return;
+	if(selectedExploration===null) return;
 	$.ajax({
 		type: 'POST',
 		url: "/shareExploration",
@@ -345,11 +347,15 @@ function shareExplFile(exploration, userName){
 		}),
 		success: function(response){
 			if(!JSON.parse(response)){
-				el("expl-sent-message").innerHTML = "user does not exist!";
+				el("message-send-identify").innerHTML = "user does not exist!";
+				setTimeout(function(){
+					el("message-send-identify").style.display = "none"; }, 5000);
 			}
 			else {
 				var userLabelValue = el("shared-with").value;
-				el("expl-sent-message").innerHTML = "Sent to: "+userLabelValue+ "     ExplName:"+ selectedExploration.name;
+				el("message-send-identify").innerHTML = "Sent to: "+userLabelValue+ "     ExplName:"+ selectedExploration.name;
+				setTimeout(function(){
+					el("message-send-identify").style.display = "none";}, 5000);
 			}
 
 		}, //callback when ajax request finishes
@@ -361,14 +367,14 @@ function shareExplFile(exploration, userName){
 //share text message to userLabelValue
 function shareTextMessage(userLabelValue){
 	testMessageToSend = el("text-message-input").value;
-	if(testMessageToSend==null) return;
+	if(testMessageToSend===null) return;
 	var Message = {
 			timeStamp: new Date(),
 			from: currentUser.name,
 			to: userLabelValue,
 			message: testMessageToSend,
 			isNew: true
-	}
+	};
 	$.ajax({
 		type: 'POST',
 		url: "/postMessage",
@@ -397,7 +403,7 @@ function resetShareDiv(){
 }
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
-	if(voiceMessageData==null)return;
+	if(voiceMessageData===null)return;
 	//converted audio
 	var newFormetVoice = null;
 	var VoiceMessage = null;
@@ -413,8 +419,7 @@ function shareVoiceMessage(userLabelValue){
 				to: userLabelValue,
 				audioData: newFormetVoice,
 				isNew: true
-		}
-		console.log(VoiceMessage.from)
+		};
 		$.ajax({
 			type: 'POST',
 			url: "/postVoiceMessage",
@@ -422,8 +427,11 @@ function shareVoiceMessage(userLabelValue){
 			success: function(response){
 				el("record-voice").style.display = "none";
 				el("shared-with").value = "";
-			},
-			contentType: "application/json"
+				el("message-send-identify").style.display = "block";
+				el("message-send-identify").innerHTML = "Voice message send to "+ userLabelValue;
+				setTimeout(function(){
+					el("message-send-identify").style.display = "none";}, 5000);},
+					contentType: "application/json"
 		});
 	}
 

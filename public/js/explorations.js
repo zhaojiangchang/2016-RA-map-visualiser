@@ -17,20 +17,17 @@
 var explRecording = false,
 	playing = false,
 	paused = false,
-	inserting = false;
-
+	inserting = false,
 // id for timer which triggers next event in playback. Is used to stop playback.
-var	playTimerID = -1;
-
+ 	playTimerID = -1,
 // HTML5 audio element for any audio .
-var audioElem = el("exploration-audio");
-
+    audioElem = el("exploration-audio"),
 // the bar in the lower region of the screen
-var progressBar = new ProgressBar;
+    progressBar = new ProgressBar(),
 // the high-level representation of the exploration, shown as a path
-var pathView = new PathView;
+    pathView = new PathView(),
 // currently selected exploration
-var selectedExploration = null;
+    selectedExploration = null;
 
 // an exploration event.
 // can be of type: start, end, travel, movement
@@ -42,7 +39,7 @@ function Event(type, body, time){
 
 // an exploration of the map
 function Exploration() {
-	this.name;
+	this.name = null;
 	this.userName = (currentUser ? currentUser.name : null); // user who recorded this
 	this.events = []; // events that took place over the course of the exploration
 	this.timeStamp = null;//time saving at save button pressed
@@ -56,7 +53,7 @@ function Exploration() {
 	};
 	this.addEvent = function (type, body){
 		var currentTime = new Date().getTime();
-		if (firstEventTime == null){
+		if (firstEventTime === null){
 			firstEventTime = currentTime;
 		}
 		var timeFromFirstEvent = currentTime - firstEventTime;
@@ -96,7 +93,7 @@ function Exploration() {
 	};
 
 	this.isEmpty = function(){
-		return this.events.length == 0;
+		return this.events.length === 0;
 	};
 
 	this.reset = function(){
@@ -114,12 +111,11 @@ function Exploration() {
 
 	// to establish exploration equality
 	this.equals = function(exploration){
-		if (exploration == null) return false;
-		return this.userName === exploration.userName
-			&& this.timeStamp === exploration.timeStamp;
+		if (exploration === null) return false;
+		return this.userName === exploration.userName && this.timeStamp === exploration.timeStamp;
 	};
 	this.getDuration = function(){
-		if(this.events.length == 0)
+		if(this.events.length === 0)
 			return 0;
 		return  this.events[this.events.length-1].time;//return millisecond
 
@@ -149,8 +145,8 @@ function Exploration() {
 			newEvents[i].time += time;
 		}
 		// increment time of all events after the insert
-		for (var i = afterIndex; i < selectedExploration.numEvents(); i++){
-			var event = selectedExploration.getEvent(i);
+		for (var j = afterIndex; j < selectedExploration.numEvents(); j++){
+			var event = selectedExploration.getEvent(j);
 			event.time += insertDuration;
 		}
 		// insert new events into events array
@@ -294,7 +290,7 @@ function launchEvents(exploration, i, elapsedTime){
 //plays an exploration from the start
 //PRE: no other exploration is being played
 function startPlayback(exploration){
-	if (!exploration || exploration.numEvents() == 0) {
+	if (!exploration || exploration.numEvents() === 0) {
 		alert("nothing to play");
 		return; // if no events, do nothing.
 	}
@@ -482,7 +478,7 @@ function insertIntoSelectedExploration(insertee){
 
 // loads audio data into the audio element
 function setupAudio(exploration){
-	if(exploration.getAudio()==null) return;
+	if(exploration.getAudio()===null) return;
 	var audioBlob = exploration.getAudio();
 	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
 }
@@ -585,12 +581,11 @@ function saveExploration(exploration) {
 		var reader = new FileReader();
 		reader.addEventListener("loadend", audioConverted);
 		reader.readAsBinaryString(exploration.getAudio());
-
-		function audioConverted(){
-			var audioString = reader.result;
-			exploration.setAudio(audioString);
-			sendExploration(exploration);
-		}
+	}
+	function audioConverted(){
+		var audioString = reader.result;
+		exploration.setAudio(audioString);
+		sendExploration(exploration);
 	}
 
 	function sendExploration(exploration){
@@ -626,7 +621,7 @@ function enableAction(names){
 		button.disabled = false;
 		button.style.cursor = "pointer";
 		// change the colour if it's not the record button
-		if (!name.localeCompare("record") == 0)
+		if (name.localeCompare("record") !== 0)
 			changeButtonColour(name, true);
 	});
 }
@@ -681,9 +676,7 @@ function updateSelectedExploration(){
 
 // ensures that an exploration is selected by selecting the first in the list
 function ensureExplorationSelected(){
-	if (!selectedExploration
-		&& userLoggedOn()
-		&& currentUser.explorations.length > 0){
+	if (!selectedExploration && userLoggedOn() && currentUser.explorations.length > 0){
 
 		var explTimeStamp = explChooser.options[0].id;
 		var userExpl = currentUser.getExploration(explTimeStamp);

@@ -43,7 +43,7 @@ var FROM_TEXT_FILE = [];
 var FAST = 0.4;
 var SLOW = 2.4;
 //The path to the easing function text file
-var PATH_TO_FILE = "data/functions/easingFunctions20.txt"
+var PATH_TO_FILE = "data/functions/easingFunctions20.txt";
 
 // data to be bound to svg elements
 var cities, distances, direction, paths;
@@ -145,7 +145,7 @@ function submitAnnotation(annotationText){
 		fileName: null,
 		imageData: null,
 	};
-	if(selectedImgFile!=null){
+	if(selectedImgFile!==null){
 		annotation.imgFile = selectedImgFile;
 		annotation.fileName = selectedImgFile.title;
 		annotation.imageData = selectedImgFile.src;
@@ -178,7 +178,7 @@ function deleteAnnotation(annotation){
 		data: JSON.stringify(annotation),
 		contentType: "application/json",
 		complete: updateLocationInfo
-	})
+	});
 }
 
 //smoothly transitions from current location to a city
@@ -205,14 +205,14 @@ function transitionTo(center, scale, duration, elapsedTime){
 	var sb = getRealBounds(),
 		start = [sb[0][0], sb[0][1], height / d3.transform(map.attr("transform")).scale[0]];
 
-	var center = [width / 2, height / 2],
-		interpolator = d3.interpolateZoom(start, end);
+	center = [width / 2, height / 2];
+	var interpolator = d3.interpolateZoom(start, end);
 
-	var duration = duration ? duration : interpolator.duration * ANIMATION_DELAY,
+	var new_duration = duration ? duration : interpolator.duration * ANIMATION_DELAY,
 		ease = elapsedTime ? resumed_ease(EASE_FUNCTION, elapsedTime) : EASE_FUNCTION;
 
 	map.transition()
-	.duration(duration)
+	.duration(new_duration)
 	.ease(ease)
 	.attrTween("transform", function() {
 		return function(t) { return transformAt(interpolator(t)); };

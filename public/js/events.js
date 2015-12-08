@@ -153,10 +153,10 @@ removeImgButton.addEventListener('click', function(){
 
 saveAnnButton.addEventListener('click', function(){
 	var annInput = el('annInput').value;
-	if(annInput == "")	return;
+	if(annInput === "")	return;
 	submitAnnotation(annInput);
 	selectedImgFile = null;
-})
+});
 
 //==========================================
 //=========== inserting expl ===============
@@ -233,21 +233,26 @@ function onFileSelected(event) {
 //userLabelValue: receiver
 //if userLabelValue not on the userList on the server will not able to send.
 el("submit-shared-file").addEventListener('click',function(){
-	if(el("shared-with").value=='') return;
+	if(el("shared-with").value==='') return;
 	var userLabelValue = el("shared-with").value;
 	var sendOptionValue = el("sendOption").value;
-	if(sendOptionValue == null)return;
+	if(sendOptionValue === null)return;
 	switch(sendOptionValue){
 	case "exploration":
 		if(!selectedExploration)return;
 		shareExplFile(selectedExploration, userLabelValue);
+		setTimeout(function(){
+			el("selectedExplName").style.display = "none";}, 5000);
 		break;
 	case "text":
-		if(el("text-message-input").value == '') return;
+		if(el("text-message-input").value === '') return;
 		shareTextMessage(userLabelValue);
+		el("message-send-identify").innerHTML = "Text message sent to: "+userLabelValue;
+		setTimeout(function(){
+			el("message-send-identify").style.display = "none";}, 5000);
 		break;
 	case "voice":
-		if(el("record-voice").value=="Stop Recording" || voiceMessageData == null) return;
+		if(el("record-voice").value==="Stop Recording" || voiceMessageData === null) return;
 		else shareVoiceMessage(userLabelValue);
 		break;
 
@@ -263,12 +268,12 @@ el("submit-shared-file").addEventListener('click',function(){
 
 //on click on select options to send to other users
 function selectedSendInfoOption() {
-	if(el("shared-with").value==''){
+	if(el("shared-with").value===''){
 		el("sendOption").value = "select";
 		return;
 	}
 	removegroupElem("selectedExplName");
-	el("expl-sent-message").innerHTML = '';
+	el("message-send-identify").innerHTML = '';
 	el("text-message-input").value = '';
 	el("text-message-input-div").style.display = "none";
 	el("record-voice").style.display = "none";
@@ -288,7 +293,7 @@ function selectedSendInfoOption() {
 		break;
 	case "voice":
 		if(explRecording)
-			window.alert('Can Not Record Exploration and Voice Message At Same Time!')
+			window.alert('Can Not Record Exploration and Voice Message At Same Time!');
 			else
 				el("record-voice").style.display = "block";
 		break;
@@ -317,8 +322,8 @@ el("record-voice").onclick = function(){
 
 function updateRecordVoiceButton(){
 	// if user is currently logged on, disable all userImage button
-	if (el("record-voice").value=="Start Recording"){
-		el("record-voice").value="Stop Recording"
+	if (el("record-voice").value==="Start Recording"){
+		el("record-voice").value="Stop Recording";
 	}
 	else
 		el("record-voice").value = "Start Recording";
@@ -416,20 +421,20 @@ function appendAudioMessageOnSideBar(selectedName){
 				info.innerHTML = sender+" "+time;
 			info.onclick = function(){
 				console.log("clicked to play");
-				console.log(message)
+				console.log(message);
 				playAudioMessage(message);
 
-			}
+			};
 
 
 			// display delete button if user owns the annotation
 			// TODO: more reliable equality check
-			if (currentUser != null){
+			if (currentUser !== null){
 				var deleteButton = document.createElement("input");
 				deleteButton.type = "image";
 				deleteButton.src = IMAGE_PATH + "delete.png";
 				deleteButton.id = "delete-button";
-				deleteButton.onclick = function () { deleteAudioMessage(message); }
+				deleteButton.onclick = function () { deleteAudioMessage(message); };
 				controlsDiv.appendChild(deleteButton);
 			}
 

@@ -2,25 +2,25 @@
 
 Copyright Â© 2013 Matt Diamond
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
-documentation files (the "Software"), to deal in the Software without restriction, including without limitation 
-the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
 to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of 
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of
 the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
-THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
 (function(window){
- 
+
   var WORKER_PATH = 'js/audio/recorder/recorderWorker.js';
-  var foo = function(){}
+  var foo = function(){};
   var bar = 5;
 
   var Recorder = function(source, cfg){
@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
     } else {
        this.node = this.context.createScriptProcessor(bufferLen, 2, 2);
     }
-   
+
     var worker = new Worker(config.workerPath || WORKER_PATH);
     worker.postMessage({
       command: 'init',
@@ -52,7 +52,7 @@ DEALINGS IN THE SOFTWARE.
           e.inputBuffer.getChannelData(1)
         ]
       });
-    }
+    };
 
     // transfers all properties from cfg to config
     this.configure = function(cfg){
@@ -61,24 +61,24 @@ DEALINGS IN THE SOFTWARE.
           config[prop] = cfg[prop];
         }
       }
-    }
+    };
 
     this.record = function(){
       recording = true;
-    }
+    };
 
     this.stop = function(){
       recording = false;
-    }
+    };
 
     this.clear = function(){
       worker.postMessage({ command: 'clear' });
-    }
+    };
 
     this.getBuffers = function(cb) {
       currCallback = cb || config.callback;
-      worker.postMessage({ command: 'getBuffers' })
-    }
+      worker.postMessage({ command: 'getBuffers' });
+    };
 
     this.exportWAV = function(cb, type){
       currCallback = cb || config.callback;
@@ -88,7 +88,7 @@ DEALINGS IN THE SOFTWARE.
         command: 'exportWAV',
         type: type
       });
-    }
+    };
 
     this.exportMonoWAV = function(cb, type){
       currCallback = cb || config.callback;
@@ -98,12 +98,12 @@ DEALINGS IN THE SOFTWARE.
         command: 'exportMonoWAV',
         type: type
       });
-    }
+    };
 
     worker.onmessage = function(e){
       var blob = e.data;
       currCallback(blob);
-    }
+    };
 
     source.connect(this.node);
     this.node.connect(this.context.destination);   // if the script node is not connected to an output the "onaudioprocess" event is not triggered in chrome.
@@ -114,7 +114,7 @@ DEALINGS IN THE SOFTWARE.
     var link = document.getElementById("save-audio");
     link.href = url;
     link.download = filename || 'output.wav';
-  }
+  };
 
   window.Recorder = Recorder;
 

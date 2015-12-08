@@ -25,8 +25,8 @@ notificationContainer = el("notification-container"),
 removeNotification = el("remove-notification"),
 quickplayNotification = el("quickplay-notification"),
 notificationSelector = el("notification-selector"),
-notificationElements = document.getElementsByClassName("notification-elements")
-showPathButton = el("show-path");
+notificationElements = document.getElementsByClassName("notification-elements"),
+showPathButton = el("show-path"),
 insertButton = $("#insert-button"),
 stopInsertButton = $("#stop-insert-button"),
 explorationTitle = $("#exploration-title"),
@@ -35,8 +35,8 @@ durationText = $("#duration-text"),
 hasAudio = $("#has-audio"),
 aboveBarDiv = $("#above-bar"),
 belowBarDiv = $("#below-bar"),
-palyControlButton = el("play-control");
-saveAnnButton = el("save-ann-button");
+palyControlButton = el("play-control"),
+saveAnnButton = el("save-ann-button"),
 removeImgButton  = el("remove-img-button");
 
 
@@ -209,9 +209,7 @@ function updateNotifications(){
 	newAudioMessages.forEach(function(message){
 		if(message.isNew)
 			newAudioMessageCount++;
-	})
-
-	console.log(newExplCount+"   "+newMessageCount+"    "+newAudioMessageCount)
+	});
 	// show notification message
 	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
 		resetVisibility(notificationContainer,"visible");
@@ -369,7 +367,7 @@ function toggleVisiblePath(){
 //init shared element value
 function updateShareExplElements(){
 	el("shared-with").value = "";
-	el("expl-sent-message").innerHTML = "";
+	el("message-send-identify").innerHTML = "";
 }
 
 //=====================================================
@@ -428,13 +426,17 @@ function displayLocationInfo(city){
 	//remove and add new annotation input
 	var annotationInputCont = el("annotation-input-container");
 	annotationInputCont.innerHTML = null;
-	if (currentUser != null)
+	if (currentUser !== null){
 		makeAnnotationInput(annotationInputCont);
+	}
 
 	getAnnotationFromLocalServer(city);
 }
 
 function getAnnotationFromLocalServer(city){
+	if(city===undefined){
+		return;
+	}
 	// get annotations for this location
 	$.ajax({
 		type: 'GET',
@@ -453,7 +455,7 @@ function getAnnotationFromLocalServer(city){
 		el("file-browse").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
 		var container = document.createElement("div");
-		container.className["annotation-container-2"];
+		container.className = "annotation-container-2";
 
 		annotations.forEach(function(annotation){
 
@@ -483,7 +485,7 @@ function getAnnotationFromLocalServer(city){
 			rowDiv.className = "annotation-row";
 			imgDiv.className = "annotation-image";
 
-			if(annotation.imageData!=null){
+			if(annotation.imageData!==null){
 				var image = new Image();
 				image.src = annotation.imageData;
 				image.width = 50;
@@ -498,19 +500,19 @@ function getAnnotationFromLocalServer(city){
 					img.height = 300;
 					el("preview-city-img").appendChild(img);
 
-				}
+				};
 			}
 			content.innerHTML = annotation.text;
 			info.innerHTML = annInfo;
 
 			// display delete button if user owns the annotation
 			// TODO: more reliable equality check
-			if (currentUser != null && currentUser.name === userName){
+			if (currentUser !== null && currentUser.name === userName){
 				var deleteButton = document.createElement("input");
 				deleteButton.type = "image";
 				deleteButton.src = IMAGE_PATH + "delete.png";
 				deleteButton.id = "delete-button";
-				deleteButton.onclick = function () { deleteAnnotation(annotation); }
+				deleteButton.onclick = function () { deleteAnnotation(annotation); };
 				controlsDiv.appendChild(deleteButton);
 			}
 
@@ -543,7 +545,7 @@ function makeAnnotationInput(container){
 			submitAnnotation(annInput.value);
 			selectedImgFile = null;
 		}
-	}
+	};
 	container.appendChild(annInput);
 	annInput.focus();
 }
@@ -553,7 +555,7 @@ function makeAnnotationInput(container){
 var messageFromNameList = [];
 //check local server  - messages
 function checkTextMessages(){
-	if(currentUser==null) return;
+	if(currentUser===null) return;
 	$.ajax({
 		type: 'GET',
 		url: "/getMessages",
@@ -568,7 +570,7 @@ function checkTextMessages(){
 		for (var i = 0; i < messages.length; i++){
 			messageFromNameList[i] = messages[i][0].from;
 			for(var j = 0; j< messages[i].length; j++){
-				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
+				if(messages[i][j].isNew===true && messages[i][j].from!==currentUser.name){
 					newMessages.push(messages[i][j]);
 				}
 
@@ -577,29 +579,26 @@ function checkTextMessages(){
 		currentUser.newMessages = newMessages;
 		updateNotifications();
 
-		if(messageFromNameList.length!=0){
+		if(messageFromNameList.length!==0){
 			var showMessageBox = false;
-			if(el("messageFrom1")==null){
+			if(el("messageFrom1")===null){
 				var option = document.createElement('option');
 				option.setAttribute("id", "messageFrom1");
-				var name = "Select a sender";
-				option.innerHTML = name;
+				option.innerHTML = "Select a sender";
 				option.value = "select";
 				el("messageFromOption").appendChild(option);
 			}
-			for(var j = 0; j<messageFromNameList.length;j++){
-				var name = messageFromNameList[j];
-				console.log(name+"  "+currentUser.name)
-				if(el(name+"Message")==null && name!=currentUser.name){
+			for(var k = 0; k<messageFromNameList.length;k++){
+				var name = messageFromNameList[k];
+				if(el(name+"Message")===null && name!== currentUser.name){
 					showMessageBox = true;
-					console.log(name +"    "+currentUser.name)
-					option = document.createElement('option');
-					option.setAttribute("id", name+"Message");
-					option.innerHTML = name;
-					option.value = name;
-					el("messageFromOption").appendChild(option);
+					var option2 = document.createElement('option');
+					option2.setAttribute("id", name+"Message");
+					option2.innerHTML = name;
+					option2.value = name;
+					el("messageFromOption").appendChild(option2);
 				}
-				else if(el(name+"Message")!=null && name!=currentUser.name){
+				else if(el(name+"Message")!==null && name!==currentUser.name){
 					showMessageBox = true;
 				}
 			}
@@ -634,7 +633,6 @@ function setMessageIsOld(m){
 }
 
 function setNewAudioMessageIsOld(m){
-	console.log(m.isNew)
 	$.ajax({
 		type: 'POST',
 		url: "setAudioMessageIsOld",
@@ -657,7 +655,7 @@ function setNewAudioMessageIsOld(m){
 var audioMessageFromNameList = [];
 //check local server  - messages
 function checkAudioMessages(){
-	if(currentUser==null) return;
+	if(currentUser===null) return;
 	$.ajax({
 		type: 'GET',
 		url: "/getAudioMessages",
@@ -666,11 +664,17 @@ function checkAudioMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
-		if(messages.length ==0)return;
+		if(messages.length ===0){
+			el("audio-message-div").style.visibility = "hidden";
+			return;
+		}
+		else{
+			el("audio-message-div").style.visibility = "visible";
+		}
 		audioMessageFromNameList = [];
 		currentUser.setAudioMessages(messages);
 		currentUser.audioMessages.forEach(function(message){
-			if(message.audioData==null) return;
+			if(message.audioData===null) return;
 			var audioASCII = message.audioData;
 			var byteCharacters = atob(audioASCII);
 			var byteNumbers = new Array(byteCharacters.length);
@@ -686,7 +690,6 @@ function checkAudioMessages(){
 		});
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			console.log(messages)
 			if(messages[i].from!=currentUser.name && messages[i].isNew){
 				if(messages[i].from!=currentUser.name)
 					newAudioMessages.push(messages[i]);
@@ -703,25 +706,23 @@ function addAudioMessageDropDownNameList(audioMessageFromNameList){
 	while(el("audioMessageFromOption").firstChild){
 		el("audioMessageFromOption").removeChild(el("audioMessageFromOption").firstChild);
 	}
-	if(el("audio-message-from")==null){
+	if(el("audio-message-from")===null){
 		var option = document.createElement('option');
 		option.setAttribute("id", "audio-message-from");
-		var name = "Select a sender";
-		option.innerHTML = name;
+		option.innerHTML = "Select a sender";
 		option.value = "select";
 		el("audioMessageFromOption").appendChild(option);
 	}
 	el("audio-message-div").style.display = "block";
-	if(audioMessageFromNameList.length!=0){
+	if(audioMessageFromNameList.length!==0){
 		for(var j = 0; j<audioMessageFromNameList.length;j++){
 			var name = audioMessageFromNameList[j];
-
-			if(el(name+"VoiceMessage")==null && name!=currentUser.name){
-				option = document.createElement('option');
-				option.setAttribute("id", name+"VoiceMessage");
-				option.innerHTML = name;
-				option.value = name;
-				el("audioMessageFromOption").appendChild(option);
+			if(el(name+"VoiceMessage")===null && name!==currentUser.name){
+				var option2 = document.createElement('option');
+				option2.setAttribute("id", name+"VoiceMessage");
+				option2.innerHTML = name;
+				option2.value = name;
+				el("audioMessageFromOption").appendChild(option2);
 			}
 		}
 	}
@@ -799,17 +800,17 @@ function makeShortTimeFormat(date){
 }
 
 window.setInterval(function(){
-	if(currentUser!=null){
+	if(currentUser!==null){
 		loadAllExplorations(currentUser.name, gotExplorations);
 		enableAction(["delete"]);
 		updateExplorationChooser();
 	}
-	if(selectedLocation!=null){
+	if(selectedLocation!==null){
 		getAnnotationFromLocalServer(selectedLocation);
 	}
 	//updateShareExplElements();
 	checkTextMessages();
-}, 10000);
+}, 20000);
 
 
 function gotExplorations(allExplorations){
@@ -818,8 +819,8 @@ function gotExplorations(allExplorations){
 }
 
 $("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
-	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1
-}))
+	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1;
+}));
 
 function divHideShow(div){
 	if (div.style.visibility==="visible"){

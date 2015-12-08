@@ -87,10 +87,9 @@ function PathView(){
 	//this function will return set of cityEvents in the exploration.
 	this.cityEvents = function(){
 		var citiesEvs =[] ;
-		if(this.expl == null)return;
+		if(this.expl === null)return;
 		for(var j = 0;  j < this.expl.events.length; j++ ){
-			if(this.expl.events[ j ].type  === "travel"
-				&& !checkMatchCity(this.expl.events[ j ] ,citiesEvs)){
+			if(this.expl.events[ j ].type  === "travel" && !checkMatchCity(this.expl.events[ j ] ,citiesEvs)){
 				citiesEvs.push(this.expl.events[ j ] );
 			}
 		}
@@ -110,10 +109,10 @@ function PathView(){
 
 //	get the set of cities in the exploration return list of city names
 	this.citiesDisplay = function(){
-		if(this.expl == null)return;
+		if(this.expl === null)return;
 		var cities =[] ;
 		this.cityEvents().forEach(function(event){
-			if(event.type.localeCompare("travel") == 0){
+			if(event.type.localeCompare("travel") === 0){
 				cities.push(event.body);
 			}
 		});
@@ -127,7 +126,7 @@ function PathView(){
 
 	// get the set of citie's x, y coordinates
 	this.translates = function(){
-		if(this.expl == null)return;
+		if(this.expl === null)return;
 		trans =[];
 		this.citiesDisplay().forEach(function(cityName){
 			var index = getCityIndex(cityName);
@@ -188,7 +187,7 @@ function PathView(){
 		function isOnLine(x1,y1, x2, y2, px, py, tolerance) {
 			var dy = y1 - y2;
 			var dx = x1 - x2;
-			if(dy == 0) { //horizontal line
+			if(dy === 0) { //horizontal line
 				if(py == y1) {
 					if(x1 > x2) {
 						if(px <= x1 && px >= x2)
@@ -200,7 +199,7 @@ function PathView(){
 					}
 				}
 			}
-			else if(dx == 0) { //vertical line
+			else if(dx === 0) { //vertical line
 				if(px == x1) {
 					if(y1 > y2) {
 						if(py <= y1 && py >= y2)
@@ -254,7 +253,7 @@ function PathView(){
 	// load called when user select exploration function or stop recording function called.
 	this.load = function(expl){
 		this.expl = expl;
-		if(this.citiesDisplay().length == 0)return;
+		if(this.citiesDisplay().length === 0)return;
 		// arrowhead markers
 		/*map.append("defs")
 			.append("marker")
@@ -326,7 +325,7 @@ function PathView(){
 	this.updateProgress = function(eventTime){
 		this.pausedTime = null;
 		this.progressBarClicked = false;
-		if(this.citiesDisplay().length == 0){
+		if(this.citiesDisplay().length === 0){
 			return;
 		}
 		currentCityIndex = this.cityEventTimes().indexOf(eventTime);
@@ -422,7 +421,7 @@ function PathView(){
 		//will cause error: undefined is not a function (pathLineMove is undefined)
 		var dur =  -1;
 		//this.pausedTime set when click on the progress bar.
-		if( this.pausedTime >=this.cityEventTimes()[ 1 ]  && this.pausedTime!=null ){
+		if( this.pausedTime >=this.cityEventTimes()[ 1 ]  && this.pausedTime!==null ){
 			//case: pausedTime great then first city event time
 			//duration from paused point to next city event time
 			if( currentCityIndex  === this.citiesDisplay().length - 1 )
@@ -430,22 +429,20 @@ function PathView(){
 			else
 				dur = this.cityEventTimes()[ currentCityIndex + 1 ]  - this.pausedTime;
 		}
-		else if(this.pausedTime ==  null){
+		else if(this.pausedTime ===  null){
 			if(pausedX  ===  -1)return;  //pausedX == -1  <==>  paused == false
 			dur = eventDur * (lineDistance({x:pausedX,y:pausedY},{x:ncx, y:ncy})/lineDistance({x:ctx,y:cty},{x:ncx,y:ncy}));
+		}
+		// line distance between two points (paused point and city position
+		function lineDistance( point1, point2 ){
+			var xs = 0;
+			var ys = 0;
+			xs = point2.x  -  point1.x;
+			xs = xs  *  xs;
+			ys = point2.y  -  point1.y;
+			ys = ys  *  ys;
 
-
-			// line distance between two points (paused point and city position
-			function lineDistance( point1, point2 ){
-				var xs = 0;
-				var ys = 0;
-				xs = point2.x  -  point1.x;
-				xs = xs  *  xs;
-				ys = point2.y  -  point1.y;
-				ys = ys  *  ys;
-
-				return Math.sqrt( xs  +  ys );
-			}
+			return Math.sqrt( xs  +  ys );
 		}
 
 		var line =
@@ -585,7 +582,7 @@ function PathView(){
 
 	// pause transition set duration to 0
 	this.pause = function(){
-		if(this.citiesDisplay().length == 0)return;
+		if(this.citiesDisplay().length === 0)return;
 		d3.selectAll("#circle-move").transition()
 		.duration(0);
 
@@ -667,18 +664,17 @@ function setPositionFromClickedPathLine(cityIndex){
 	d3.selectAll("#circle-move")
 	.attr("cx", pathView.getCtx())
 	.attr("cy", pathView.getCty());
-
+	var tempTrans =  [];
 	if(currentCityIndex < pathView.translates().length - 1){
 		pathView.setNcx( pathView.translates()[currentCityIndex+1][ 0 ]);
 		pathView.setNcy( pathView.translates()[currentCityIndex+1][ 1 ]);
-		var tempTrans =  [];
 		for(var i = 0;  i < currentCityIndex+1;  i++ )
 			tempTrans.push(pathView.translates()[ i ] );
 		tempTrans.push( [ pathView.getPausedX(), pathView.getPausedY() ] );
 	}
-	else
+	else{
 		tempTrans = pathView.translates();
-
+	}
 	map.append("path")
 	.data( [ tempTrans ] )
 	.attr({
