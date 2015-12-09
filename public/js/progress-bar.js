@@ -1,16 +1,26 @@
-// =================================================================================
-// Author: Will Hardwick-Smith
-// Design based on: http://bl.ocks.org/keithcollins/a0564c578b9328fcdcbb
-// Contains: Contructor for ProgressBar, definition of the progress bar including
-// functionality such as:
-// - load/unload an exploration
-// - update, pause, reset, change position
-//
-// and other related elements in the same panel:
-// - timeText (displays exploration time at cursor position)
-// - exploration info text (name, timestamp, duration, has audio)
-// - insert/stop inserting buttons and associated animations
-// =================================================================================
+
+/*global $, d3, selectedExploration, playing, paused, ping, progressBar,
+	startPlayback, resumePlayback, pausePlayback, pathView, setPlaybackPosition, setTimeout*/
+/*exported ProgressBar*/
+//=================================================================================
+//Author: Will Hardwick-Smith
+//Design based on: http://bl.ocks.org/keithcollins/a0564c578b9328fcdcbb
+//Contains: Contructor for ProgressBar, definition of the progress bar including
+//functionality such as:
+//- load/unload an exploration
+//- update, pause, reset, change position
+
+//and other related elements in the same panel:
+//- timeText (displays exploration time at cursor position)
+//- exploration info text (name, timestamp, duration, has audio)
+//- insert/stop inserting buttons and associated animations
+//=================================================================================
+var	belowBarDiv = $("#below-bar"),
+	explorationTitle = $("#exploration-title"),
+	timeText = $("#time-text"),
+	hasAudio = $("#has-audio"),
+	insertButton = $("#insert-button"),
+	durationText = $("#duration-text");
 
 function ProgressBar() {
 
@@ -56,7 +66,7 @@ function ProgressBar() {
 		.duration(eventDuration)
 		.ease("linear in-out")
 		.attr("x", nextPosition);
-	}
+	};
 
 	// stops moving the bar
 	this.pause = function(cb){
@@ -65,7 +75,7 @@ function ProgressBar() {
 		.each("end.cb", cb);
 
 		showInsertButton();
-	}
+	};
 
 	// sets the position of the bar
 	this.setPosition = function(time){
@@ -77,7 +87,7 @@ function ProgressBar() {
 			var progress = time / selectedExploration.getDuration();
 			bar.attr("x", progress * progressWidth);
 		}
-	}
+	};
 
 	// brings the bar back to the start
 	this.resetProgress = function(){
@@ -86,17 +96,20 @@ function ProgressBar() {
 		bar.transition().duration(0).each("end", function(){
 			that.setPosition(0);
 		});
-	}
+	};
 
 	// changes the button based on the state of the program
 	this.updateButton = function(){
-		if (playing && !paused)
+		if (playing && !paused){
 			$("#play-control").removeClass().addClass("pause");
-		else if (!playing && !paused)
-			$("#play-control").removeClass().addClass("start");
-		else
-			$("#play-control").removeClass().addClass("resume");
-	}
+			}
+			else if (!playing && !paused){
+				$("#play-control").removeClass().addClass("start");
+			}
+				else{
+					$("#play-control").removeClass().addClass("resume");
+			}
+	};
 
 	// updates markers, adds listeners, shows information about exploration
 	this.load = function(exploration){
@@ -108,8 +121,9 @@ function ProgressBar() {
 
 		for (var i = 0; i < exploration.numEvents(); i++){
 			var event = exploration.getEvent(i);
-			if (event.type == "travel")
+			if (event.type == "travel"){
 				travelEvents.push(event);
+				}
 		}
 
 		// add event markers
@@ -188,11 +202,12 @@ function ProgressBar() {
 		explorationTitle.text(exploration.name + ", " + exploration.timeStamp);
 		explorationTitle.show();
 		// if exploration has audio, show hasAudio
-		if (selectedExploration.hasAudio())
+		if (selectedExploration.hasAudio()){
 			hasAudio.show();
+			}
 		// duration
 		showDurationText();
-	}
+	};
 
 	// unloads an exploration
 	this.unload = function(){
@@ -213,13 +228,11 @@ function ProgressBar() {
 		hideInsertButton();
 		//hasAudio.hide();
 		belowBarDiv.hide();
-	}
+	};
 
 	// trigger a playback position change
-	function onBarClick(e){
-		var rect = d3.select("#play-svg");
+	function onBarClick(){
 		// figure out x position of mouse
-      	var offset = $(this).offset();
       	var xpos = d3.mouse(this)[0]; // 36 ?
       	// Pathmove needs to know this for setPosition
 		pathView.setProgressBarClicked(true, false);
@@ -230,7 +243,7 @@ function ProgressBar() {
 	this.getXPosOfTime = function(time){
 		var progress = time / selectedExploration.getDuration();
 		return progress * progressWidth;
-	}
+	};
 
 	// get the time into the exploration given an x position
 	function getTimeOfXpos(xpos){
@@ -240,9 +253,9 @@ function ProgressBar() {
 	}
 
 	// returns the x position of the bar as it is now
-	function getCurrentProgressX(){
-		return parseInt(bar.attr("x"));
-	}
+//	function getCurrentProgressX(){
+//		return parseInt(bar.attr("x"));
+//	}
 
 	// displays insert button above the current playback position
 	function showTimeText(millis){
@@ -250,7 +263,6 @@ function ProgressBar() {
 		var formattedTime = formatTime(millis);
 
 		var progressPosition = progressBar.getXPosOfTime(millis);
-		var	padding = 10;
 
 		var timePosition = {
 			left: (progressPosition - timeText.outerWidth()/2)
@@ -270,7 +282,7 @@ function ProgressBar() {
 	// used in explorations
 	this.hideTimeText = function(){
 		timeText.hide();
-	}
+	};
 
 	// convert millis to mm:ss
 	function formatTime(millis){
@@ -315,7 +327,7 @@ function ProgressBar() {
 			.attr("id", "insert-bar");
 
 		// insert bar
-		var insertBar = insertGroup.append("rect")
+		insertGroup.append("rect")
 			.attr({
 				x: barLeft,
 				y: barTop,
@@ -326,7 +338,7 @@ function ProgressBar() {
 				fill: "#28AADE"
 			});
 		// ** recording ** text
-		var insertText = insertGroup.append("text")
+		insertText = insertGroup.append("text")
 			.text(insertText)
 			.attr({
 				x: barLeft + (barWidth/2),
@@ -368,7 +380,7 @@ function ProgressBar() {
 					changeColour(!red);
 				});
 		}
-	}
+	};
 
 	this.hideInsertGraphics = function(){
 		var insertSVG = d3.select("#insert-svg");
@@ -384,7 +396,7 @@ function ProgressBar() {
 		}
 		//aboveBarDiv.hide();
 		$("#stop-insert-button").hide();
-	}
+	};
 
 	// highlights a chunk representing an inserted exploration
 	// starting at startTime, for duration
@@ -424,5 +436,5 @@ function ProgressBar() {
 				.ease("cubic-in-out")
 				.style("opacity", 0);
 		}
-	}
+	};
 }

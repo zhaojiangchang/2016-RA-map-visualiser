@@ -1,48 +1,53 @@
-// =================================================================================
-// Authors: Will Hardwick-Smith & Jacky Chang
-// Contains: Event and Exploration contructors.
-// Contains functions which relate to explorations such as:
-// - starting/stopping recording
-// - playing/stopping/pausing/resuming playback
-// - inserting into explorations
-// - saving explorations
-// - selecting explorations.
 
-// Also contains references to the GUI elements: pathView and progressBar.
-// And the currently selected exploration (selectedExploration).
-// =================================================================================
+/*global document, $, console, currentUser, userLoggedOn, d3, Blob,updateNotifications, clearTimeout, explChooser,
+	el, setTimeout, makeShortTimeFormat, zoom, updateScaleAndTrans, goToLoc, window, FileReader,
+	map, audioRecorder, startAudioRecording, addRecordingGraphics, updateExplorationControls, getCityIndex,
+	stopAudioRecording, removeRecordingGraphics, alert, goToFirstLocation, showPathButton, isNextEvent,
+	loadAllExplorations, gotExplorations, updateExplorationChooser, changeButtonColour, ProgressBar, PathView*/
+/*exported startRecording, startPlayback, insertIntoSelectedExploration, saveExploration, deleteExploration,
+    updateSelectedExploration, ensureExplorationSelected, setPositionFromClickedPathLine*/
+//=================================================================================
+//Authors: Will Hardwick-Smith & Jacky Chang
+//Contains: Event and Exploration contructors.
+//Contains functions which relate to explorations such as:
+//- starting/stopping recording
+//- playing/stopping/pausing/resuming playback
+//- inserting into explorations
+//- saving explorations
+//- selecting explorations.
+
+//Also contains references to the GUI elements: pathView and progressBar.
+//And the currently selected exploration (selectedExploration).
+//=================================================================================
 
 
-// if the user is currently recording, playing ...
+//if the user is currently recording, playing ...
 var explRecording = false,
-	playing = false,
-	paused = false,
-	inserting = false;
+playing = false,
+paused = false,
+inserting = false,
+//id for timer which triggers next event in playback. Is used to stop playback.
+playTimerID = -1,
+//HTML5 audio element for any audio .
+audioElem = el("exploration-audio"),
+//the bar in the lower region of the screen
+progressBar = new ProgressBar(),
+//the high-level representation of the exploration, shown as a path
+pathView = new PathView(),
+//currently selected exploration
+selectedExploration = null;
 
-// id for timer which triggers next event in playback. Is used to stop playback.
-var	playTimerID = -1;
-
-// HTML5 audio element for any audio .
-var audioElem = el("exploration-audio");
-
-// the bar in the lower region of the screen
-var progressBar = new ProgressBar;
-// the high-level representation of the exploration, shown as a path
-var pathView = new PathView;
-// currently selected exploration
-var selectedExploration = null;
-
-// an exploration event.
-// can be of type: start, end, travel, movement
+//an exploration event.
+//can be of type: start, end, travel, movement
 function Event(type, body, time){
 	this.type = type;
 	this.body = body;
 	this.time = time;
 }
 
-// an exploration of the map
+//an exploration of the map
 function Exploration() {
-	this.name;
+	this.name = null;
 	this.userName = (currentUser ? currentUser.name : null); // user who recorded this
 	this.events = []; // events that took place over the course of the exploration
 	this.timeStamp = null;//time saving at save button pressed
@@ -56,7 +61,7 @@ function Exploration() {
 	};
 	this.addEvent = function (type, body){
 		var currentTime = new Date().getTime();
-		if (firstEventTime == null){
+		if (firstEventTime === null){
 			firstEventTime = currentTime;
 		}
 		var timeFromFirstEvent = currentTime - firstEventTime;
@@ -96,7 +101,7 @@ function Exploration() {
 	};
 
 	this.isEmpty = function(){
-		return this.events.length == 0;
+		return this.events.length === 0;
 	};
 
 	this.reset = function(){
@@ -114,13 +119,15 @@ function Exploration() {
 
 	// to establish exploration equality
 	this.equals = function(exploration){
-		if (exploration == null) return false;
-		return this.userName === exploration.userName
-			&& this.timeStamp === exploration.timeStamp;
+		if (exploration === null){
+			return false;
+		}
+		return this.userName === exploration.userName && this.timeStamp === exploration.timeStamp;
 	};
 	this.getDuration = function(){
-		if(this.events.length == 0)
+		if(this.events.length === 0){
 			return 0;
+			}
 		return  this.events[this.events.length-1].time;//return millisecond
 
 	};
@@ -129,8 +136,9 @@ function Exploration() {
 	// PRE: time must be > 0
 	this.getEventAtTime = function(time){
 		for (var i = 0; i < this.events.length; i++){
-			if (this.getEvent(i).time > time)
+			if (this.getEvent(i).time > time){
 				return this.getEvent(i-1);
+				}
 		}
 	};
 
@@ -149,14 +157,14 @@ function Exploration() {
 			newEvents[i].time += time;
 		}
 		// increment time of all events after the insert
-		for (var i = afterIndex; i < selectedExploration.numEvents(); i++){
-			var event = selectedExploration.getEvent(i);
+		for (var j = afterIndex; j < selectedExploration.numEvents(); j++){
+			var event = selectedExploration.getEvent(j);
 			event.time += insertDuration;
 		}
 		// insert new events into events array
 		this.events = this.events.slice(0, afterIndex)
-						.concat(newEvents)
-						.concat(this.events.slice(afterIndex));
+		.concat(newEvents)
+		.concat(this.events.slice(afterIndex));
 
 	};
 
@@ -169,20 +177,22 @@ function Exploration() {
 	this.hasCityEvents = function(){
 		var events = this.events;
 		for(var i = 0; i < events.length; i++){
-			if(events[i].type === "travel")
+			if(events[i].type === "travel"){
 				return true;
+				}
 		}
 		return false;
 	};
 }
 
 
-// begins recording of user navigation actions
-// insert is true if this recording will be inserted into another exploration
+//begins recording of user navigation actions
+//insert is true if this recording will be inserted into another exploration
 function startRecording() {
 	// only reset exploration if
-	if (!inserting)
+	if (!inserting){
 		resetExplorations();
+		}
 
 	// adds event listeners which record user navigation actions
 	zoom.on("zoom.record", recordMovement);
@@ -202,8 +212,9 @@ function startRecording() {
 	currentUser.setCurrentExploration(newExpl);
 
 	// starts recording audio
-	if (audioRecorder)
+	if (audioRecorder){
 		startAudioRecording();
+		}
 
 	// shows that recording is in progess
 	addRecordingGraphics();
@@ -215,8 +226,9 @@ function startRecording() {
 function stopRecording(audioCB) {
 	var recordedExpl = currentUser.currentExpl;
 	// if there is no recording, do nothing
-	if (!recordedExpl || !explRecording)
+	if (!recordedExpl || !explRecording){
 		return;
+		}
 
 	// removes event listeners which are recording user navigation.
 	zoom.on("zoom.record", null); // remove recording zoom listener
@@ -233,12 +245,14 @@ function stopRecording(audioCB) {
 	recordedExpl.giveName();
 
 	// else, it will overwrite the selected exploration
-	if (!inserting)
+	if (!inserting){
 		selectExploration(recordedExpl);
+		}
 
 	// audio stuff
-	if (audioRecorder)
+	if (audioRecorder){
 		stopAudioRecording(audioCB);
+		}
 
 	removeRecordingGraphics();
 	explRecording = false;
@@ -246,14 +260,14 @@ function stopRecording(audioCB) {
 	progressBar.load(currentUser.getCurrentExploration());
 }
 
-// index of last event which was played
+//index of last event which was played
 var currentEventIndex = 0,
-	// for pausePlayback
-	lastEventTime = -1, // the time which the last playback started
-	elapsedEventTime = -1; // how much time elapsed since event before pausing
+// for pausePlayback
+lastEventTime = -1, // the time which the last playback started
+elapsedEventTime = -1; // how much time elapsed since event before pausing
 
-// launches the events of an exploration started at the ith event
-// *not supported currently* if elapsedTime is specified, plays from elapsedTime to event end time.
+//launches the events of an exploration started at the ith event
+//*not supported currently* if elapsedTime is specified, plays from elapsedTime to event end time.
 function launchEvents(exploration, i, elapsedTime){
 
 	lastEventTime = new Date();
@@ -264,26 +278,27 @@ function launchEvents(exploration, i, elapsedTime){
 	switch (currentEvent.type){
 	case ("travel"):
 		var location = currentEvent.body;
-		goToLoc(location, elapsedTime);
-		pathView.updateProgress(currentEvent.time);
-	   	break;
+	goToLoc(location, elapsedTime);
+	pathView.updateProgress(currentEvent.time);
+	break;
 	case ("start"):
 	case ("movement"):
 		var transform = currentEvent.body;
-		map.attr("transform", transform);
-		updateScaleAndTrans();
-		break;
+	map.attr("transform", transform);
+	updateScaleAndTrans();
+	break;
 	case ("end"):
 		stopPlayback(exploration);
-		return;
+	return;
 	}
 
 	// prepare to launch next event
 	var nextEvent = exploration.getEvent(i+1);
 	var delay = nextEvent.time - currentEvent.time;
 	// if elapsedTime is specified, remove it from delay
-	if (elapsedTime)
+	if (elapsedTime){
 		delay = delay - elapsedTime;
+	}
 
 	progressBar.updateProgress(exploration, currentEvent.time, delay);
 
@@ -294,7 +309,7 @@ function launchEvents(exploration, i, elapsedTime){
 //plays an exploration from the start
 //PRE: no other exploration is being played
 function startPlayback(exploration){
-	if (!exploration || exploration.numEvents() == 0) {
+	if (!exploration || exploration.numEvents() === 0) {
 		alert("nothing to play");
 		return; // if no events, do nothing.
 	}
@@ -317,7 +332,7 @@ function startPlayback(exploration){
 }
 
 
-// stops playback and resets position to the start
+//stops playback and resets position to the start
 function stopPlayback(exploration){
 	clearTimeout(playTimerID);
 
@@ -334,11 +349,12 @@ function stopPlayback(exploration){
 	// reset gui/views
 	progressBar.resetProgress();
 	updatePlaybackStopped();
-	if(exploration.hasCityEvents())
+	if(exploration.hasCityEvents()){
 		pathView.reset();
+		}
 }
 
-// pauses the current playback. cb will happen after progress bar updates
+//pauses the current playback. cb will happen after progress bar updates
 function pausePlayback(exploration, cb){
 	elapsedEventTime = new Date() - lastEventTime;
 	clearTimeout(playTimerID);
@@ -351,17 +367,18 @@ function pausePlayback(exploration, cb){
 
 	updatePlaybackStopped();
 	progressBar.pause(cb);
-	if(exploration.hasCityEvents())
+	if(exploration.hasCityEvents()){
 		pathView.pause();
+		}
 }
 
-// waits until next event before executing playExploration
+//waits until next event before executing playExploration
 function resumePlayback(exploration){
 	var currentEvent = exploration.getEvent(currentEventIndex);
 	var eventDur = exploration.getEvent(currentEventIndex+1).time - currentEvent.time,
-		timeTilNextEvent = eventDur - elapsedEventTime,
-		// playback position in time
-		position = currentEvent.time + elapsedEventTime;
+	timeTilNextEvent = eventDur - elapsedEventTime,
+	// playback position in time
+	position = currentEvent.time + elapsedEventTime;
 
 	// skips the rest of the event and goes to the next one.
 	// TODO: play the rest of the event, don't skip
@@ -369,19 +386,21 @@ function resumePlayback(exploration){
 		launchEvents(exploration, currentEventIndex+1);
 	}, timeTilNextEvent);
 
-	if (exploration.hasAudio())
+	if (exploration.hasAudio()){
 		resumeAudio(position/1000);
+		}
 
 	updatePlaybackStarted();
 
 	progressBar.updateProgress(exploration, position, timeTilNextEvent);
 	progressBar.updateButton();
 
-	if(exploration.hasCityEvents())
+	if(exploration.hasCityEvents()){
 		pathView.resumeProgress(eventDur, currentEvent.time);
+		}
 }
 
-// sets playback position to time parameter, then plays from that position (if was playing before)
+//sets playback position to time parameter, then plays from that position (if was playing before)
 function setPlaybackPosition(exploration, time){
 	var wasPlaying = playing;
 
@@ -398,28 +417,30 @@ function setPlaybackPosition(exploration, time){
 		progressBar.setPosition(time);
 		if(exploration.hasCityEvents()){
 			pathView.setPausedTime(time);
-			if(pathView.progressBarClicked)
+			if(pathView.progressBarClicked){
 				pathView.setPosition(time);
+				}
 		}
 
 		// if already playing, continue
-		if (wasPlaying)
+		if (wasPlaying){
 			resumePlayback(exploration);
+			}
 	});
 
 	// changes (transforms) map to be aftermath of event
 	function transformToAfterEvent(event){
 		switch (event.type){
-			case ("travel"):
-				var locationName = event.body;
-				// instantly go to location
-				goToLoc(locationName, 0.001);
-			   	break;
-			case ("movement"):
-				var transform = event.body;
-				map.attr("transform", transform);
-				updateScaleAndTrans();
-				break;
+		case ("travel"):
+			var locationName = event.body;
+		// instantly go to location
+		goToLoc(locationName, 0.001);
+		break;
+		case ("movement"):
+			var transform = event.body;
+		map.attr("transform", transform);
+		updateScaleAndTrans();
+		break;
 
 		}
 	}
@@ -437,13 +458,14 @@ function insertIntoSelectedExploration(insertee){
 
 	// grab audio
 	var newAudio = function(){
-		if (!insertee.hasAudio() || !exploration.hasAudio())
+		if (!insertee.hasAudio() || !exploration.hasAudio()){
 			return null;
+			}
 
 		// find the byte position of the current time
 		var	sampleRate = 44100,
-			bytesPerFrame = 4,
-			headerSize = 44;
+		bytesPerFrame = 4,
+		headerSize = 44;
 
 		var framePosition = (currentTime/1000) * sampleRate;
 		var dataBytePos = framePosition * bytesPerFrame;
@@ -480,9 +502,12 @@ function insertIntoSelectedExploration(insertee){
 	inserting = false;
 }
 
-// loads audio data into the audio element
+//loads audio data into the audio element
 function setupAudio(exploration){
-	if(exploration.getAudio()==null) return;
+	if(exploration.getAudio()===null){
+		return;
+	}
+	el("has-audio").style.visibility = "visible";
 	var audioBlob = exploration.getAudio();
 	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
 }
@@ -491,13 +516,13 @@ function playAudio(){
 	audioElem.play();
 }
 
-// resumes audio from a position (seconds)
+//resumes audio from a position (seconds)
 function resumeAudio(position){
 	audioElem.currentTime = position;
 	playAudio();
 }
 
-// updates GUI and globals
+//updates GUI and globals
 function updatePlaybackStopped(){
 	playing = false;
 	updateExplorationControls();
@@ -513,10 +538,12 @@ function updatePlaybackStarted(){
 	progressBar.hideTimeText();
 }
 
-// makes an exploration become selected
+//makes an exploration become selected
 function selectExploration(exploration){
-	if (selectedExploration)
+	el("has-audio").style.visibility = "hidden";
+	if (selectedExploration){
 		deselectExploration();
+		}
 
 	selectedExploration = exploration;
 	setupAudio(exploration);
@@ -537,33 +564,39 @@ function selectExploration(exploration){
 	goToFirstLocation(exploration);
 }
 
-// deselects current exploration
+//deselects current exploration
 function deselectExploration(){
-	if (!selectedExploration)
+	if (!selectedExploration){
 		return;
-
+	}
+	el("has-audio").style.visibility = "hidden";
 	// must do this first to check if there are city events
-	if(selectedExploration.hasCityEvents())
+	if(selectedExploration.hasCityEvents()){
 		pathView.unload();
-	selectedExploration = null;
-
+		selectedExploration = null;
+	}
 	// update GUI/views
 	progressBar.unload();
-	if (!currentUser || !currentUser.hasExplorations())
+	if (!currentUser || !currentUser.hasExplorations()){
 		disableAction(["delete"]);
+	}
+	// all sharing elements (includes: send to, text message, audio message)
 	$("#share-file").hide();
 
 
 }
 
-// resets to original state (no explorations selected, no recordings or playbacks in progress)
+//resets to original state (no explorations selected, no recordings or playbacks in progress)
 function resetExplorations() {
-	if (playing || paused)
+	if (playing || paused){
 		stopPlayback(selectedExploration);
-	if (explRecording)
+	}
+	if (explRecording){
 		stopRecording();
-	if (currentUser)
+	}
+	if (currentUser){
 		currentUser.resetCurrentExploration();
+	}
 
 	deselectExploration();
 	progressBar.unload();
@@ -571,13 +604,14 @@ function resetExplorations() {
 	updateExplorationControls();
 }
 
-// PRE: current exploration != null
-// save the exploration to server
+//PRE: current exploration != null
+//save the exploration to server
 function saveExploration(exploration) {
 	updateExplorationControls("saved");
 
 	// if the exploration has no audio, go ahead and send
 	if (!exploration.audio){
+		console.log("no audio");
 		sendExploration(exploration);
 	}
 	else { // if the exploration contains audio
@@ -585,12 +619,11 @@ function saveExploration(exploration) {
 		var reader = new FileReader();
 		reader.addEventListener("loadend", audioConverted);
 		reader.readAsBinaryString(exploration.getAudio());
-
-		function audioConverted(){
-			var audioString = reader.result;
-			exploration.setAudio(audioString);
-			sendExploration(exploration);
-		}
+	}
+	function audioConverted(){
+		var audioString = reader.result;
+		exploration.setAudio(audioString);
+		sendExploration(exploration);
 	}
 
 	function sendExploration(exploration){
@@ -598,7 +631,7 @@ function saveExploration(exploration) {
 			type: 'POST',
 			url: "/postExploration",
 			data: JSON.stringify(exploration),
-			success: function(response){
+			success: function(){
 				//TODO: try not load all explorations after send exploration, add this exploration to currentuser's expls
 				loadAllExplorations(currentUser.name, gotExplorations);
 				enableAction(["delete"]);
@@ -609,7 +642,7 @@ function saveExploration(exploration) {
 	}
 }
 
-// disables an action (currently button)
+//disables an action (currently button)
 function disableAction(names){
 	names.forEach(function(name){
 		var button = el(name + "-exploration-button");
@@ -626,8 +659,9 @@ function enableAction(names){
 		button.disabled = false;
 		button.style.cursor = "pointer";
 		// change the colour if it's not the record button
-		if (!name.localeCompare("record") == 0)
+		if (name.localeCompare("record") !== 0){
 			changeButtonColour(name, true);
+		}
 	});
 }
 
@@ -643,7 +677,7 @@ function recordMovement(){
 	currentUser.getCurrentExploration().addEvent("movement", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
 
-// removes this exploration from the user's files
+//removes this exploration from the user's files
 function deleteExploration(expl){
 	$.ajax({
 		type: 'POST',
@@ -657,7 +691,7 @@ function deleteExploration(expl){
 		success: deletedExploration
 	});
 
-	function deletedExploration(response){
+	function deletedExploration(){
 		loadAllExplorations(currentUser.name, gotExplorations);
 
 		function gotExplorations(allExplorations){
@@ -670,8 +704,9 @@ function deleteExploration(expl){
 
 function updateSelectedExploration(){
 	// nothing is selected
-	if (explChooser.selectedIndex === -1)
+	if (explChooser.selectedIndex === -1){
 		return;
+	}
 
 	var timeStamp = explChooser.options[explChooser.selectedIndex].id;
 	var userExpl = currentUser.getExploration(timeStamp);
@@ -679,11 +714,9 @@ function updateSelectedExploration(){
 	selectExploration(userExpl);
 }
 
-// ensures that an exploration is selected by selecting the first in the list
+//ensures that an exploration is selected by selecting the first in the list
 function ensureExplorationSelected(){
-	if (!selectedExploration
-		&& userLoggedOn()
-		&& currentUser.explorations.length > 0){
+	if (!selectedExploration && userLoggedOn() && currentUser.explorations.length > 0){
 
 		var explTimeStamp = explChooser.options[0].id;
 		var userExpl = currentUser.getExploration(explTimeStamp);
@@ -705,7 +738,91 @@ function setExplorationIsOld(expl){
 	});
 }
 
-// returns the time position in the current playback
+//returns the time position in the current playback
 function getCurrentPlaybackTime(){
 	return selectedExploration.getEvent(currentEventIndex).time + elapsedEventTime;
 }
+
+//when click the path on the map will trigger this function to set the position at clicked point
+//also set the progress bar to the right "time".
+function setPositionFromClickedPathLine(cityIndex){
+	var currentCityIndex = null;
+	pathView.setProgressBarClicked(false,true); // first param: progressBar clicked			second param: pathview clicked
+	d3.selectAll("#animationPath").remove();
+	if(!cityIndex){ // if argument is null get city index by calling getCityIndexByPoint function
+		currentCityIndex = pathView.getCityIndexByPoint(pathView.getPausedX(), pathView.getPausedY());
+	}
+	else {
+		currentCityIndex = cityIndex;
+	}
+
+	pathView.setCtx( pathView.getPausedX() );
+	pathView.setCty( pathView.getPausedY() );
+
+	d3.selectAll("#circle-move")
+	.attr("cx", pathView.getCtx())
+	.attr("cy", pathView.getCty());
+	var tempTrans =  [];
+	if(currentCityIndex < pathView.translates().length - 1){
+		pathView.setNcx( pathView.translates()[currentCityIndex+1][ 0 ]);
+		pathView.setNcy( pathView.translates()[currentCityIndex+1][ 1 ]);
+		for(var i = 0;  i < currentCityIndex+1;  i++ ){
+			tempTrans.push(pathView.translates()[ i ] );
+		}
+		tempTrans.push( [ pathView.getPausedX(), pathView.getPausedY() ] );
+	}
+	else{
+		tempTrans = pathView.translates();
+	}
+	map.append("path")
+	.data( [ tempTrans ] )
+	.attr({
+		id: "animationPath",
+		class: "path-move",
+		stroke: "blue",
+		"stroke-width": "2",
+	})
+	.style("fill", "none")
+	.attr("d", d3.svg.line()
+			.tension(0))
+			.on("click", function(){
+				pathView.setPausedX(d3.mouse(this)[0]);
+				pathView.setPausedY(d3.mouse(this)[1]);
+				setPositionFromClickedPathLine();}
+			);
+
+	if(currentCityIndex>pathView.translates().length-1){
+		return;
+	}
+
+	// currentCityIndex is one step behand the progress bar city event
+	// distence between paused position to previous city event
+	var distToPausedX  = Math.abs(pathView.getPausedX() - pathView.translates()[currentCityIndex][0]),
+	nextCityEventTime = pathView.cityEventTimes()[currentCityIndex+2],
+	durCityEvents = -1,
+	lastCityEventTime = -1;
+
+	//path between last two cities
+	if(currentCityIndex === pathView.translates().length-2){
+		durCityEvents = pathView.expl.events[pathView.expl.events.length-1].time - pathView.cityEventTimes()[pathView.cityEventTimes().length-1];
+		lastCityEventTime = pathView.cityEventTimes()[pathView.cityEventTimes().length-1];
+	}
+	//path between first two cities
+	else if(currentCityIndex === 0){
+		durCityEvents = pathView.cityEventTimes()[2]- pathView.cityEventTimes()[1];
+		lastCityEventTime = pathView.cityEventTimes()[1];
+	}
+	//all other path
+	else{
+		durCityEvents = nextCityEventTime - pathView.cityEventTimes()[currentCityIndex+1];
+		lastCityEventTime = pathView.cityEventTimes()[currentCityIndex + 1];
+	}
+	//x distence between two cities
+	var distX = Math.abs((pathView.translates()[currentCityIndex][0] - pathView.translates()[currentCityIndex+1][0]));
+	var time = distToPausedX * durCityEvents / distX + lastCityEventTime;
+	if(time<pathView.cityEventTimes()[0]){
+		time = pathView.cityEventTimes()[0];
+	}
+	setPlaybackPosition(pathView.expl, time);
+}
+

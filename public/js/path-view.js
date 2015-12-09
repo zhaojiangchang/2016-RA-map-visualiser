@@ -1,26 +1,31 @@
+/*global document, $, map, el,d3, height, getCityIndex, ANIMATION_DELAY,
+	EASE_FUNCTION, getRealBounds, setPositionFromClickedPathLine*/
+/*exported PathView*/
 //==================================================================================================
-//  Author:Will Hardwick-Smith and Jacky Chang
-//
-//  Loaded path view:
-//		. select an exploration from selector and the selected exploration has city events
-//		. user log into the system and first exploration in the selector has city events
-//
-//  Unload path view:
-//		. Remove all path and circles
-//		. City names font change back to original size, color and position
-//
-//  Path view elements:
-//  	. Dash line - all city events in selected exploration connect by dash line
-//  	. Filled circle (gray and blue): all city event coordinates
-//  	. City event names: names will highlighted when selected exploration has city events
-//
-//  Path view actions:
-//		. Progress bar clicked - update both progress bar and path view (append path from first city
-//		  events to paused position
-//		. Path view lines clicked - update path view line draw from last position to clicked position
-//		  then calculate the time progress bar to update the progress bar position.
-//
+//Author:Will Hardwick-Smith and Jacky Chang
+
+//Loaded path view:
+//. select an exploration from selector and the selected exploration has city events
+//. user log into the system and first exploration in the selector has city events
+
+//Unload path view:
+//. Remove all path and circles
+//. City names font change back to original size, color and position
+
+//Path view elements:
+//. Dash line - all city events in selected exploration connect by dash line
+//. Filled circle (gray and blue): all city event coordinates
+//. City event names: names will highlighted when selected exploration has city events
+
+//Path view actions:
+//. Progress bar clicked - update both progress bar and path view (append path from first city
+//events to paused position
+//. Path view lines clicked - update path view line draw from last position to clicked position
+//then calculate the time progress bar to update the progress bar position.
+
 //==================================================================================================
+var showPathButton = el("show-path");
+
 function PathView(){
 
 	this.expl = null; // value signed when load pathView
@@ -87,10 +92,11 @@ function PathView(){
 	//this function will return set of cityEvents in the exploration.
 	this.cityEvents = function(){
 		var citiesEvs =[] ;
-		if(this.expl == null)return;
+		if(this.expl === null){
+			return;
+		}
 		for(var j = 0;  j < this.expl.events.length; j++ ){
-			if(this.expl.events[ j ].type  === "travel"
-				&& !checkMatchCity(this.expl.events[ j ] ,citiesEvs)){
+			if(this.expl.events[ j ].type  === "travel" && !checkMatchCity(this.expl.events[ j ] ,citiesEvs)){
 				citiesEvs.push(this.expl.events[ j ] );
 			}
 		}
@@ -110,10 +116,12 @@ function PathView(){
 
 //	get the set of cities in the exploration return list of city names
 	this.citiesDisplay = function(){
-		if(this.expl == null)return;
+		if(this.expl === null){
+			return;
+		}
 		var cities =[] ;
 		this.cityEvents().forEach(function(event){
-			if(event.type.localeCompare("travel") == 0){
+			if(event.type.localeCompare("travel") === 0){
 				cities.push(event.body);
 			}
 		});
@@ -127,8 +135,10 @@ function PathView(){
 
 	// get the set of citie's x, y coordinates
 	this.translates = function(){
-		if(this.expl == null)return;
-		trans =[];
+		if(this.expl === null){
+			return;
+		}
+		var trans =[];
 		this.citiesDisplay().forEach(function(cityName){
 			var index = getCityIndex(cityName);
 			var paths = document.getElementById(index);
@@ -141,7 +151,7 @@ function PathView(){
 
 	// return: set of cities event time
 	this.cityEventTimes = function(){
-		times = [] ;
+		var times = [] ;
 		this.cityEvents().forEach(function(event){
 			times.push(event.time);
 		});
@@ -154,7 +164,7 @@ function PathView(){
 		showPathButton.innerHTML="Hide Path";
 		showPathButton.style.visibility = "visible";
 		var elems = $(".path-move");
-		pathView.setText();
+		this.setText();
 		elems.show();
 	};
 
@@ -162,7 +172,7 @@ function PathView(){
 	this.hidePathElems = function(){
 		showPathButton.innerHTML="Show Path";
 		var classes = $(".path-move");
-		pathView.resetText();
+		this.resetText();
 		classes.hide();
 	};
 
@@ -188,27 +198,31 @@ function PathView(){
 		function isOnLine(x1,y1, x2, y2, px, py, tolerance) {
 			var dy = y1 - y2;
 			var dx = x1 - x2;
-			if(dy == 0) { //horizontal line
+			if(dy === 0) { //horizontal line
 				if(py == y1) {
 					if(x1 > x2) {
-						if(px <= x1 && px >= x2)
+						if(px <= x1 && px >= x2){
 							return true;
+						}
 					}
 					else {
-						if(px >= x1 && px <= x2)
+						if(px >= x1 && px <= x2){
 							return true;
+						}
 					}
 				}
 			}
-			else if(dx == 0) { //vertical line
+			else if(dx === 0) { //vertical line
 				if(px == x1) {
 					if(y1 > y2) {
-						if(py <= y1 && py >= y2)
+						if(py <= y1 && py >= y2){
 							return true;
+						}
 					}
 					else {
-						if(py >= y1 && py <= y2)
+						if(py >= y1 && py <= y2){
 							return true;
+						}
 					}
 				}
 			}
@@ -218,12 +232,14 @@ function PathView(){
 				var y = p * px + b;
 				if(y <= py + tolerance && y >= py - tolerance) {
 					if(x1 > x2) {
-						if(px <= x1 && px >= x2)
+						if(px <= x1 && px >= x2){
 							return true;
+						}
 					}
 					else {
-						if(px >= x1 && px <= x2)
+						if(px >= x1 && px <= x2){
 							return true;
+						}
 					}
 				}
 			}
@@ -237,24 +253,30 @@ function PathView(){
 	this.getCurrentCityIndex = function(time){
 		for(var i = 1;  i < this.cityEventTimes().length;  i++ ){
 
-			if(this.cityEventTimes()[ i - 1 ]  < time && this.cityEventTimes()[ i ]  > time)
+			if(this.cityEventTimes()[ i - 1 ]  < time && this.cityEventTimes()[ i ]  > time){
 				return i - 1;
+			}
 
-			if(this.cityEventTimes()[ i ]   === time)
+			if(this.cityEventTimes()[ i ]   === time){
 				return i;
+			}
 
-			if(time > this.cityEventTimes()[ this.cityEventTimes().length - 1 ] )
+			if(time > this.cityEventTimes()[ this.cityEventTimes().length - 1 ] ){
 				return this.cityEventTimes().length - 1;
+			}
 
-			if(time < this.cityEventTimes()[ 0 ] )
+			if(time < this.cityEventTimes()[ 0 ] ){
 				return 0;
+			}
 		}
 	};
 
 	// load called when user select exploration function or stop recording function called.
 	this.load = function(expl){
 		this.expl = expl;
-		if(this.citiesDisplay().length == 0)return;
+		if(this.citiesDisplay().length === 0){
+			return;
+		}
 		// arrowhead markers
 		/*map.append("defs")
 			.append("marker")
@@ -304,8 +326,9 @@ function PathView(){
 			pausedX = d3.mouse(map.node())[0];
 			pausedY = d3.mouse(map.node())[1];
 			for(var i = 0; i<trans.length; i++){// go throught the htis.translates() find the matched value and return the index of the value
-				if(trans[i][0]===d[0] && trans[i][1]===d[1])
-					setPositionFromClickedPathLine(i); // append new line from start to clicked city
+				if(trans[i][0]===d[0] && trans[i][1]===d[1]){
+					setPositionFromClickedPathLine(); // append new line from start to clicked city
+				}
 			}
 		});
 
@@ -326,7 +349,7 @@ function PathView(){
 	this.updateProgress = function(eventTime){
 		this.pausedTime = null;
 		this.progressBarClicked = false;
-		if(this.citiesDisplay().length == 0){
+		if(this.citiesDisplay().length === 0){
 			return;
 		}
 		currentCityIndex = this.cityEventTimes().indexOf(eventTime);
@@ -391,7 +414,7 @@ function PathView(){
 		// when pause button clicked pausedX and pausedY value stop updating at paused.
 		function translateAlong(path) {
 			var l = path.getTotalLength();
-			return function(d, i, a) {
+			return function() {
 				return function(t) {
 					var p = path.getPointAtLength(t  *  l);
 					pausedX = p.x;
@@ -400,6 +423,19 @@ function PathView(){
 				};
 			};
 		}
+
+		function makeZoomInterpolator(translation, scale){
+			var sb = getRealBounds(),
+			start = [sb[0][0], sb[0][1], height / d3.transform(map.attr("transform")).scale[0]];
+
+			var cx = translation[0],
+			cy = translation[1],
+			screenWidth = scale ? height / scale : 200;
+
+			var end = [cx, cy, screenWidth];
+
+			return d3.interpolateZoom(start, end);
+		}
 	};
 
 
@@ -407,45 +443,49 @@ function PathView(){
 	// pausedTime argument for path Line Clicked
 	// when click on the path line on the map,
 	this.resumeProgress = function(eventDur, pausedTime){
-
-		if(this.progressBarClicked)
+		if(this.progressBarClicked){
 			currentCityIndex = this.getCurrentCityIndex( this.pausedTime );
+		}
 
-		else if(this.pathLineClicked)
+		else if(this.pathLineClicked){
 			currentCityIndex = this.getCurrentCityIndex( pausedTime );
+		}
 
-		if( currentCityIndex < 1 ||undefined )
+		if( currentCityIndex < 1 ||undefined ){
 			return;
+		}
 
 		//the pathLineMove variable signed when the timeline pass through the fist city
 		//if click on the progress bar before the yellow bar(city event).
 		//will cause error: undefined is not a function (pathLineMove is undefined)
 		var dur =  -1;
 		//this.pausedTime set when click on the progress bar.
-		if( this.pausedTime >=this.cityEventTimes()[ 1 ]  && this.pausedTime!=null ){
+		if( this.pausedTime >=this.cityEventTimes()[ 1 ]  && this.pausedTime!==null ){
 			//case: pausedTime great then first city event time
 			//duration from paused point to next city event time
-			if( currentCityIndex  === this.citiesDisplay().length - 1 )
+			if( currentCityIndex  === this.citiesDisplay().length - 1 ){
 				dur = this.expl.events[ this.expl.events.length - 1 ].time  - this.pausedTime;
-			else
-				dur = this.cityEventTimes()[ currentCityIndex + 1 ]  - this.pausedTime;
-		}
-		else if(this.pausedTime ==  null){
-			if(pausedX  ===  -1)return;  //pausedX == -1  <==>  paused == false
-			dur = eventDur * (lineDistance({x:pausedX,y:pausedY},{x:ncx, y:ncy})/lineDistance({x:ctx,y:cty},{x:ncx,y:ncy}));
-
-
-			// line distance between two points (paused point and city position
-			function lineDistance( point1, point2 ){
-				var xs = 0;
-				var ys = 0;
-				xs = point2.x  -  point1.x;
-				xs = xs  *  xs;
-				ys = point2.y  -  point1.y;
-				ys = ys  *  ys;
-
-				return Math.sqrt( xs  +  ys );
 			}
+			else{
+				dur = this.cityEventTimes()[ currentCityIndex + 1 ]  - this.pausedTime;
+			}
+		}
+		else if(this.pausedTime ===  null){
+			if(pausedX  ===  -1){
+				return;  //pausedX == -1  <==>  paused == false
+			}
+			dur = eventDur * (lineDistance({x:pausedX,y:pausedY},{x:ncx, y:ncy})/lineDistance({x:ctx,y:cty},{x:ncx,y:ncy}));
+		}
+		// line distance between two points (paused point and city position
+		function lineDistance( point1, point2 ){
+			var xs = 0;
+			var ys = 0;
+			xs = point2.x  -  point1.x;
+			xs = xs  *  xs;
+			ys = point2.y  -  point1.y;
+			ys = ys  *  ys;
+
+			return Math.sqrt( xs  +  ys );
 		}
 
 		var line =
@@ -499,10 +539,8 @@ function PathView(){
 			.attr("cy", this.translates()[ 0 ][ 1 ] );
 			ncx = this.translates()[ 1 ][ 0 ];
 			ncy = this.translates()[ 1 ][ 1 ];
-			dur = 0;
 		}
 		currentCityIndex = this.getCurrentCityIndex(this.pausedTime);
-
 		if( currentCityIndex < 1 ||undefined){return;}
 		//reset circle FROM position and TO position
 		var currentCityX = this.translates()[ currentCityIndex ][ 0 ];
@@ -524,24 +562,30 @@ function PathView(){
 		// temp is percentage between (pausedTime  -  previous CityEvent time) and total time between lastcity events and current city event time
 		// paused time percentage -  use percentage to calcualate the distance moved for horizontal and vertical
 		var temp = (this.pausedTime  -  this.cityEventTimes()[ currentCityIndex ] )	/
-					(nextCityEventTime - this.cityEventTimes()[ currentCityIndex ] );
+		(nextCityEventTime - this.cityEventTimes()[ currentCityIndex ] );
 
 		var xMoved = temp  *  (Math.abs(previousCityX  -  currentCityX)); // horizontal moved
 		var yMoved = temp  *  (Math.abs(previousCityY  -  currentCityY)); // vertical moved
 		//
-		if(previousCityX  >  currentCityX)
+		if(previousCityX  >  currentCityX){
 			pausedX = previousCityX - xMoved;
-		else if(previousCityX  <  currentCityX)
+		}
+		else if(previousCityX  <  currentCityX){
 			pausedX = previousCityX + xMoved;
-		else if(previousCityX   ===  currentCityX)
+		}
+		else if(previousCityX   ===  currentCityX){
 			pausedX = currentCityX;
+		}
 
-		if(currentCityY < previousCityY)
+		if(currentCityY < previousCityY){
 			pausedY = previousCityY  -  yMoved;
-		else if(currentCityY > previousCityY)
+		}
+		else if(currentCityY > previousCityY){
 			pausedY = previousCityY  +  yMoved;
-		else
+		}
+		else{
 			pausedY = previousCityY;
+		}
 		ctx = pausedX;
 		cty = pausedY;
 		ncx = this.translates()[currentCityIndex][ 0 ];
@@ -564,10 +608,10 @@ function PathView(){
 			map.append("path")
 			.data( [ tempTrans ] )
 			.attr({
-					id: "animationPath",
-					class: "path-move",
-					stroke: "blue",
-					"stroke-width": "2",
+				id: "animationPath",
+				class: "path-move",
+				stroke: "blue",
+				"stroke-width": "2",
 			})
 			.style("fill", "none")
 			.attr("d", d3.svg.line()
@@ -585,7 +629,9 @@ function PathView(){
 
 	// pause transition set duration to 0
 	this.pause = function(){
-		if(this.citiesDisplay().length == 0)return;
+		if(this.citiesDisplay().length === 0){
+			return;
+		}
 		d3.selectAll("#circle-move").transition()
 		.duration(0);
 
@@ -609,7 +655,9 @@ function PathView(){
 	this.init = function(){
 		pausedX =  - 1;
 		pausedY =  - 1;
-		if(!this.citiesDisplay())return;
+		if(!this.citiesDisplay()){
+			return;
+		}
 		d3.selectAll("#animationPath").remove();
 		d3.selectAll("#circle-move")
 		.attr("cx", this.translates()[ 0 ][ 0 ] )
@@ -641,7 +689,7 @@ function PathView(){
 
 	// this funciton called by pathView.unload() reset the city name color back to initial value;
 	this.resetText = function(){
-		$(".place-label").each(function(index , value){
+		$(".place-label").each(function(){
 			$(this).attr("font-size","12px");
 			$(this).attr("fill" , '#000000');
 			$(this).attr("dy" , ".35em");
@@ -650,82 +698,4 @@ function PathView(){
 	};
 }
 
-
-// when click the path on the map will trigger this function to set the position at clicked point
-// also set the progress bar to the right "time".
-function setPositionFromClickedPathLine(cityIndex){
-	pathView.setProgressBarClicked(false,true); // first param: progressBar clicked			second param: pathview clicked
-	d3.selectAll("#animationPath").remove();
-	if(!cityIndex){ // if argument is null get city index by calling getCityIndexByPoint function
-		currentCityIndex = pathView.getCityIndexByPoint(pathView.getPausedX(), pathView.getPausedY());
-	}
-	else currentCityIndex = cityIndex;
-
-	pathView.setCtx( pathView.getPausedX() );
-	pathView.setCty( pathView.getPausedY() );
-
-	d3.selectAll("#circle-move")
-	.attr("cx", pathView.getCtx())
-	.attr("cy", pathView.getCty());
-
-	if(currentCityIndex < pathView.translates().length - 1){
-		pathView.setNcx( pathView.translates()[currentCityIndex+1][ 0 ]);
-		pathView.setNcy( pathView.translates()[currentCityIndex+1][ 1 ]);
-		var tempTrans =  [];
-		for(var i = 0;  i < currentCityIndex+1;  i++ )
-			tempTrans.push(pathView.translates()[ i ] );
-		tempTrans.push( [ pathView.getPausedX(), pathView.getPausedY() ] );
-	}
-	else
-		tempTrans = pathView.translates();
-
-	map.append("path")
-	.data( [ tempTrans ] )
-	.attr({
-		id: "animationPath",
-		class: "path-move",
-		stroke: "blue",
-		"stroke-width": "2",
-	})
-	.style("fill", "none")
-	.attr("d", d3.svg.line()
-			.tension(0))
-			.on("click", function(){
-				pathView.setPausedX(d3.mouse(this)[0]);
-				pathView.setPausedY(d3.mouse(this)[1]);
-				setPositionFromClickedPathLine();}
-			);
-
-	if(currentCityIndex>pathView.translates().length-1)
-		return;
-
-	// currentCityIndex is one step behand the progress bar city event
-	// distence between paused position to previous city event
-	var distToPausedX  = Math.abs(pathView.getPausedX() - pathView.translates()[currentCityIndex][0]),
-	nextCityEventTime = pathView.cityEventTimes()[currentCityIndex+2],
-	durCityEvents = -1,
-	lastCityEventTime = -1;
-
-	//path between last two cities
-	if(currentCityIndex === pathView.translates().length-2){
-		durCityEvents = pathView.expl.events[pathView.expl.events.length-1].time - pathView.cityEventTimes()[pathView.cityEventTimes().length-1];
-		lastCityEventTime = pathView.cityEventTimes()[pathView.cityEventTimes().length-1];
-	}
-	//path between first two cities
-	else if(currentCityIndex === 0){
-		durCityEvents = pathView.cityEventTimes()[2]- pathView.cityEventTimes()[1];
-		lastCityEventTime = pathView.cityEventTimes()[1];
-	}
-	//all other path
-	else{
-		durCityEvents = nextCityEventTime - pathView.cityEventTimes()[currentCityIndex+1];
-		lastCityEventTime = pathView.cityEventTimes()[currentCityIndex + 1];
-	}
-	//x distence between two cities
-	var distX = Math.abs((pathView.translates()[currentCityIndex][0] - pathView.translates()[currentCityIndex+1][0]));
-	var time = distToPausedX * durCityEvents / distX + lastCityEventTime;
-	if(time<pathView.cityEventTimes()[0])
-		time = pathView.cityEventTimes()[0];
-	setPlaybackPosition(pathView.expl, time);
-}
 

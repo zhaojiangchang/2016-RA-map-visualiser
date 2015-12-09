@@ -1,3 +1,6 @@
+
+/* global $, currentUser, selectedImgFile, d3,el, window, topojson, displayLocationInfo,resumed_ease, index*/
+/* exported submitAnnotation, IMAGE_PATH, distances, direction, paths,reset,goToFirstLocation, goToLoc,ping*/
 /* Copyright (c) 2014, Sivan Fesherman
 All rights reserved.
 
@@ -24,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. **/
 
 // the location of image files
 var IMAGE_PATH = "data/image/";
-
 // width and height of window (TODO: make these update dynamically)
 var width = $(window).width() * 0.8,
 	height = $(window).height();
@@ -37,13 +39,8 @@ var ANIMATION_DELAY = 0.8;
 var PING_SIZE = 0.2;
 //The ease function used for transitioning
 var EASE_FUNCTION = "cubic-in-out";
-//The array of easing functions and zoom speeds to use
-var FROM_TEXT_FILE = [];
-//The constants for the animation delay function to be used in the set easing function
-var FAST = 0.4;
-var SLOW = 2.4;
+
 //The path to the easing function text file
-var PATH_TO_FILE = "data/functions/easingFunctions20.txt"
 
 // data to be bound to svg elements
 var cities, distances, direction, paths;
@@ -71,7 +68,8 @@ var svg = d3.select("body").append("svg")
 .attr("class", "svg_map")
 .attr("id", "svg_map")
 .call(zoom) // attach zoom listener
-.on("dblclick.zoom", null); // disable double-click zoom
+.on("dblclick.zoom", null)
+.on("click", deselectLocation); // disable double-click zoom
 
 // contains all map graphics
 var map = svg.append("g")
@@ -94,6 +92,10 @@ d3.json("data/map/kaz.json", function(error, json) {
 	.attr("stroke", "#FFAA40");
 });
 
+function deselectLocation(){
+	el("location-div").style.display = "none";
+	selectedLocation = null;
+}
 // cities
 d3.json("data/map/kaz_places.json", function(error, json){
 	cities = json.features;
@@ -102,7 +104,7 @@ d3.json("data/map/kaz_places.json", function(error, json){
 	.data(cities)
 	.enter()
 	.append("g")
-		.attr("id", function(d, i) { return d.properties.NAME; })
+		.attr("id", function(d) { return d.properties.NAME; })
 		.on("dblclick.zoom", cityClicked)
 		.on("click", selectLocation)
 		.attr("class", "place");
@@ -145,7 +147,7 @@ function submitAnnotation(annotationText){
 		fileName: null,
 		imageData: null,
 	};
-	if(selectedImgFile!=null){
+	if(selectedImgFile!==null){
 		annotation.imgFile = selectedImgFile;
 		annotation.fileName = selectedImgFile.title;
 		annotation.imageData = selectedImgFile.src;
@@ -170,21 +172,9 @@ function updateLocationInfo(){
 
 }
 
-// removing an annotation from a location.
-function deleteAnnotation(annotation){
-	$.ajax({
-		type: 'POST',
-		url: "/deleteAnnotation",
-		data: JSON.stringify(annotation),
-		contentType: "application/json",
-		complete: updateLocationInfo
-	})
-}
-
 //smoothly transitions from current location to a city
 function travelToCity(city, duration, elapsedTime) {
 	var center = path.centroid(city);
-	var scale = 4;
 
 	transitionTo(center, null, duration, elapsedTime);
 }
@@ -205,14 +195,14 @@ function transitionTo(center, scale, duration, elapsedTime){
 	var sb = getRealBounds(),
 		start = [sb[0][0], sb[0][1], height / d3.transform(map.attr("transform")).scale[0]];
 
-	var center = [width / 2, height / 2],
-		interpolator = d3.interpolateZoom(start, end);
+	center = [width / 2, height / 2];
+	var interpolator = d3.interpolateZoom(start, end);
 
-	var duration = duration ? duration : interpolator.duration * ANIMATION_DELAY,
-		ease = elapsedTime ? resumed_ease(EASE_FUNCTION, elapsedTime) : EASE_FUNCTION;
+	var new_duration = duration ? duration : interpolator.duration * ANIMATION_DELAY;
+	var ease = elapsedTime ? resumed_ease(EASE_FUNCTION, elapsedTime) : EASE_FUNCTION;
 
 	map.transition()
-	.duration(duration)
+	.duration(new_duration)
 	.ease(ease)
 	.attrTween("transform", function() {
 		return function(t) { return transformAt(interpolator(t)); };
@@ -229,19 +219,6 @@ function transitionTo(center, scale, duration, elapsedTime){
 	}
 }
 
-function makeZoomInterpolator(translation, scale){
-	var sb = getRealBounds(),
-		start = [sb[0][0], sb[0][1], height / d3.transform(map.attr("transform")).scale[0]];
-
-	var cx = translation[0],
-		cy = translation[1],
-		screenWidth = scale ? height / scale : 200;
-
-	var end = [cx, cy, screenWidth];
-
-	return d3.interpolateZoom(start, end);
-}
-
 // updates the zoom.scale and zoom.translation properties to the map's current state
 function updateScaleAndTrans(){
 	var scale = d3.transform(map.attr("transform")).scale[0];
@@ -252,9 +229,9 @@ function updateScaleAndTrans(){
 
 // A function to reset the map to the center, zoomed out.
 function reset(){
-	x = width / 2;
-	y = height / 2;
-	k = 1;
+	var x = width / 2;
+	var y = height / 2;
+	var k = 1;
 
 	map.transition()
 	.duration(900 * ANIMATION_DELAY)
@@ -278,7 +255,7 @@ function goToFirstLocation(exploration){
 
 // A function to return the index of a given city
 function getCityIndex(name){
-	for(j = 0; j < cities.length; j++){
+	for(var j = 0; j < cities.length; j++){
 		if(cities[j].properties.NAME == name){
 			return j;
 		}
@@ -295,10 +272,12 @@ function cityClicked(d){
 // duration: duration of transition
 // elapsedTime: continue transition from this time
 function goToLoc(location, duration, elapsedTime) {
-	if (typeof location === "number")
+	if (typeof location === "number"){
 		location = cities[index];
-	if (typeof location === "string")
+		}
+	if (typeof location === "string"){
 		location = cities[getCityIndex(location)];
+		}
 
 	selectLocation(location); // so that information appears in sidebar
 	travelToCity(location, duration, elapsedTime);
@@ -307,10 +286,12 @@ function goToLoc(location, duration, elapsedTime) {
 // Pings a country on the screen
 function ping(location) {
 	var source;
-	if (typeof location === "number")
+	if (typeof location === "number"){
 		source = cities[location];
-	if (typeof location === "string")
+		}
+	if (typeof location === "string"){
 		source = cities[getCityIndex(location)];
+		}
 
 	var center = path.centroid(source);
 	var screenvars = getAbsoluteBounds();
@@ -364,8 +345,9 @@ function ping(location) {
 //Convert the screen coords into data coords
 //gets current screen coords if no arg
 function getRealBounds(transform) {
-	if (!transform)
+	if (!transform){
 		transform = d3.transform(map.attr("transform"));
+		}
 
 	var tx = transform.translate[0];
 	var ty = transform.translate[1];
