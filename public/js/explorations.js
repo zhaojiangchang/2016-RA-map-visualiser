@@ -1,5 +1,5 @@
 
-/*global document, $, currentUser, userLoggedOn, d3, Blob,updateNotifications, clearTimeout, explChooser,
+/*global document, $, console, currentUser, userLoggedOn, d3, Blob,updateNotifications, clearTimeout, explChooser,
 	el, setTimeout, makeShortTimeFormat, zoom, updateScaleAndTrans, goToLoc, window, FileReader,
 	map, audioRecorder, startAudioRecording, addRecordingGraphics, updateExplorationControls, getCityIndex,
 	stopAudioRecording, removeRecordingGraphics, alert, goToFirstLocation, showPathButton, isNextEvent,
@@ -507,6 +507,7 @@ function setupAudio(exploration){
 	if(exploration.getAudio()===null){
 		return;
 	}
+	el("has-audio").style.visibility = "visible";
 	var audioBlob = exploration.getAudio();
 	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
 }
@@ -539,6 +540,7 @@ function updatePlaybackStarted(){
 
 //makes an exploration become selected
 function selectExploration(exploration){
+	el("has-audio").style.visibility = "hidden";
 	if (selectedExploration){
 		deselectExploration();
 		}
@@ -567,6 +569,7 @@ function deselectExploration(){
 	if (!selectedExploration){
 		return;
 	}
+	el("has-audio").style.visibility = "hidden";
 	// must do this first to check if there are city events
 	if(selectedExploration.hasCityEvents()){
 		pathView.unload();
@@ -608,6 +611,7 @@ function saveExploration(exploration) {
 
 	// if the exploration has no audio, go ahead and send
 	if (!exploration.audio){
+		console.log("no audio");
 		sendExploration(exploration);
 	}
 	else { // if the exploration contains audio

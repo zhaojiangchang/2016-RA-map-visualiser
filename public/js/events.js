@@ -48,8 +48,10 @@ guestUsers.forEach(function(userName){
 //========= exploration controls ==================
 
 // record expl button pressed
-// If currently recording - stop recording
-// 		If inserting new expl into current selected expl Do: stop recording and
+// If currently recording -
+// 		If inserting new expl into current selected expl Do: stop recording
+//		else stop recording
+// else stop recording
 recordExplButton.addEventListener("click", function(){
 	var currentExpl = currentUser.getCurrentExploration();
 
@@ -60,6 +62,7 @@ recordExplButton.addEventListener("click", function(){
 			}
 			else {
 				doneRecording();
+				stopRecording();
 			}
 		}
 		else{
@@ -70,6 +73,7 @@ recordExplButton.addEventListener("click", function(){
 	else{
 		startRecording();
 	}
+	// set progressBar and update selectedExploration
 	function doneRecording(){
 		inserting = false;
 		var insertionDuration = currentExpl.getDuration();
@@ -85,6 +89,7 @@ recordExplButton.addEventListener("click", function(){
 	}
 });
 
+// play button clicked (sidebar)- play selected exploration
 playExplButton.on('click', function () {
 	if (paused){
 		resumePlayback(selectedExploration);
@@ -94,31 +99,38 @@ playExplButton.on('click', function () {
 	}
 });
 
+// pause button clicked (sidebar)- pause play selected exploration
 pauseExplButton.on('click', function(){
 	pausePlayback(selectedExploration);
 });
 
+// stop button clicked (sidebar)- stop play selected exploration
 stopExplButton.on('click', function(){
 	stopPlayback(selectedExploration);
 });
 
+// save button clicked (sidebar)- save recorded exploration and set selected exploration as saved
 saveExplButton.click(function(){
 	saveExploration(currentUser.getCurrentExploration());
 });
 
+// delete button clicked (sidebar)- delete exploration from current user,s explorations list
+// if selected exploration is not null do: select the next exploraiton from the list.
 deleteExplButton.click(function(){
 	if (selectedExploration){
 		deleteExploration(selectedExploration);
 	}
 });
 
+// reset button clicked (sidebar) - reset to init. SelectedExploration === first exploration in Exploration list
 resetExplButton.click(resetExplorations);
 
 //==========================================
 //======== exploration chooser and login====
 
+// Explorations dropdown list (sidebar) - click item on the list to set selected exploration
 explChooser.onclick = updateSelectedExploration;
-
+// Show and hide path button (on main canvas top-right) - show and hide path view
 showPathButton.onclick = toggleVisiblePath;
 
 //submit button
@@ -411,13 +423,21 @@ function selectedMessageSenderOption(){
 	var messagesFromSender = currentUser.getMessagesBySender(selectedName);
 	for(var i = 0; i<messagesFromSender.length; i++){
 		el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
-		if(messagesFromSender[i].isNew){
-			el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+"(New Message) " + ": "+messagesFromSender[i].message;
+		if(messagesFromSender[i].isNew && selectedName!==currentUser.name){
+			if(messagesFromSender[i].to===currentUser.name){
+				el("showTextArea").innerHTML += "\n"+messagesFromSender[i].to + ": "+messagesFromSender[i].message;
+			}
+			else{
+				el("showTextArea").innerHTML += "\n"+messagesFromSender[i].to+"(New Message) " + ": "+messagesFromSender[i].message;
+			}
 
 		}
-		else{
+		else if(!messagesFromSender[i].isNew && selectedName!==currentUser.name){
 			el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from+": "+messagesFromSender[i].message;
 
+		}
+		else if(selectedName === currentUser.name){
+			el("showTextArea").innerHTML += "\n"+ messagesFromSender[i].from +" to "+ messagesFromSender[i].to + ": "+messagesFromSender[i].message;
 		}
 
 		el("showTextArea").innerHTML += "\n";
@@ -439,6 +459,7 @@ function selectedAudioMessageSenderOption(){
 		while(el("audio-messages-list").firstChild){
 			el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
 		}
+		resetVisibility(el("audio-message-div"), "visible");
 		appendAudioMessageOnSideBar(selectedName);
 	}
 
@@ -463,17 +484,28 @@ function appendAudioMessageOnSideBar(selectedName){
 
 			// set class (styles are applied in styles.css)
 			info.className = "annotation-text annotation-info";
-			info.id = sender+timeStamp+"wav";
+			info.id = sender + timeStamp+"wav";
 			controlsDiv.className = "annotation-inner-container annotation-controls";
 			textDiv.className ="annotation-inner-container annotation-text-container";
 			rowDiv.className = "annotation-row";
 
 			if(message.isNew && message.to === currentUser.name){
 				newAudioMessages.push(message);
-				info.innerHTML = "(New) "+ sender+" "+time;
+				if(currentUser.name===message.to){
+					info.innerHTML = "(New) "+ sender +" "+time;
+				}
+				else{
+					info.innerHTML = "(New) "+ sender+" to "+message.to+" "+time;
+				}
 			}
 			else{
-				info.innerHTML = sender+" "+time;
+				if(currentUser.name===message.to){
+					info.innerHTML = sender +" "+time;
+				}
+				else{
+					info.innerHTML = sender+" to "+message.to+" "+time;
+				}
+
 			}
 			info.onclick = playAudioMessage(message);
 

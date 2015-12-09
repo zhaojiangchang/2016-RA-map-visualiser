@@ -68,7 +68,8 @@ var svg = d3.select("body").append("svg")
 .attr("class", "svg_map")
 .attr("id", "svg_map")
 .call(zoom) // attach zoom listener
-.on("dblclick.zoom", null); // disable double-click zoom
+.on("dblclick.zoom", null)
+.on("click", deselectLocation); // disable double-click zoom
 
 // contains all map graphics
 var map = svg.append("g")
@@ -91,6 +92,10 @@ d3.json("data/map/kaz.json", function(error, json) {
 	.attr("stroke", "#FFAA40");
 });
 
+function deselectLocation(){
+	el("location-div").style.display = "none";
+	selectedLocation = null;
+}
 // cities
 d3.json("data/map/kaz_places.json", function(error, json){
 	cities = json.features;

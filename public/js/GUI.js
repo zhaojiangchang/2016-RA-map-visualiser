@@ -37,7 +37,6 @@ function updateSideBar(){
 	updateUserButtons(currentUser);
 	updateExplorationChooser();
 	updateExplorationControls();
-	checkNotifications();
 	updateLogonElements();
 	updateShareExplElements();
 }
@@ -165,11 +164,6 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 
 //=====================================================
 //=========== Notification ============================
-
-function checkNotifications(){
-	checkTextMessages();
-	checkAudioMessages();
-}
 
 //updates the notification GUI elements
 function updateNotifications(){
@@ -373,6 +367,8 @@ function toggleVisiblePath(){
 function updateShareExplElements(){
 	el("shared-with").value = "";
 	el("message-send-identify").innerHTML = "";
+	checkTextMessages();
+	checkAudioMessages();
 }
 
 //=====================================================
@@ -459,7 +455,7 @@ function getAnnotationFromLocalServer(city){
 		if (annotations === "no_annotations") {
 			return;
 		}
-		el("file-browse").style.display = "block";
+		el("location-div").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
 		var container = document.createElement("div");
 		container.className = "annotation-container-2";
@@ -584,6 +580,7 @@ function checkTextMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
+		console.log(messages )
 		messageFromNameList = [];
 		currentUser.setMessages(messages);
 		var newMessages = [];
@@ -600,7 +597,7 @@ function checkTextMessages(){
 		updateNotifications();
 
 		if(messageFromNameList.length!==0){
-			var showMessageBox = false;
+			el("text-message-div").style.visibility = "visible";
 			if(el("messageFrom1")===null){
 				var option = document.createElement('option');
 				option.setAttribute("id", "messageFrom1");
@@ -610,23 +607,15 @@ function checkTextMessages(){
 			}
 			for(var k = 0; k<messageFromNameList.length;k++){
 				var name = messageFromNameList[k];
-				if(el(name+"Message")===null && name!== currentUser.name){
-					showMessageBox = true;
+				console.log(name)
+
+				if(el(name+"Message")===null){
 					var option2 = document.createElement('option');
 					option2.setAttribute("id", name+"Message");
 					option2.innerHTML = name;
 					option2.value = name;
 					el("messageFromOption").appendChild(option2);
 				}
-				else if(el(name+"Message")!==null && name!==currentUser.name){
-					showMessageBox = true;
-				}
-			}
-			if(showMessageBox){
-				el("text-message-div").style.visibility = "visible";
-			}
-			else{
-				el("text-message-div").style.visibility = "hidden";
 			}
 		}
 		else{
@@ -686,15 +675,15 @@ function checkAudioMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
-		if(messages.length ===0){
+		audioMessageFromNameList = [];
+		currentUser.setAudioMessages(messages);
+		if(currentUser.audioMessages.length<1){
 			el("audio-message-div").style.visibility = "hidden";
 			return;
 		}
 		else{
 			el("audio-message-div").style.visibility = "visible";
 		}
-		audioMessageFromNameList = [];
-		currentUser.setAudioMessages(messages);
 		currentUser.audioMessages.forEach(function(message){
 			if(message.audioData===null){
 				return;
@@ -724,9 +713,13 @@ function checkAudioMessages(){
 		}
 
 		currentUser.newAudioMessages = newAudioMessages;
-		if(audioMessageFromNameList>0){
+		if(audioMessageFromNameList.length>0){
+			el("audio-message-div").style.display = "block";
 			addAudioMessageDropDownNameList(audioMessageFromNameList);
 			updateNotifications();
+		}
+		else{
+			el("audio-message-div").style.display = "none";
 		}
 
 	}
@@ -743,22 +736,18 @@ function addAudioMessageDropDownNameList(audioMessageFromNameList){
 		option.disabled = true;
 		el("audioMessageFromOption").appendChild(option);
 	}
-	el("audio-message-div").style.display = "block";
-	if(audioMessageFromNameList.length!==0){
-		for(var j = 0; j<audioMessageFromNameList.length;j++){
-			var name = audioMessageFromNameList[j];
-			if(el(name+"VoiceMessage")===null && name!==currentUser.name){
-				var option2 = document.createElement('option');
-				option2.setAttribute("id", name+"VoiceMessage");
-				option2.innerHTML = name;
-				option2.value = name;
-				el("audioMessageFromOption").appendChild(option2);
-			}
+	for(var j = 0; j<audioMessageFromNameList.length;j++){
+		var name = audioMessageFromNameList[j];
+		if(el(name+"VoiceMessage")===null){
+			var option2 = document.createElement('option');
+			option2.setAttribute("id", name+"VoiceMessage");
+			option2.innerHTML = name;
+			option2.value = name;
+			el("audioMessageFromOption").appendChild(option2);
 		}
 	}
-	else{
-		el("audio-message-div").style.display = "none";
-	}
+
+
 }
 function setVoiceMessageIsOld(m){
 	currentUser.setIsOld(m);

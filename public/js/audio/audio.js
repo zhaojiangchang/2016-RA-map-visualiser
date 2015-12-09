@@ -116,6 +116,7 @@ function errorCallback(error){
 
 // sends request to use mic
 function start(){
+
     if (!!window.stream) {
         window.stream.stop();
     }

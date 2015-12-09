@@ -1,5 +1,5 @@
 
-/*global $, window, selectedExploration, setTimeout, el, alert, selectedLocation, updateSideBar,resetExplorations, updateNotifications,
+/*global $, window, selectedExploration, setTimeout, el, alert, updateSideBar,resetExplorations, updateNotifications,
  	Exploration, atob, Uint8Array, Blob, voiceMessageData, FileReader, appendAudioMessageOnSideBar, addAudioMessageDropDownNameList*/
 /*exported attemptLogin, logout, userLoggedOn,attemptCreateAccount, shareExplFile, shareTextMessage,
     shareVoiceMessage, deleteAudioMessage, deletedVoiceMessageFromCurrentUser*/
@@ -211,11 +211,7 @@ function login(name){
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
 	el("share-file").style.display = "block";
-	if(selectedLocation===null){
-		el("file-browse").style.display = "none";
-	}
-
-
+	el("location-div").style.display = "none";
 	function gotExplorations(allExplorations){
 		currentUser.setExplorations(allExplorations);
 		updateSideBar();
