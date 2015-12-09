@@ -419,16 +419,18 @@ function stopRecordVoiceMessage(){
 function selectedMessageSenderOption(){
 	el("showTextArea").innerHTML = '';
 	var selectedName = el("messageFromOption").value;
+	console.log("selected name: "+selectedName)
 
 	var messagesFromSender = currentUser.getMessagesBySender(selectedName);
+	console.log(messagesFromSender )
 	for(var i = 0; i<messagesFromSender.length; i++){
 		el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
 		if(messagesFromSender[i].isNew && selectedName!==currentUser.name){
 			if(messagesFromSender[i].to===currentUser.name){
-				el("showTextArea").innerHTML += "\n"+messagesFromSender[i].to + ": "+messagesFromSender[i].message;
-			}
-			else{
-				el("showTextArea").innerHTML += "\n"+messagesFromSender[i].to+"(New Message) " + ": "+messagesFromSender[i].message;
+				el("showTextArea").innerHTML += "\n"+messagesFromSender[i].from + "(New Message) "  + ": "+messagesFromSender[i].message;
+
+			}else {
+				el("showTextArea").innerHTML += "\n"+currentUser.name + ": "+messagesFromSender[i].message;
 			}
 
 		}

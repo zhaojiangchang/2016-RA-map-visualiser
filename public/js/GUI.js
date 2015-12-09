@@ -585,8 +585,10 @@ function checkTextMessages(){
 		currentUser.setMessages(messages);
 		var newMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			messageFromNameList[i] = messages[i][0].from;
 			for(var j = 0; j< messages[i].length; j++){
+				if(messages[i][j].from!==currentUser.name && $.inArray(messages[i][j].from,messageFromNameList[i])==-1){
+					messageFromNameList[i] = messages[i][j].from;
+				}
 				if(messages[i][j].isNew===true && messages[i][j].from!==currentUser.name){
 					newMessages.push(messages[i][j]);
 				}
@@ -738,7 +740,7 @@ function addAudioMessageDropDownNameList(audioMessageFromNameList){
 	}
 	for(var j = 0; j<audioMessageFromNameList.length;j++){
 		var name = audioMessageFromNameList[j];
-		if(el(name+"VoiceMessage")===null){
+		if(el(name+"VoiceMessage")===null && name!== currentUser.name){
 			var option2 = document.createElement('option');
 			option2.setAttribute("id", name+"VoiceMessage");
 			option2.innerHTML = name;

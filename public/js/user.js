@@ -73,8 +73,8 @@ function User(name, explorations){
 	this.getMessagesBySender = function(name){
 		var messagesForSelectedSender = [];
 		for (var i = 0; i<this.messages.length; i++){
-			if(this.messages[i][0].from===name){
 				for (var j = 0; j<this.messages[i].length; j++){
+					if(this.messages[i][j].from===name ||this.messages[i][j].to===name){
 					messagesForSelectedSender[j] = this.messages[i][j];
 				}
 			}
