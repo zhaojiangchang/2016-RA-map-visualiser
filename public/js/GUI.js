@@ -724,8 +724,11 @@ function checkAudioMessages(){
 		}
 
 		currentUser.newAudioMessages = newAudioMessages;
-		addAudioMessageDropDownNameList(audioMessageFromNameList);
-		updateNotifications();
+		if(audioMessageFromNameList>0){
+			addAudioMessageDropDownNameList(audioMessageFromNameList);
+			updateNotifications();
+		}
+
 	}
 }
 function addAudioMessageDropDownNameList(audioMessageFromNameList){
