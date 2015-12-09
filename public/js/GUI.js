@@ -1,3 +1,12 @@
+
+/* global document, $, currentUser,userLoggedOn,d3,atob,Blob,disableAction,enableAction,playing,
+   ensureExplorationSelected,explRecording, height, width, svg, updateLocationInfo, selectedExploration,
+   stopRecording, selectExploration, playAudioMessage, pathView, Image, submitAnnotation, selectedImgFile,
+   window, loadAllExplorations, selectedLocation, Uint8Array*/
+/* exported updateSideBar, showNotificationButtons, toggleVisiblePath,addRecordingGraphics, removeRecordingGraphics,
+   displayLocationInfo, setVoiceMessageIsOld, removeAudioGraphic, displayAudioGraphic, divHideShow*/
+/*global selectedImgFile:true*/
+
 //=================================================================================
 //Author: Will Hardwick-Smith & Jacky Chang
 //Contains: Only GUI/view related methods, such as:
@@ -9,42 +18,24 @@
 //=================================================================================
 
 //------ Dom elements --------
-var recordExplButton = el("record-exploration-button"),
-playExplButton = $("#play-exploration-button"),
-pauseExplButton = $("#pause-exploration-button"),
-stopExplButton = $("#stop-exploration-button"),
-saveExplButton = $("#save-exploration-button"),
-deleteExplButton = $("#delete-exploration-button"),
-resetExplButton = $("#reset-exploration-button"),
-explChooser = el("exploration-selector"),
+
+var explChooser = el("exploration-selector"),
 userNameInput = el("username-input"),
 passwordInput = el("password-input"),
 logonButton = el("logon-button"),
-messageBar = el("percent"),
 notificationContainer = el("notification-container"),
 removeNotification = el("remove-notification"),
 quickplayNotification = el("quickplay-notification"),
 notificationSelector = el("notification-selector"),
-notificationElements = document.getElementsByClassName("notification-elements"),
 showPathButton = el("show-path"),
-insertButton = $("#insert-button"),
-stopInsertButton = $("#stop-insert-button"),
-explorationTitle = $("#exploration-title"),
-timeText = $("#time-text"),
-durationText = $("#duration-text"),
-hasAudio = $("#has-audio"),
-aboveBarDiv = $("#above-bar"),
-belowBarDiv = $("#below-bar"),
-palyControlButton = el("play-control"),
-saveAnnButton = el("save-ann-button"),
-removeImgButton  = el("remove-img-button");
+IMAGE_PATH = "data/image/";
+
 
 
 //updates elements in the side bar
 function updateSideBar(){
 	updateUserButtons(currentUser);
 	updateExplorationChooser();
-	updateLocationInfo();
 	updateExplorationControls();
 	checkNotifications();
 	updateLogonElements();
@@ -263,7 +254,7 @@ function showListNotifications(){
 				var newOption = document.createElement('option');
 				newOption.setAttribute("id", currentUser.name+"Message"+ index);
 				newOption.value = index;
-				messageName = "Txt Msg: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				var messageName = "Txt Msg: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
 					//TODO: show message
@@ -281,7 +272,7 @@ function showListNotifications(){
 					var newOption = document.createElement('option');
 					newOption.setAttribute("id", currentUser.name+index);
 					newOption.value = index;
-					explorationName = "Expl: "+ expl.name;
+					var explorationName = "Expl: "+ expl.name;
 					newOption.innerHTML = explorationName;
 					newOption.onclick  = function(){
 						stopRecording();
@@ -299,7 +290,7 @@ function showListNotifications(){
 				var newOption = document.createElement('option');
 				newOption.setAttribute("id", currentUser.name+"AudioMessage"+ index);
 				newOption.value = index;
-				messageName = "Audio Msgs: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				var messageName = "Audio Msgs: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
 					//TODO: show message
@@ -378,7 +369,6 @@ function addRecordingGraphics(){
 	// var points = [0, 0, width, height];
 	var borderWidth = 10;
 	var circleRadius = 20;
-	var padding = 10;
 	var bottomPadding = 10;
 	var circleCX = borderWidth + circleRadius;
 	var circleCY = borderWidth + circleRadius;
@@ -516,6 +506,16 @@ function getAnnotationFromLocalServer(city){
 				controlsDiv.appendChild(deleteButton);
 			}
 
+			// removing an annotation from a location.
+			function deleteAnnotation(annotation){
+				$.ajax({
+					type: 'POST',
+					url: "/deleteAnnotation",
+					data: JSON.stringify(annotation),
+					contentType: "application/json",
+					complete: updateLocationInfo
+				});
+			}
 			textDiv.appendChild(content);
 			textDiv.appendChild(info);
 
@@ -711,6 +711,7 @@ function addAudioMessageDropDownNameList(audioMessageFromNameList){
 		option.setAttribute("id", "audio-message-from");
 		option.innerHTML = "Select a sender";
 		option.value = "select";
+		option.disabled = true;
 		el("audioMessageFromOption").appendChild(option);
 	}
 	el("audio-message-div").style.display = "block";
@@ -789,7 +790,7 @@ function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
 	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
-			seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
+			//seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
 					day = date.getDate(),
 					month = monthAsString(date.getMonth());
 

@@ -1,3 +1,4 @@
+/*global Worker, document, window */
 /*License (MIT)
 
 Copyright Â© 2013 Matt Diamond
@@ -20,8 +21,8 @@ DEALINGS IN THE SOFTWARE.
 (function(window){
 
   var WORKER_PATH = 'js/audio/recorder/recorderWorker.js';
-  var foo = function(){};
-  var bar = 5;
+  //var foo = function(){};
+  //var bar = 5;
 
   var Recorder = function(source, cfg){
     var config = cfg || {};

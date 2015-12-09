@@ -1,3 +1,6 @@
+/* global document, navigator, window, AudioContext, console, displayAudioGraphic, removeAudioGraphic,
+     voiceMessageRecording, currentUser, voiceMessageData, videoSelect, alert, MediaStreamTrack, Recorder, */
+/* exported saveAudio, startAudioRecording, stopAudioRecording,*/
 // =================================================================================
 // Author: github.com/samdutton, modified by Will Hardwick-Smith
 // original code from https://github.com/samdutton/simpl/blob/master/getusermedia/sources/js/main.js

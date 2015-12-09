@@ -1,3 +1,15 @@
+/* global document, IMAGE_PATH, $, el, currentUser,userLoggedOn,explRecording, userNameInput, passwordInput,
+   stopRecording, inserting, startRecording, getCurrentPlaybackTime, audioRecorder, insertIntoSelectedExploration,
+   progressBar, paused, selectedExploration, resumePlayback, startPlayback, pausePlayback, stopPlayback, saveExploration,
+   deleteExploration, resetExplorations, updateSelectedExploration, explChooser,toggleVisiblePath,
+   showPathButton, logonButton, selectedLocation,logout, attemptLogin, window, notificationContainer,updateNotifications,
+   showListNotifications, notificationSelector,showNotificationButtons, hideNotificationButtons, removeNotification,
+   setExplorationIsOld, checkTextMessages, deselectExploration, quickplayNotification, submitAnnotation, insertButton,
+   FileReader, shareExplFile, setTimeout,startAudioRecording, shareTextMessage, shareVoiceMessage,
+   stopAudioRecording, makeShortTimeFormat,deleteAudioMessage,resetVisibility, audioElem*/
+/* exported onFileSelected, selectedSendInfoOption, selectedMessageSenderOption, selectedAudioMessageSenderOption*/
+/*global inserting:true , selectedLocation:true, */
+
 //=================================================================================
 //Author: Will Hardwick-Smith & Jacky Chang
 //Contains: Event handlers for most GUI elements, including:
@@ -7,11 +19,20 @@
 //- notifications
 //- inserting
 //=================================================================================
-
+var recordExplButton = el("record-exploration-button"),
+playExplButton = $("#play-exploration-button"),
+pauseExplButton = $("#pause-exploration-button"),
+stopExplButton = $("#stop-exploration-button"),
+deleteExplButton = $("#delete-exploration-button"),
+saveExplButton = $("#save-exploration-button"),
+resetExplButton = $("#reset-exploration-button"),
+palyControlButton = el("play-control"),
+saveAnnButton = el("save-ann-button"),
+stopInsertButton = $("#stop-insert-button"),
+removeImgButton  = el("remove-img-button");
 //========= guest users =============================
 
 var guestUsers = ["obama", "john", "lorde", "will"];
-var testMessageToSend = null;
 var selectedImgFile = null;
 
 guestUsers.forEach(function(userName){
@@ -101,7 +122,7 @@ logonButton.onclick = function(){
 
 //==========================================
 //============== create new account ========
-var myWindow;
+var myWindow = null;
 var newAccount = el("create-new-account");
 newAccount.onclick = function(){
 	myWindow = window.open("new-account.html", "_blank", "toolbar=yes, scrollbars=no, resizable=no, top=500, left=800, width=270, height=180");
@@ -136,7 +157,7 @@ removeNotification.addEventListener("click", function(){
 });
 
 quickplayNotification.addEventListener("click", function(){
-	selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
+	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	startPlayback(selected);
 	selected.isNew = true;
 	checkTextMessages();
@@ -294,8 +315,8 @@ function selectedSendInfoOption() {
 	case "voice":
 		if(explRecording)
 			window.alert('Can Not Record Exploration and Voice Message At Same Time!');
-			else
-				el("record-voice").style.display = "block";
+		else
+			el("record-voice").style.display = "block";
 		break;
 
 	}
@@ -347,7 +368,6 @@ function stopRecordVoiceMessage(){
 
 //show text messages
 function selectedMessageSenderOption(){
-	var messageFromOption = el("messageFromOption");
 	el("showTextArea").innerHTML = '';
 	var selectedName = el("messageFromOption").value;
 
@@ -373,7 +393,6 @@ function selectedMessageSenderOption(){
 
 //show audio messages
 function selectedAudioMessageSenderOption(){
-	var messageFromOption = el("audioMessageFromOption");
 	var selectedName = el("audioMessageFromOption").value;
 	if(selectedName == "select"){
 		el("audio-messages-list").parentNode.removeChild(el("audio-messages-list"));
@@ -396,7 +415,6 @@ function appendAudioMessageOnSideBar(selectedName){
 
 			//removegroupElem("audio-messages-list");
 			var sender = message.from;
-			var receiver = message.to;
 			var timeStamp = new Date(message.timeStamp);
 			// h:mm format
 			var time = 	makeShortTimeFormat(timeStamp);
@@ -417,14 +435,10 @@ function appendAudioMessageOnSideBar(selectedName){
 				newAudioMessages.push(message);
 				info.innerHTML = "(New) "+ sender+" "+time;
 			}
-			else
+			else{
 				info.innerHTML = sender+" "+time;
-			info.onclick = function(){
-				console.log("clicked to play");
-				console.log(message);
-				playAudioMessage(message);
-
-			};
+			}
+			info.onclick = playAudioMessage(message);
 
 
 			// display delete button if user owns the annotation
@@ -434,7 +448,7 @@ function appendAudioMessageOnSideBar(selectedName){
 				deleteButton.type = "image";
 				deleteButton.src = IMAGE_PATH + "delete.png";
 				deleteButton.id = "delete-button";
-				deleteButton.onclick = function () { deleteAudioMessage(message); };
+				deleteButton.onclick = deleteAudioMessage(message);
 				controlsDiv.appendChild(deleteButton);
 			}
 
@@ -465,9 +479,11 @@ function removegroupElem(classname) {
 }
 
 function playAudioMessage(message){
-	var audioBlob = message.audioData;
-	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
-	audioElem.play();
+	return function(){
+		var audioBlob = message.audioData;
+		audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
+		audioElem.play();
+	};
 }
 //---- INIT
 resetExplorations();

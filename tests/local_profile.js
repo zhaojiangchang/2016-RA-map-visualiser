@@ -20,8 +20,8 @@ define({
 		{ browserName: 'internet explorer', version: '11', platform: 'WIN8' },
 		{ browserName: 'internet explorer', version: '10', platform: 'WIN8' },
 		{ browserName: 'internet explorer', version: '9', platform: 'WINDOWS' },
-		{ browserName: 'firefox', version: '37', platform: [ 'WINDOWS', 'MAC' ] },
-		{ browserName: 'chrome', version: '39', platform: [ 'WINDOWS', 'MAC' ] },
+		{ browserName: 'firefox', version: '37', platform: [ 'WINDOWS', 'MAC' ,'Linux'] },
+		{ browserName: 'chrome', version: ['46','39'], platform: [ 'WINDOWS', 'MAC','Linux' ] },
 		{ browserName: 'safari', version: '8', platform: 'MAC' }
 	],
 
@@ -30,7 +30,12 @@ define({
 
 	// Name of the tunnel class to use for WebDriver tests.
 	// See <https://theintern.github.io/intern/#option-tunnel> for built-in options
-	tunnel: 'BrowserStackTunnel',
+	//tunnel: 'BrowserStackTunnel',
+       tunnel: 'NullTunnel',
+	    tunnelOptions: {
+	      hostname: 'localhost',
+	      port: 3000
+	    },
 
 	// Configuration options for the module loader; any AMD configuration options supported by the AMD loader in use
 	// can be used here.
@@ -38,11 +43,13 @@ define({
 	// <https://theintern.github.io/intern/#option-useLoader> for instruction
 	loaderOptions: {
 		// Packages that should be registered with the loader in each testing environment
-		packages: [ { name: 'myPackage', location: '.' } ]
+		packages: [ { name: 'myPackage', location: '.' },
+		  { name: 'myJS', location: './public/js' },
+		]
 	},
 
 	// Non-functional test suite(s) to run in each browser
-	suites: [ /* 'myPackage/tests/foo', 'myPackage/tests/bar' */ ],
+	suites: [  'myPackage/tests/foo', 'myPackage/tests/bar' ],
 
 	// Functional test suite(s) to execute against each browser once non-functional tests are completed
 	functionalSuites: [ /* 'myPackage/tests/functional' */ ],

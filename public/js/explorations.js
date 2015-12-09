@@ -1,3 +1,11 @@
+
+/*global document, $, currentUser, userLoggedOn, d3, Blob,updateNotifications, clearTimeout, explChooser,
+	el, setTimeout, makeShortTimeFormat, zoom, updateScaleAndTrans, goToLoc, window, FileReader,
+	map, audioRecorder, startAudioRecording, addRecordingGraphics, updateExplorationControls, getCityIndex,
+	stopAudioRecording, removeRecordingGraphics, alert, goToFirstLocation, showPathButton, isNextEvent,
+	loadAllExplorations, gotExplorations, updateExplorationChooser, changeButtonColour, ProgressBar, PathView*/
+/*exported startRecording, startPlayback, insertIntoSelectedExploration, saveExploration, deleteExploration,
+    updateSelectedExploration, ensureExplorationSelected, setPositionFromClickedPathLine*/
 // =================================================================================
 // Authors: Will Hardwick-Smith & Jacky Chang
 // Contains: Event and Exploration contructors.
@@ -593,7 +601,7 @@ function saveExploration(exploration) {
 			type: 'POST',
 			url: "/postExploration",
 			data: JSON.stringify(exploration),
-			success: function(response){
+			success: function(){
 				//TODO: try not load all explorations after send exploration, add this exploration to currentuser's expls
 				loadAllExplorations(currentUser.name, gotExplorations);
 				enableAction(["delete"]);
@@ -652,7 +660,7 @@ function deleteExploration(expl){
 		success: deletedExploration
 	});
 
-	function deletedExploration(response){
+	function deletedExploration(){
 		loadAllExplorations(currentUser.name, gotExplorations);
 
 		function gotExplorations(allExplorations){
@@ -702,3 +710,82 @@ function setExplorationIsOld(expl){
 function getCurrentPlaybackTime(){
 	return selectedExploration.getEvent(currentEventIndex).time + elapsedEventTime;
 }
+
+//when click the path on the map will trigger this function to set the position at clicked point
+//also set the progress bar to the right "time".
+function setPositionFromClickedPathLine(cityIndex){
+	var currentCityIndex = null;
+	pathView.setProgressBarClicked(false,true); // first param: progressBar clicked			second param: pathview clicked
+	d3.selectAll("#animationPath").remove();
+	if(!cityIndex){ // if argument is null get city index by calling getCityIndexByPoint function
+		currentCityIndex = pathView.getCityIndexByPoint(pathView.getPausedX(), pathView.getPausedY());
+	}
+	else currentCityIndex = cityIndex;
+
+	pathView.setCtx( pathView.getPausedX() );
+	pathView.setCty( pathView.getPausedY() );
+
+	d3.selectAll("#circle-move")
+	.attr("cx", pathView.getCtx())
+	.attr("cy", pathView.getCty());
+	var tempTrans =  [];
+	if(currentCityIndex < pathView.translates().length - 1){
+		pathView.setNcx( pathView.translates()[currentCityIndex+1][ 0 ]);
+		pathView.setNcy( pathView.translates()[currentCityIndex+1][ 1 ]);
+		for(var i = 0;  i < currentCityIndex+1;  i++ )
+			tempTrans.push(pathView.translates()[ i ] );
+		tempTrans.push( [ pathView.getPausedX(), pathView.getPausedY() ] );
+	}
+	else{
+		tempTrans = pathView.translates();
+	}
+	map.append("path")
+	.data( [ tempTrans ] )
+	.attr({
+		id: "animationPath",
+		class: "path-move",
+		stroke: "blue",
+		"stroke-width": "2",
+	})
+	.style("fill", "none")
+	.attr("d", d3.svg.line()
+			.tension(0))
+			.on("click", function(){
+				pathView.setPausedX(d3.mouse(this)[0]);
+				pathView.setPausedY(d3.mouse(this)[1]);
+				setPositionFromClickedPathLine();}
+			);
+
+	if(currentCityIndex>pathView.translates().length-1)
+		return;
+
+	// currentCityIndex is one step behand the progress bar city event
+	// distence between paused position to previous city event
+	var distToPausedX  = Math.abs(pathView.getPausedX() - pathView.translates()[currentCityIndex][0]),
+	nextCityEventTime = pathView.cityEventTimes()[currentCityIndex+2],
+	durCityEvents = -1,
+	lastCityEventTime = -1;
+
+	//path between last two cities
+	if(currentCityIndex === pathView.translates().length-2){
+		durCityEvents = pathView.expl.events[pathView.expl.events.length-1].time - pathView.cityEventTimes()[pathView.cityEventTimes().length-1];
+		lastCityEventTime = pathView.cityEventTimes()[pathView.cityEventTimes().length-1];
+	}
+	//path between first two cities
+	else if(currentCityIndex === 0){
+		durCityEvents = pathView.cityEventTimes()[2]- pathView.cityEventTimes()[1];
+		lastCityEventTime = pathView.cityEventTimes()[1];
+	}
+	//all other path
+	else{
+		durCityEvents = nextCityEventTime - pathView.cityEventTimes()[currentCityIndex+1];
+		lastCityEventTime = pathView.cityEventTimes()[currentCityIndex + 1];
+	}
+	//x distence between two cities
+	var distX = Math.abs((pathView.translates()[currentCityIndex][0] - pathView.translates()[currentCityIndex+1][0]));
+	var time = distToPausedX * durCityEvents / distX + lastCityEventTime;
+	if(time<pathView.cityEventTimes()[0])
+		time = pathView.cityEventTimes()[0];
+	setPlaybackPosition(pathView.expl, time);
+}
+

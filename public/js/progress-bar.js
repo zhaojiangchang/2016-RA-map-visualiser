@@ -1,3 +1,7 @@
+
+/*global $, d3, selectedExploration, playing, paused, ping, progressBar,
+	startPlayback, resumePlayback, pausePlayback, pathView, setPlaybackPosition, setTimeout*/
+/*exported ProgressBar*/
 //=================================================================================
 //Author: Will Hardwick-Smith
 //Design based on: http://bl.ocks.org/keithcollins/a0564c578b9328fcdcbb
@@ -11,6 +15,13 @@
 //- exploration info text (name, timestamp, duration, has audio)
 //- insert/stop inserting buttons and associated animations
 //=================================================================================
+var	belowBarDiv = $("#below-bar"),
+	explorationTitle = $("#exploration-title"),
+	timeText = $("#time-text"),
+	hasAudio = $("#has-audio"),
+	insertButton = $("#insert-button"),
+	durationText = $("#duration-text");
+
 
 function ProgressBar() {
 
@@ -177,7 +188,7 @@ function ProgressBar() {
 		// add mouse listener to bar
 		progressSVG.on("click", onBarClick);
 		// add hover listener
-		progressSVG.on("mousemove", function(){ showTimeText(getTimeOfXpos(d3.mouse(this)[0])); });
+		progressSVG.on("mousemove", function(){ showTimeText(this,getTimeOfXpos(d3.mouse(this)[0])); });
 		// mouseoff listener
 		progressSVG.on("mouseout", this.hideTimeText);
 		// show bar
@@ -192,6 +203,9 @@ function ProgressBar() {
 			hasAudio.show();
 		// duration
 		showDurationText();
+
+		// displays insert button above the current playback position
+
 	};
 
 	// unloads an exploration
@@ -216,10 +230,8 @@ function ProgressBar() {
 	};
 
 	// trigger a playback position change
-	function onBarClick(e){
-		var rect = d3.select("#play-svg");
+	function onBarClick(){
 		// figure out x position of mouse
-		var offset = $(this).offset();
 		var xpos = d3.mouse(this)[0]; // 36 ?
 		// Pathmove needs to know this for setPosition
 		pathView.setProgressBarClicked(true, false);
@@ -240,18 +252,12 @@ function ProgressBar() {
 	}
 
 	// returns the x position of the bar as it is now
-	function getCurrentProgressX(){
-		return parseInt(bar.attr("x"));
-	}
-
-	// displays insert button above the current playback position
+//	function getCurrentProgressX(){
+//		return parseInt(bar.attr("x"));
+//	}
 	function showTimeText(millis){
-
 		var formattedTime = formatTime(millis);
-
 		var progressPosition = progressBar.getXPosOfTime(millis);
-		var	padding = 10;
-
 		var timePosition = {
 				left: (progressPosition - timeText.outerWidth()/2)
 		};
@@ -260,7 +266,6 @@ function ProgressBar() {
 		timeText.text(formattedTime);
 		timeText.css(timePosition); // sets position relative to parent
 	}
-
 	// shows the selected exploration's duration
 	function showDurationText(){
 		var formattedTime = formatTime(selectedExploration.getDuration());
@@ -315,7 +320,7 @@ function ProgressBar() {
 		.attr("id", "insert-bar");
 
 		// insert bar
-		var insertBar = insertGroup.append("rect")
+		 insertGroup.append("rect")
 		.attr({
 			x: barLeft,
 			y: barTop,

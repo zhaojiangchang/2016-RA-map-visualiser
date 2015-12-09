@@ -1,6 +1,8 @@
-/* jshint undef: true, unused: true */
-/* globals MY_GLOBAL */
 
+/*global $, window, selectedExploration, setTimeout, el, alert, selectedLocation, updateSideBar,resetExplorations, updateNotifications,
+ 	Exploration, atob, Uint8Array, Blob, voiceMessageData, FileReader, appendAudioMessageOnSideBar, addAudioMessageDropDownNameList*/
+/*exported attemptLogin, logout, userLoggedOn,attemptCreateAccount, shareExplFile, shareTextMessage,
+    shareVoiceMessage, deleteAudioMessage, deletedVoiceMessageFromCurrentUser*/
 var currentUser = null; // the user who is currently logged in
 
 //user object is created with their name and explorations
@@ -366,7 +368,7 @@ function shareExplFile(exploration, userName){
 //=========== Message =================================
 //share text message to userLabelValue
 function shareTextMessage(userLabelValue){
-	testMessageToSend = el("text-message-input").value;
+	var testMessageToSend = el("text-message-input").value;
 	if(testMessageToSend===null) return;
 	var Message = {
 			timeStamp: new Date(),
@@ -379,7 +381,7 @@ function shareTextMessage(userLabelValue){
 		type: 'POST',
 		url: "/postMessage",
 		data: JSON.stringify(Message),
-		success: function(response){
+		success: function(){
 			el("sendOption").value = "select";
 			el("text-message-input-div").style.display = "none";
 			el("shared-with").value = "";
@@ -424,7 +426,7 @@ function shareVoiceMessage(userLabelValue){
 			type: 'POST',
 			url: "/postVoiceMessage",
 			data: JSON.stringify(VoiceMessage),
-			success: function(response){
+			success: function(){
 				el("record-voice").style.display = "none";
 				el("shared-with").value = "";
 				el("message-send-identify").style.display = "block";
@@ -439,26 +441,28 @@ function shareVoiceMessage(userLabelValue){
 
 //delete voice message
 function deleteAudioMessage(message){
-	$.ajax({
-		type: 'POST',
-		url: "deleteAudioMessage",
-		data: JSON.stringify({
-			message: message,
-			currentUser: currentUser.name }),
-			contentType: "application/json",
-			success: deletedVoiceMessageFromCurrentUser
-	});
+	return function(){
+		$.ajax({
+			type: 'POST',
+			url: "deleteAudioMessage",
+			data: JSON.stringify({
+				message: message,
+				currentUser: currentUser.name }),
+				contentType: "application/json",
+				success: deletedVoiceMessageFromCurrentUser
+		});
 
-	function deletedVoiceMessageFromCurrentUser(response){
-		currentUser.removeAudioMessageByMessage(message);
-		while(el("audio-messages-list").firstChild){
-			el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
-		}
-		if(currentUser.audioMessages.length>0)
-			appendAudioMessageOnSideBar();
-		else{
+		function deletedVoiceMessageFromCurrentUser(){
+			currentUser.removeAudioMessageByMessage(message);
+			while(el("audio-messages-list").firstChild){
+				el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
+			}
+			if(currentUser.audioMessages.length>0)
+				appendAudioMessageOnSideBar();
+			else{
 
-			addAudioMessageDropDownNameList();
+				addAudioMessageDropDownNameList();
+			}
 		}
-	}
+	};
 }
