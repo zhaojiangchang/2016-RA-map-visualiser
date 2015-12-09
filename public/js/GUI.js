@@ -1,3 +1,12 @@
+
+/* global document, $, currentUser,userLoggedOn,d3,atob,Blob,disableAction,enableAction,playing,
+   ensureExplorationSelected,explRecording, height, width, svg, updateLocationInfo, selectedExploration,
+   stopRecording, selectExploration, playAudioMessage, pathView, Image, submitAnnotation, selectedImgFile,
+   window, loadAllExplorations, selectedLocation, Uint8Array*/
+/* exported updateSideBar, showNotificationButtons, toggleVisiblePath,addRecordingGraphics, removeRecordingGraphics,
+   displayLocationInfo, setVoiceMessageIsOld, removeAudioGraphic, displayAudioGraphic, divHideShow*/
+/*global selectedImgFile:true*/
+
 //=================================================================================
 //Author: Will Hardwick-Smith & Jacky Chang
 //Contains: Only GUI/view related methods, such as:
@@ -9,44 +18,25 @@
 //=================================================================================
 
 //------ Dom elements --------
-var recordExplButton = el("record-exploration-button"),
-playExplButton = $("#play-exploration-button"),
-pauseExplButton = $("#pause-exploration-button"),
-stopExplButton = $("#stop-exploration-button"),
-saveExplButton = $("#save-exploration-button"),
-deleteExplButton = $("#delete-exploration-button"),
-resetExplButton = $("#reset-exploration-button"),
-explChooser = el("exploration-selector"),
+
+var explChooser = el("exploration-selector"),
 userNameInput = el("username-input"),
 passwordInput = el("password-input"),
 logonButton = el("logon-button"),
-messageBar = el("percent"),
 notificationContainer = el("notification-container"),
 removeNotification = el("remove-notification"),
 quickplayNotification = el("quickplay-notification"),
 notificationSelector = el("notification-selector"),
-notificationElements = document.getElementsByClassName("notification-elements")
-showPathButton = el("show-path");
-insertButton = $("#insert-button"),
-stopInsertButton = $("#stop-insert-button"),
-explorationTitle = $("#exploration-title"),
-timeText = $("#time-text"),
-durationText = $("#duration-text"),
-hasAudio = $("#has-audio"),
-aboveBarDiv = $("#above-bar"),
-belowBarDiv = $("#below-bar"),
-palyControlButton = el("play-control");
-saveAnnButton = el("save-ann-button");
-removeImgButton  = el("remove-img-button");
+showPathButton = el("show-path"),
+IMAGE_PATH = "data/image/";
+
 
 
 //updates elements in the side bar
 function updateSideBar(){
 	updateUserButtons(currentUser);
 	updateExplorationChooser();
-	updateLocationInfo();
 	updateExplorationControls();
-	checkNotifications();
 	updateLogonElements();
 	updateShareExplElements();
 }
@@ -63,7 +53,9 @@ function updateExplorationChooser(){
 		$("#noOfFilesLoaded").html("no explorations loaded");
 		$("#exploration-selector").hide();
 		return;
-	}else $("#exploration-selector").show();
+	}else {
+		$("#exploration-selector").show();
+	}
 	explorations.forEach(function(exploration, index){
 		var explOption = document.createElement('option');
 		explOption.setAttribute("id", exploration.timeStamp);
@@ -136,8 +128,9 @@ function updateLogonElements(){
 	if (userLoggedOn()){
 		toggleLogon(true,"not-allowed");
 	}
-	else
+	else{
 		toggleLogon(false, "default" , "pointer");
+	}
 
 }
 
@@ -154,9 +147,13 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 
 		elems[i].disabled = loggedOn;
 		if (!loggedOn)
+		{
 			elems[i].style.cursor = cursorP;
+		}
 		else
+		{
 			elems[i].style.cursor = cursorD;
+		}
 	}
 	// logoff set value to default
 	if (!loggedOn){
@@ -168,16 +165,14 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 //=====================================================
 //=========== Notification ============================
 
-function checkNotifications(){
-	checkTextMessages();
-	checkAudioMessages();
-}
-
 //updates the notification GUI elements
 function updateNotifications(){
 
 	//set visibility to all notification buttons/labels hidden when log on.
 	resetVisibility(notificationContainer,"hidden");
+	el("audioMessageFromOption").value = "select";
+	resetVisibility(el("audio-messages-list"), "hidden");
+
 	hideNotificationButtons();
 	if (!userLoggedOn()){
 		return;
@@ -187,38 +182,50 @@ function updateNotifications(){
 
 	var sharedExpl = currentUser.getSharedExploration();
 	var newMessages = currentUser.newMessages;
+	var newAudioMessages = currentUser.newAudioMessages;
 	// newCount == the number of nonplayed shared exploration in current user folder
 	var newExplCount = 0;
 	var newMessageCount = 0;
+	var newAudioMessageCount = 0;
+
 
 	sharedExpl.forEach(function(expl){
-		if(expl.isNew)
+		if(expl.isNew){
 			newExplCount++;
+		}
 
 	});
 	newMessages.forEach(function(message){
-		if(message.isNew)
+		if(message.isNew){
 			newMessageCount++;
-
-
+		}
 	});
-
+	newAudioMessages.forEach(function(message){
+		if(message.isNew){
+			newAudioMessageCount++;
+		}
+	});
 	// show notification message
-	if(newExplCount>0 && newMessageCount==0){
+	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
 		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newExplCount + " new expls.");
+		$("#notification-container").html( "Have new notificaiton.");
 		notificationContainer.style.cursor = "pointer";
 	}
-	else if(newExplCount>0 && newMessageCount>0){
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
-		notificationContainer.style.cursor = "pointer";
-	}
-	else if(newExplCount==0 && newMessageCount>0){
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(newMessageCount + " new msgs.");
-		notificationContainer.style.cursor = "pointer";
-	}
+//	if(newExplCount>0 && newMessageCount==0){
+//	resetVisibility(notificationContainer,"visible");
+//	$("#notification-container").html(newExplCount + " new expls.");
+//	notificationContainer.style.cursor = "pointer";
+//	}
+//	else if(newExplCount>0 && newMessageCount>0){
+//	resetVisibility(notificationContainer,"visible");
+//	$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
+//	notificationContainer.style.cursor = "pointer";
+//	}
+//	else if(newExplCount==0 && newMessageCount>0){
+//	resetVisibility(notificationContainer,"visible");
+//	$("#notification-container").html(newMessageCount + " new msgs.");
+//	notificationContainer.style.cursor = "pointer";
+//	}
 	else{
 		resetVisibility(notificationContainer,"visible");
 		$("#notification-container").html(" No new notification.");
@@ -230,24 +237,30 @@ function updateNotifications(){
 //return true - when has new shared exploration
 function showListNotifications(){
 	while(notificationSelector.firstChild)//remove old labels
+	{
 		notificationSelector.removeChild(notificationSelector.firstChild);
+	}
 
 	var newSharedExpls = currentUser.getSharedExploration();
 	var hasNewNoti = false;
 	var newMessages = [];
+	var newAudioMessages = [];
 	if(currentUser.haveNewMessages()) {
 		newMessages = currentUser.newMessages;
 	}
+	if(currentUser.haveNewAudioMessages()){
+		newAudioMessages = currentUser.newAudioMessages;
+	}
 
 	// if has new shared exploration append to notificationSelector
-	if(newSharedExpls.length>0 || newMessages.length>0){
+	if(newSharedExpls.length>0 || newMessages.length>0 ||newAudioMessages.length>0){
 
 		if(newMessages.length>0){
 			newMessages.forEach(function(message, index){
 				var newOption = document.createElement('option');
-				newOption.setAttribute("id", currentUser.name+"message"+ index);
+				newOption.setAttribute("id", currentUser.name+"Message"+ index);
 				newOption.value = index;
-				messageName = "Message: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				var messageName = "Txt Msg: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
 					//TODO: show message
@@ -265,7 +278,7 @@ function showListNotifications(){
 					var newOption = document.createElement('option');
 					newOption.setAttribute("id", currentUser.name+index);
 					newOption.value = index;
-					explorationName = "Expl: "+ expl.name;
+					var explorationName = "Expl: "+ expl.name;
 					newOption.innerHTML = explorationName;
 					newOption.onclick  = function(){
 						stopRecording();
@@ -278,6 +291,24 @@ function showListNotifications(){
 
 			);
 		}
+		if(newAudioMessages.length>0){
+			newAudioMessages.forEach(function(message, index){
+				var newOption = document.createElement('option');
+				newOption.setAttribute("id", currentUser.name+"AudioMessage"+ index);
+				newOption.value = index;
+				var messageName = "Audio Msgs: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
+				newOption.innerHTML = messageName;
+				newOption.onclick  = function(){
+					//TODO: show message
+					playAudioMessage(message);
+					setNewAudioMessageIsOld(message);
+
+				};
+				notificationSelector.appendChild(newOption);
+				hasNewNoti = true;
+			});
+		}
+
 	}
 	return hasNewNoti;
 
@@ -319,7 +350,9 @@ function showNotificationButtons(){
 
 //this function called once showPathButton clicked (event.js)
 function toggleVisiblePath(){
-	if(!selectedExploration) return;
+	if(!selectedExploration){
+		return;
+	}
 	if(selectedExploration.hasCityEvents()){
 		if(showPathButton.innerHTML=="Show Path"){
 			pathView.showPathElems();
@@ -333,7 +366,9 @@ function toggleVisiblePath(){
 //init shared element value
 function updateShareExplElements(){
 	el("shared-with").value = "";
-	el("expl-sent-message").innerHTML = "";
+	el("message-send-identify").innerHTML = "";
+	checkTextMessages();
+	checkAudioMessages();
 }
 
 //=====================================================
@@ -344,7 +379,6 @@ function addRecordingGraphics(){
 	// var points = [0, 0, width, height];
 	var borderWidth = 10;
 	var circleRadius = 20;
-	var padding = 10;
 	var bottomPadding = 10;
 	var circleCX = borderWidth + circleRadius;
 	var circleCY = borderWidth + circleRadius;
@@ -392,13 +426,17 @@ function displayLocationInfo(city){
 	//remove and add new annotation input
 	var annotationInputCont = el("annotation-input-container");
 	annotationInputCont.innerHTML = null;
-	if (currentUser != null)
+	if (currentUser !== null){
 		makeAnnotationInput(annotationInputCont);
+	}
 
 	getAnnotationFromLocalServer(city);
 }
 
 function getAnnotationFromLocalServer(city){
+	if(city===undefined){
+		return;
+	}
 	// get annotations for this location
 	$.ajax({
 		type: 'GET',
@@ -410,14 +448,17 @@ function getAnnotationFromLocalServer(city){
 
 	// displays annotations associated with the current location
 	function displayAnnotations(annotations){
-		while(el("annotation-container").firstChild)//remove old labels
+		while(el("annotation-container").firstChild){//remove old labels
 			el("annotation-container").removeChild(el("annotation-container").firstChild);
+		}
 		// if response is "no_annotations", no annotations were found, so do nothing
-		if (annotations === "no_annotations") return;
-		el("file-browse").style.display = "block";
+		if (annotations === "no_annotations") {
+			return;
+		}
+		el("location-div").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
 		var container = document.createElement("div");
-		container.className["annotation-container-2"];
+		container.className = "annotation-container-2";
 
 		annotations.forEach(function(annotation){
 
@@ -447,37 +488,48 @@ function getAnnotationFromLocalServer(city){
 			rowDiv.className = "annotation-row";
 			imgDiv.className = "annotation-image";
 
-			if(annotation.imageData!=null){
+			if(annotation.imageData!==null){
 				var image = new Image();
 				image.src = annotation.imageData;
 				image.width = 50;
 				image.height = 50;
 				imgDiv.appendChild(image);
 				image.onclick = function(){
-					while(el("preview-city-img").firstChild)//remove old labels
+					while(el("preview-city-img").firstChild){//remove old labels
 						el("preview-city-img").removeChild(el("preview-city-img").firstChild);
+					}
 					var img = new Image();
 					img.src = annotation.imageData;
 					img.width = 250;
 					img.height = 300;
 					el("preview-city-img").appendChild(img);
 
-				}
+				};
 			}
 			content.innerHTML = annotation.text;
 			info.innerHTML = annInfo;
 
 			// display delete button if user owns the annotation
 			// TODO: more reliable equality check
-			if (currentUser != null && currentUser.name === userName){
+			if (currentUser !== null && currentUser.name === userName){
 				var deleteButton = document.createElement("input");
 				deleteButton.type = "image";
 				deleteButton.src = IMAGE_PATH + "delete.png";
 				deleteButton.id = "delete-button";
-				deleteButton.onclick = function () { deleteAnnotation(annotation); }
+				deleteButton.onclick = function () { deleteAnnotation(annotation); };
 				controlsDiv.appendChild(deleteButton);
 			}
 
+			// removing an annotation from a location.
+			function deleteAnnotation(annotation){
+				$.ajax({
+					type: 'POST',
+					url: "/deleteAnnotation",
+					data: JSON.stringify(annotation),
+					contentType: "application/json",
+					complete: updateLocationInfo
+				});
+			}
 			textDiv.appendChild(content);
 			textDiv.appendChild(info);
 
@@ -507,7 +559,7 @@ function makeAnnotationInput(container){
 			submitAnnotation(annInput.value);
 			selectedImgFile = null;
 		}
-	}
+	};
 	container.appendChild(annInput);
 	annInput.focus();
 }
@@ -517,7 +569,9 @@ function makeAnnotationInput(container){
 var messageFromNameList = [];
 //check local server  - messages
 function checkTextMessages(){
-	if(currentUser==null) return;
+	if(currentUser===null){
+		return;
+	}
 	$.ajax({
 		type: 'GET',
 		url: "/getMessages",
@@ -526,13 +580,14 @@ function checkTextMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
+		console.log(messages )
 		messageFromNameList = [];
 		currentUser.setMessages(messages);
 		var newMessages = [];
 		for (var i = 0; i < messages.length; i++){
 			messageFromNameList[i] = messages[i][0].from;
 			for(var j = 0; j< messages[i].length; j++){
-				if(messages[i][j].isNew==true && messages[i][j].from!=currentUser.name){
+				if(messages[i][j].isNew===true && messages[i][j].from!==currentUser.name){
 					newMessages.push(messages[i][j]);
 				}
 
@@ -541,37 +596,26 @@ function checkTextMessages(){
 		currentUser.newMessages = newMessages;
 		updateNotifications();
 
-		if(messageFromNameList.length!=0){
-			var showMessageBox = false;
-			if(el("messageFrom1")==null){
+		if(messageFromNameList.length!==0){
+			el("text-message-div").style.visibility = "visible";
+			if(el("messageFrom1")===null){
 				var option = document.createElement('option');
 				option.setAttribute("id", "messageFrom1");
-				var name = "Select a sender";
-				option.innerHTML = name;
+				option.innerHTML = "Select a sender";
 				option.value = "select";
 				el("messageFromOption").appendChild(option);
 			}
-			for(var j = 0; j<messageFromNameList.length;j++){
-				var name = messageFromNameList[j];
-				console.log(name+"  "+currentUser.name)
-				if(el(name+"Message")==null && name!=currentUser.name){
-					showMessageBox = true;
-					console.log(name +"    "+currentUser.name)
-					option = document.createElement('option');
-					option.setAttribute("id", name+"Message");
-					option.innerHTML = name;
-					option.value = name;
-					el("messageFromOption").appendChild(option);
+			for(var k = 0; k<messageFromNameList.length;k++){
+				var name = messageFromNameList[k];
+				console.log(name)
+
+				if(el(name+"Message")===null){
+					var option2 = document.createElement('option');
+					option2.setAttribute("id", name+"Message");
+					option2.innerHTML = name;
+					option2.value = name;
+					el("messageFromOption").appendChild(option2);
 				}
-				else if(el(name+"Message")!=null && name!=currentUser.name){
-					showMessageBox = true;
-				}
-			}
-			if(showMessageBox){
-				el("text-message-div").style.visibility = "visible";
-			}
-			else{
-				el("text-message-div").style.visibility = "hidden";
 			}
 		}
 		else{
@@ -581,7 +625,7 @@ function checkTextMessages(){
 }
 
 function setMessageIsOld(m){
-	currentUser.setIsOld(m);
+	currentUser.setTextMessageIsOld(m);
 	$.ajax({
 		type: 'POST',
 		url: "setMessageIsOld",
@@ -597,10 +641,32 @@ function setMessageIsOld(m){
 	});
 }
 
-var voiceMessageFromNameList = [];
+function setNewAudioMessageIsOld(m){
+	$.ajax({
+		type: 'POST',
+		url: "setAudioMessageIsOld",
+		data: JSON.stringify({
+			mObject: m,
+			sender:m.from,
+			currentUser:m.to, // the user who made the exploration
+			timeStamp: m.timeStamp,
+			messageDetial: m.message
+
+		}),
+		success:setMessageToOld,
+		contentType: "application/json"
+	});
+	function setMessageToOld(){
+		//currentUser.setAudioMessageIsOld(m);
+		checkAudioMessages();
+	}
+}
+var audioMessageFromNameList = [];
 //check local server  - messages
 function checkAudioMessages(){
-	if(currentUser==null) return;
+	if(currentUser===null){
+		return;
+	}
 	$.ajax({
 		type: 'GET',
 		url: "/getAudioMessages",
@@ -609,12 +675,19 @@ function checkAudioMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
-		console.log(messages)
-		if(messages.length ==0)return;
 		audioMessageFromNameList = [];
 		currentUser.setAudioMessages(messages);
+		if(currentUser.audioMessages.length<1){
+			el("audio-message-div").style.visibility = "hidden";
+			return;
+		}
+		else{
+			el("audio-message-div").style.visibility = "visible";
+		}
 		currentUser.audioMessages.forEach(function(message){
-			if(message.audioData==null) return;
+			if(message.audioData===null){
+				return;
+			}
 			var audioASCII = message.audioData;
 			var byteCharacters = atob(audioASCII);
 			var byteNumbers = new Array(byteCharacters.length);
@@ -623,57 +696,58 @@ function checkAudioMessages(){
 			}
 			var byteArray = new Uint8Array(byteNumbers);
 			message.audioData = new Blob([byteArray], {type: "audio/wav"});
-
+			if($.inArray(message.from,audioMessageFromNameList )==-1){
+				audioMessageFromNameList.push(message.from);
+			}
 
 
 		});
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			if(messages[i].isNew==true && messages[i].from!=currentUser.name){
-				if(messages[i].from!=currentUser.name)
+			if(messages[i].from!=currentUser.name && messages[i].isNew){
+				if(messages[i].from!=currentUser.name){
 					newAudioMessages.push(messages[i]);
-				if($.inArray(messages[i].from,audioMessageFromNameList )==-1)
-					audioMessageFromNameList.push(messages[i].from);
-
 				}
+
 			}
-		console.log(audioMessageFromNameList)
+		}
 
 		currentUser.newAudioMessages = newAudioMessages;
-		updateNotifications();
+		if(audioMessageFromNameList.length>0){
+			el("audio-message-div").style.display = "block";
+			addAudioMessageDropDownNameList(audioMessageFromNameList);
+			updateNotifications();
+		}
+		else{
+			el("audio-message-div").style.display = "none";
+		}
 
-		addAudioMessageDropDownNameList(audioMessageFromNameList);
 	}
 }
 function addAudioMessageDropDownNameList(audioMessageFromNameList){
 	while(el("audioMessageFromOption").firstChild){
 		el("audioMessageFromOption").removeChild(el("audioMessageFromOption").firstChild);
 	}
-		if(el("audio-message-from")==null){
-			var option = document.createElement('option');
-			option.setAttribute("id", "audio-message-from");
-			var name = "Select a sender";
-			option.innerHTML = name;
-			option.value = "select";
-			el("audioMessageFromOption").appendChild(option);
+	if(el("audio-message-from")===null){
+		var option = document.createElement('option');
+		option.setAttribute("id", "audio-message-from");
+		option.innerHTML = "Select a sender";
+		option.value = "select";
+		option.disabled = true;
+		el("audioMessageFromOption").appendChild(option);
+	}
+	for(var j = 0; j<audioMessageFromNameList.length;j++){
+		var name = audioMessageFromNameList[j];
+		if(el(name+"VoiceMessage")===null){
+			var option2 = document.createElement('option');
+			option2.setAttribute("id", name+"VoiceMessage");
+			option2.innerHTML = name;
+			option2.value = name;
+			el("audioMessageFromOption").appendChild(option2);
 		}
-		el("audio-message-div").style.display = "block";
-		if(audioMessageFromNameList.length!=0){
-		for(var j = 0; j<audioMessageFromNameList.length;j++){
-			var name = audioMessageFromNameList[j];
+	}
 
-			if(el(name+"VoiceMessage")==null && name!=currentUser.name){
-				option = document.createElement('option');
-				option.setAttribute("id", name+"VoiceMessage");
-				option.innerHTML = name;
-				option.value = name;
-				el("audioMessageFromOption").appendChild(option);
-			}
-		}
-	}
-	else{
-		el("audio-message-div").style.display = "none";
-	}
+
 }
 function setVoiceMessageIsOld(m){
 	currentUser.setIsOld(m);
@@ -702,10 +776,12 @@ function setVoiceMessageIsOld(m){
 function changeButtonColour(name, state){
 	var button = el(name + "-exploration-button");
 
-	if (state)
+	if (state){
 		button.src = IMAGE_PATH + name + "-on.png";
-	else
+	}
+	else{
 		button.src = IMAGE_PATH + name + "-off.png";
+	}
 }
 
 //displays an image of a microphone
@@ -734,28 +810,28 @@ function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
 	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
-			seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
-					day = date.getDate(),
-					month = monthAsString(date.getMonth());
+			//seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
+			day = date.getDate(),
+			month = monthAsString(date.getMonth());
 
-			return hours + ":" + minutes + " -" + day + "th " + month;
-			function monthAsString(monthIndex){
-				return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-			}
+	return hours + ":" + minutes + " -" + day + "th " + month;
+	function monthAsString(monthIndex){
+		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+	}
 }
 
 window.setInterval(function(){
-	if(currentUser!=null){
+	if(currentUser!==null){
 		loadAllExplorations(currentUser.name, gotExplorations);
 		enableAction(["delete"]);
 		updateExplorationChooser();
 	}
-	if(selectedLocation!=null){
+	if(selectedLocation!==null){
 		getAnnotationFromLocalServer(selectedLocation);
 	}
 	//updateShareExplElements();
 	checkTextMessages();
-}, 10000);
+}, 20000);
 
 
 function gotExplorations(allExplorations){
@@ -764,8 +840,8 @@ function gotExplorations(allExplorations){
 }
 
 $("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
-	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1
-}))
+	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1;
+}));
 
 function divHideShow(div){
 	if (div.style.visibility==="visible"){
