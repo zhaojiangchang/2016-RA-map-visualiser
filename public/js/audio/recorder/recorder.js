@@ -16,107 +16,113 @@ THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRI
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
-*/
+ */
 
 (function(window){
 
-  var WORKER_PATH = 'js/audio/recorder/recorderWorker.js';
-  //var foo = function(){};
-  //var bar = 5;
+	var WORKER_PATH = 'js/audio/recorder/recorderWorker.js';
+	//var foo = function(){};
+	//var bar = 5;
 
-  var Recorder = function(source, cfg){
-    var config = cfg || {};
-    var bufferLen = config.bufferLen || 4096;
-    this.context = source.context;
-    if(!this.context.createScriptProcessor){
-       this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
-    } else {
-       this.node = this.context.createScriptProcessor(bufferLen, 2, 2);
-    }
+	var Recorder = function(source, cfg){
+		var config = cfg || {};
+		var bufferLen = config.bufferLen || 4096;
+		this.context = source.context;
+		if(!this.context.createScriptProcessor){
+			this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
+		} else {
+			this.node = this.context.createScriptProcessor(bufferLen, 2, 2);
+		}
 
-    var worker = new Worker(config.workerPath || WORKER_PATH);
-    worker.postMessage({
-      command: 'init',
-      config: {
-        sampleRate: this.context.sampleRate
-      }
-    });
-    var recording = false,
-      currCallback;
+		var worker = new Worker(config.workerPath || WORKER_PATH);
+		worker.postMessage({
+			command: 'init',
+			config: {
+				sampleRate: this.context.sampleRate
+			}
+		});
+		var recording = false,
+		currCallback;
 
-    this.node.onaudioprocess = function(e){
-      if (!recording) return;
-      worker.postMessage({
-        command: 'record',
-        buffer: [
-          e.inputBuffer.getChannelData(0),
-          e.inputBuffer.getChannelData(1)
-        ]
-      });
-    };
+		this.node.onaudioprocess = function(e){
+			if (!recording) {
+				return;
+			}
+			worker.postMessage({
+				command: 'record',
+				buffer: [
+				         e.inputBuffer.getChannelData(0),
+				         e.inputBuffer.getChannelData(1)
+				         ]
+			});
+		};
 
-    // transfers all properties from cfg to config
-    this.configure = function(cfg){
-      for (var prop in cfg){
-        if (cfg.hasOwnProperty(prop)){
-          config[prop] = cfg[prop];
-        }
-      }
-    };
+		// transfers all properties from cfg to config
+		this.configure = function(cfg){
+			for (var prop in cfg){
+				if (cfg.hasOwnProperty(prop)){
+					config[prop] = cfg[prop];
+				}
+			}
+		};
 
-    this.record = function(){
-      recording = true;
-    };
+		this.record = function(){
+			recording = true;
+		};
 
-    this.stop = function(){
-      recording = false;
-    };
+		this.stop = function(){
+			recording = false;
+		};
 
-    this.clear = function(){
-      worker.postMessage({ command: 'clear' });
-    };
+		this.clear = function(){
+			worker.postMessage({ command: 'clear' });
+		};
 
-    this.getBuffers = function(cb) {
-      currCallback = cb || config.callback;
-      worker.postMessage({ command: 'getBuffers' });
-    };
+		this.getBuffers = function(cb) {
+			currCallback = cb || config.callback;
+			worker.postMessage({ command: 'getBuffers' });
+		};
 
-    this.exportWAV = function(cb, type){
-      currCallback = cb || config.callback;
-      type = type || config.type || 'audio/wav';
-      if (!currCallback) throw new Error('Callback not set');
-      worker.postMessage({
-        command: 'exportWAV',
-        type: type
-      });
-    };
+		this.exportWAV = function(cb, type){
+			currCallback = cb || config.callback;
+			type = type || config.type || 'audio/wav';
+			if (!currCallback){
+				throw new Error('Callback not set');
+			}
+			worker.postMessage({
+				command: 'exportWAV',
+				type: type
+			});
+		};
 
-    this.exportMonoWAV = function(cb, type){
-      currCallback = cb || config.callback;
-      type = type || config.type || 'audio/wav';
-      if (!currCallback) throw new Error('Callback not set');
-      worker.postMessage({
-        command: 'exportMonoWAV',
-        type: type
-      });
-    };
+		this.exportMonoWAV = function(cb, type){
+			currCallback = cb || config.callback;
+			type = type || config.type || 'audio/wav';
+			if (!currCallback){
+				throw new Error('Callback not set');
+			}
+			worker.postMessage({
+				command: 'exportMonoWAV',
+				type: type
+			});
+		};
 
-    worker.onmessage = function(e){
-      var blob = e.data;
-      currCallback(blob);
-    };
+		worker.onmessage = function(e){
+			var blob = e.data;
+			currCallback(blob);
+		};
 
-    source.connect(this.node);
-    this.node.connect(this.context.destination);   // if the script node is not connected to an output the "onaudioprocess" event is not triggered in chrome.
-  };
+		source.connect(this.node);
+		this.node.connect(this.context.destination);   // if the script node is not connected to an output the "onaudioprocess" event is not triggered in chrome.
+	};
 
-  Recorder.setupDownload = function(blob, filename){
-    var url = (window.URL || window.webkitURL).createObjectURL(blob);
-    var link = document.getElementById("save-audio");
-    link.href = url;
-    link.download = filename || 'output.wav';
-  };
+	Recorder.setupDownload = function(blob, filename){
+		var url = (window.URL || window.webkitURL).createObjectURL(blob);
+		var link = document.getElementById("save-audio");
+		link.href = url;
+		link.download = filename || 'output.wav';
+	};
 
-  window.Recorder = Recorder;
+	window.Recorder = Recorder;
 
 })(window);

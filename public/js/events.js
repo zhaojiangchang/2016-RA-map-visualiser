@@ -32,8 +32,10 @@ stopInsertButton = $("#stop-insert-button"),
 removeImgButton  = el("remove-img-button");
 //========= guest users =============================
 
-var guestUsers = ["obama", "john", "lorde", "will"];
-var selectedImgFile = null;
+var guestUsers = ["obama", "john", "lorde", "will"],
+selectedImgFile = null,
+voiceMessageRecording = false,
+voiceMessageData = null;
 
 guestUsers.forEach(function(userName){
 	el(userName).onclick= function() {
@@ -58,8 +60,9 @@ recordExplButton.addEventListener("click", function(){
 			}
 		}
 	}
-	else
+	else{
 		startRecording();
+	}
 	function doneRecording(){
 		inserting = false;
 		var insertionDuration = currentExpl.getDuration();
@@ -76,9 +79,12 @@ recordExplButton.addEventListener("click", function(){
 });
 
 playExplButton.on('click', function () {
-	if (paused)
+	if (paused){
 		resumePlayback(selectedExploration);
-	else startPlayback(selectedExploration);
+	}
+	else {
+		startPlayback(selectedExploration);
+	}
 });
 
 pauseExplButton.on('click', function(){
@@ -94,8 +100,9 @@ saveExplButton.click(function(){
 });
 
 deleteExplButton.click(function(){
-	if (selectedExploration)
+	if (selectedExploration){
 		deleteExploration(selectedExploration);
+	}
 });
 
 resetExplButton.click(resetExplorations);
@@ -112,8 +119,9 @@ logonButton.onclick = function(){
 	// if no one is logged on
 	if(userLoggedOn()){
 		selectedLocation = null;
-		if (!explRecording)
+		if (!explRecording){
 			logout(currentUser);
+		}
 	}
 	else{
 		attemptLogin(userNameInput.value, passwordInput.value);
@@ -140,7 +148,9 @@ notificationContainer.addEventListener('click',function(){
 			showNotificationButtons();
 		}
 
-		else hideNotificationButtons();
+		else {
+			hideNotificationButtons();
+		}
 	}
 	else{
 		hideNotificationButtons();
@@ -169,12 +179,16 @@ quickplayNotification.addEventListener("click", function(){
 removeImgButton.addEventListener('click', function(){
 	var previewImg = el("preview-city-img");
 	while(previewImg.firstChild)//remove old labels
+	{
 		previewImg.removeChild(previewImg.firstChild);
+	}
 });
 
 saveAnnButton.addEventListener('click', function(){
 	var annInput = el('annInput').value;
-	if(annInput === "")	return;
+	if(annInput === "")	{
+		return;
+	}
 	submitAnnotation(annInput);
 	selectedImgFile = null;
 });
@@ -239,7 +253,9 @@ function onFileSelected(event) {
 	reader.readAsDataURL(selectedFile);
 	var previewImg = el("preview-city-img");
 	while(previewImg.firstChild)//remove old labels
+	{
 		previewImg.removeChild(previewImg.firstChild);
+	}
 	previewImg.appendChild(imgtag);
 	el("location-div").appendChild(previewImg);
 
@@ -254,27 +270,38 @@ function onFileSelected(event) {
 //userLabelValue: receiver
 //if userLabelValue not on the userList on the server will not able to send.
 el("submit-shared-file").addEventListener('click',function(){
-	if(el("shared-with").value==='') return;
+	if(el("shared-with").value==='') {
+		return;
+	}
 	var userLabelValue = el("shared-with").value;
 	var sendOptionValue = el("sendOption").value;
-	if(sendOptionValue === null)return;
+	if(sendOptionValue === null){
+		return;
+	}
 	switch(sendOptionValue){
 	case "exploration":
-		if(!selectedExploration)return;
+		if(!selectedExploration){
+			return;
+		}
 		shareExplFile(selectedExploration, userLabelValue);
 		setTimeout(function(){
 			el("selectedExplName").style.display = "none";}, 5000);
 		break;
 	case "text":
-		if(el("text-message-input").value === '') return;
+		if(el("text-message-input").value === '') {
+			return;
+		}
 		shareTextMessage(userLabelValue);
 		el("message-send-identify").innerHTML = "Text message sent to: "+userLabelValue;
-		setTimeout(function(){
-			el("message-send-identify").style.display = "none";}, 5000);
+		setTimeout(function(){el("message-send-identify").style.display = "none";}, 5000);
 		break;
 	case "voice":
-		if(el("record-voice").value==="Stop Recording" || voiceMessageData === null) return;
-		else shareVoiceMessage(userLabelValue);
+		if(el("record-voice").value==="Stop Recording" || voiceMessageData === null){
+			return;
+		}
+		else {
+			shareVoiceMessage(userLabelValue);
+		}
 		break;
 
 
@@ -301,7 +328,9 @@ function selectedSendInfoOption() {
 	var sendOptionValue = el("sendOption").value;
 	switch(sendOptionValue){
 	case "exploration":
-		if(!selectedExploration)return;
+		if(!selectedExploration){
+			return;
+		}
 		var p = document.createElement("p");
 		p.id = "selectedExplName";
 		p.className = "selectedExplName";
@@ -313,10 +342,12 @@ function selectedSendInfoOption() {
 		el("text-message-input-div").style.display = "block";
 		break;
 	case "voice":
-		if(explRecording)
+		if(explRecording){
 			window.alert('Can Not Record Exploration and Voice Message At Same Time!');
-		else
+		}
+		else{
 			el("record-voice").style.display = "block";
+		}
 		break;
 
 	}
@@ -346,12 +377,11 @@ function updateRecordVoiceButton(){
 	if (el("record-voice").value==="Start Recording"){
 		el("record-voice").value="Stop Recording";
 	}
-	else
+	else{
 		el("record-voice").value = "Start Recording";
+	}
 }
 
-var voiceMessageRecording = false;
-var voiceMessageData = null;
 function startRecordVoiceMessage(){
 	voiceMessageRecording = false;
 	if (audioRecorder){

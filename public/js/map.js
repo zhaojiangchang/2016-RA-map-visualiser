@@ -267,10 +267,12 @@ function cityClicked(d){
 // duration: duration of transition
 // elapsedTime: continue transition from this time
 function goToLoc(location, duration, elapsedTime) {
-	if (typeof location === "number")
+	if (typeof location === "number"){
 		location = cities[index];
-	if (typeof location === "string")
+		}
+	if (typeof location === "string"){
 		location = cities[getCityIndex(location)];
+		}
 
 	selectLocation(location); // so that information appears in sidebar
 	travelToCity(location, duration, elapsedTime);
@@ -279,10 +281,12 @@ function goToLoc(location, duration, elapsedTime) {
 // Pings a country on the screen
 function ping(location) {
 	var source;
-	if (typeof location === "number")
+	if (typeof location === "number"){
 		source = cities[location];
-	if (typeof location === "string")
+		}
+	if (typeof location === "string"){
 		source = cities[getCityIndex(location)];
+		}
 
 	var center = path.centroid(source);
 	var screenvars = getAbsoluteBounds();
@@ -336,8 +340,9 @@ function ping(location) {
 //Convert the screen coords into data coords
 //gets current screen coords if no arg
 function getRealBounds(transform) {
-	if (!transform)
+	if (!transform){
 		transform = d3.transform(map.attr("transform"));
+		}
 
 	var tx = transform.translate[0];
 	var ty = transform.translate[1];

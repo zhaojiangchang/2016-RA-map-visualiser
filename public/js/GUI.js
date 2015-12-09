@@ -54,7 +54,9 @@ function updateExplorationChooser(){
 		$("#noOfFilesLoaded").html("no explorations loaded");
 		$("#exploration-selector").hide();
 		return;
-	}else $("#exploration-selector").show();
+	}else {
+		$("#exploration-selector").show();
+	}
 	explorations.forEach(function(exploration, index){
 		var explOption = document.createElement('option');
 		explOption.setAttribute("id", exploration.timeStamp);
@@ -127,8 +129,9 @@ function updateLogonElements(){
 	if (userLoggedOn()){
 		toggleLogon(true,"not-allowed");
 	}
-	else
+	else{
 		toggleLogon(false, "default" , "pointer");
+	}
 
 }
 
@@ -145,9 +148,13 @@ function toggleLogon(loggedOn, cursorD, cursorP){
 
 		elems[i].disabled = loggedOn;
 		if (!loggedOn)
+		{
 			elems[i].style.cursor = cursorP;
+		}
 		else
+		{
 			elems[i].style.cursor = cursorD;
+		}
 	}
 	// logoff set value to default
 	if (!loggedOn){
@@ -189,17 +196,20 @@ function updateNotifications(){
 
 
 	sharedExpl.forEach(function(expl){
-		if(expl.isNew)
+		if(expl.isNew){
 			newExplCount++;
+		}
 
 	});
 	newMessages.forEach(function(message){
-		if(message.isNew)
+		if(message.isNew){
 			newMessageCount++;
+		}
 	});
 	newAudioMessages.forEach(function(message){
-		if(message.isNew)
+		if(message.isNew){
 			newAudioMessageCount++;
+		}
 	});
 	// show notification message
 	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
@@ -233,7 +243,9 @@ function updateNotifications(){
 //return true - when has new shared exploration
 function showListNotifications(){
 	while(notificationSelector.firstChild)//remove old labels
+	{
 		notificationSelector.removeChild(notificationSelector.firstChild);
+	}
 
 	var newSharedExpls = currentUser.getSharedExploration();
 	var hasNewNoti = false;
@@ -344,7 +356,9 @@ function showNotificationButtons(){
 
 //this function called once showPathButton clicked (event.js)
 function toggleVisiblePath(){
-	if(!selectedExploration) return;
+	if(!selectedExploration){
+		return;
+	}
 	if(selectedExploration.hasCityEvents()){
 		if(showPathButton.innerHTML=="Show Path"){
 			pathView.showPathElems();
@@ -438,10 +452,13 @@ function getAnnotationFromLocalServer(city){
 
 	// displays annotations associated with the current location
 	function displayAnnotations(annotations){
-		while(el("annotation-container").firstChild)//remove old labels
+		while(el("annotation-container").firstChild){//remove old labels
 			el("annotation-container").removeChild(el("annotation-container").firstChild);
+		}
 		// if response is "no_annotations", no annotations were found, so do nothing
-		if (annotations === "no_annotations") return;
+		if (annotations === "no_annotations") {
+			return;
+		}
 		el("file-browse").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
 		var container = document.createElement("div");
@@ -482,8 +499,9 @@ function getAnnotationFromLocalServer(city){
 				image.height = 50;
 				imgDiv.appendChild(image);
 				image.onclick = function(){
-					while(el("preview-city-img").firstChild)//remove old labels
+					while(el("preview-city-img").firstChild){//remove old labels
 						el("preview-city-img").removeChild(el("preview-city-img").firstChild);
+					}
 					var img = new Image();
 					img.src = annotation.imageData;
 					img.width = 250;
@@ -555,7 +573,9 @@ function makeAnnotationInput(container){
 var messageFromNameList = [];
 //check local server  - messages
 function checkTextMessages(){
-	if(currentUser===null) return;
+	if(currentUser===null){
+		return;
+	}
 	$.ajax({
 		type: 'GET',
 		url: "/getMessages",
@@ -655,7 +675,9 @@ function setNewAudioMessageIsOld(m){
 var audioMessageFromNameList = [];
 //check local server  - messages
 function checkAudioMessages(){
-	if(currentUser===null) return;
+	if(currentUser===null){
+		return;
+	}
 	$.ajax({
 		type: 'GET',
 		url: "/getAudioMessages",
@@ -674,7 +696,9 @@ function checkAudioMessages(){
 		audioMessageFromNameList = [];
 		currentUser.setAudioMessages(messages);
 		currentUser.audioMessages.forEach(function(message){
-			if(message.audioData===null) return;
+			if(message.audioData===null){
+				return;
+			}
 			var audioASCII = message.audioData;
 			var byteCharacters = atob(audioASCII);
 			var byteNumbers = new Array(byteCharacters.length);
@@ -683,16 +707,18 @@ function checkAudioMessages(){
 			}
 			var byteArray = new Uint8Array(byteNumbers);
 			message.audioData = new Blob([byteArray], {type: "audio/wav"});
-			if($.inArray(message.from,audioMessageFromNameList )==-1)
+			if($.inArray(message.from,audioMessageFromNameList )==-1){
 				audioMessageFromNameList.push(message.from);
+			}
 
 
 		});
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
 			if(messages[i].from!=currentUser.name && messages[i].isNew){
-				if(messages[i].from!=currentUser.name)
+				if(messages[i].from!=currentUser.name){
 					newAudioMessages.push(messages[i]);
+				}
 
 			}
 		}
@@ -758,10 +784,12 @@ function setVoiceMessageIsOld(m){
 function changeButtonColour(name, state){
 	var button = el(name + "-exploration-button");
 
-	if (state)
+	if (state){
 		button.src = IMAGE_PATH + name + "-on.png";
-	else
+	}
+	else{
 		button.src = IMAGE_PATH + name + "-off.png";
+	}
 }
 
 //displays an image of a microphone
@@ -791,13 +819,13 @@ function makeShortTimeFormat(date){
 	var hours = date.getHours().toString(),
 	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
 			//seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
-					day = date.getDate(),
-					month = monthAsString(date.getMonth());
+			day = date.getDate(),
+			month = monthAsString(date.getMonth());
 
-			return hours + ":" + minutes + " -" + day + "th " + month;
-			function monthAsString(monthIndex){
-				return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
-			}
+	return hours + ":" + minutes + " -" + day + "th " + month;
+	function monthAsString(monthIndex){
+		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
+	}
 }
 
 window.setInterval(function(){

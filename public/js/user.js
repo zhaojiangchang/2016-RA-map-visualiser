@@ -34,36 +34,25 @@ function User(name, explorations){
 		return this.audioMessage;
 	};
 	this.setTextMessageIsOld = function(message){
-		for (var i = 0; i<this.messages.length; i++){
-			for (var j = 0; j<this.messages[i].length; j++){
-				if(this.messages[i][j]===message){
-					this.messages[i][j].isNew = false;
-
-				}
-			}
+		var m = this.messages.indexOf(message);
+		if(m!==-1){
+			this.message[m].isNew = false;
 		}
-		for (var a = 0; a<this.newMessages.length; a++){
-			if(this.newMessages[a]===message){
-				this.newMessages.splice(a,1);
-			}
-
+		m = this.newMessages.indexOf(message);
+		if(m!==-1){
+			this.newMessages.splice(m,1);
 		}
-
 	};
 	this.setAudioMessageIsOld = function(message){
-		for (var i = 0; i<this.audioMessages.length; i++){
-			if(this.audioMessages[i]===message){
-				this.audioMessages[i].isNew = false;
 
-			}
+		var m = this.audioMessages.indexOf(message);
+		if(m!==-1){
+			this.audioMessages[m].isNew = false;
 		}
-		for (var a = 0; a<this.newAudioMessages.length; a++){
-			if(this.newAudioMessages[a]===message){
-				this.newAudioMessages.splice(a,1);
-			}
-
+		m = this.newAudioMessages.indexOf(message);
+		if(m!==-1){
+			this.newAudioMessages.splice(m,1);
 		}
-
 	};
 	this.haveMessages = function(){
 		return this.messages.length === 0;
@@ -135,8 +124,7 @@ function User(name, explorations){
 		this.currentExpl = null;
 	};
 	this.haveExploration = function(expl){
-		if(this.explorations.indexOf(expl)>=0) return true;
-		else return false;
+		return (this.explorations.indexOf(expl)>=0);
 	};
 	// gets an exploration (given a timestamp) from the user's collection of explorations
 	this.getExploration = function(timeStamp){
@@ -180,8 +168,9 @@ function User(name, explorations){
 	// removes the first exploration from the user
 	this.removeExploration = function(exploration){
 		for (var i = 0; i < this.explorations.length; i++){
-			if (this.explorations[i].equals(exploration))
+			if (this.explorations[i].equals(exploration)){
 				this.explorations.splice(i, 1);
+				}
 			return true;
 		}
 	};
@@ -337,8 +326,9 @@ function loadAllExplorations(userName, cb){
 
 //shares the exploration with the user
 function shareExplFile(exploration, userName){
-	if(userName==currentUser.name) return;
-	if(selectedExploration===null) return;
+	if(userName==currentUser.name ||selectedExploration===null){
+		return;
+	}
 	$.ajax({
 		type: 'POST',
 		url: "/shareExploration",
@@ -369,7 +359,9 @@ function shareExplFile(exploration, userName){
 //share text message to userLabelValue
 function shareTextMessage(userLabelValue){
 	var testMessageToSend = el("text-message-input").value;
-	if(testMessageToSend===null) return;
+	if(testMessageToSend===null){
+		return;
+	}
 	var Message = {
 			timeStamp: new Date(),
 			from: currentUser.name,
@@ -405,7 +397,9 @@ function resetShareDiv(){
 }
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
-	if(voiceMessageData===null)return;
+	if(voiceMessageData===null){
+		return;
+	}
 	//converted audio
 	var newFormetVoice = null;
 	var VoiceMessage = null;
@@ -458,8 +452,10 @@ function deleteAudioMessage(message){
 				el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
 			}
 			if(currentUser.audioMessages.length>0)
+				{
 				appendAudioMessageOnSideBar();
-			else{
+				}
+				else{
 
 				addAudioMessageDropDownNameList();
 			}
