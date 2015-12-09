@@ -37,6 +37,7 @@ selectedImgFile = null,
 voiceMessageRecording = false,
 voiceMessageData = null;
 
+// add onclick listener - when click guest user image to assign predefined user name and password
 guestUsers.forEach(function(userName){
 	el(userName).onclick= function() {
 		userNameInput.value = userName;
@@ -46,11 +47,13 @@ guestUsers.forEach(function(userName){
 //=================================================
 //========= exploration controls ==================
 
+// record expl button pressed
+// If currently recording - stop recording
+// 		If inserting new expl into current selected expl Do: stop recording and
 recordExplButton.addEventListener("click", function(){
 	var currentExpl = currentUser.getCurrentExploration();
 
 	if (explRecording){
-		stopRecording();
 		if (inserting){
 			if (audioRecorder){
 				stopRecording(doneRecording);
@@ -59,6 +62,10 @@ recordExplButton.addEventListener("click", function(){
 				doneRecording();
 			}
 		}
+		else{
+			stopRecording();
+		}
+
 	}
 	else{
 		startRecording();
