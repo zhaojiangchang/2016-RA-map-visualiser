@@ -106,7 +106,7 @@ function PathView(){
 		// bug need fixed (when exploration saved same city appear 3 times
 		function checkMatchCity(event, cityEvents){
 			for(var i = 0;  i < cityEvents.length;  i++ ){
-				if(event.body  === cityEvents[ i ].body && event.time == cityEvents[ i ].time) {
+				if(event.body  === cityEvents[ i ].body && event.time === cityEvents[ i ].time) {
 					return true;
 				}
 			}
@@ -199,7 +199,7 @@ function PathView(){
 			var dy = y1 - y2;
 			var dx = x1 - x2;
 			if(dy === 0) { //horizontal line
-				if(py == y1) {
+				if(py === y1) {
 					if(x1 > x2) {
 						if(px <= x1 && px >= x2){
 							return true;
@@ -213,7 +213,7 @@ function PathView(){
 				}
 			}
 			else if(dx === 0) { //vertical line
-				if(px == x1) {
+				if(px === x1) {
 					if(y1 > y2) {
 						if(py <= y1 && py >= y2){
 							return true;
@@ -603,7 +603,7 @@ function PathView(){
 			tempTrans.push(this.translates()[ i ] );
 		}
 		tempTrans.push( [ pausedX , pausedY ] );
-		if(showPathButton.innerHTML=="Hide Path"){
+		if(showPathButton.innerHTML==="Hide Path"){
 			// draw path from first city coordinate to paused coordinate
 			map.append("path")
 			.data( [ tempTrans ] )

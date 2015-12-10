@@ -37,7 +37,7 @@ selectedImgFile = null,
 voiceMessageRecording = false,
 voiceMessageData = null;
 
-// add onclick listener - when click guest user image to assign predefined user name and password
+//add onclick listener - when click guest user image to assign predefined user name and password
 guestUsers.forEach(function(userName){
 	el(userName).onclick= function() {
 		userNameInput.value = userName;
@@ -47,11 +47,11 @@ guestUsers.forEach(function(userName){
 //=================================================
 //========= exploration controls ==================
 
-// record expl button pressed
-// If currently recording -
-// 		If inserting new expl into current selected expl Do: stop recording
-//		else stop recording
-// else stop recording
+//record expl button pressed
+//If currently recording -
+//If inserting new expl into current selected expl Do: stop recording
+//else stop recording
+//else stop recording
 recordExplButton.addEventListener("click", function(){
 	var currentExpl = currentUser.getCurrentExploration();
 
@@ -89,7 +89,7 @@ recordExplButton.addEventListener("click", function(){
 	}
 });
 
-// play button clicked (sidebar)- play selected exploration
+//play button clicked (sidebar)- play selected exploration
 playExplButton.on('click', function () {
 	if (paused){
 		resumePlayback(selectedExploration);
@@ -99,38 +99,38 @@ playExplButton.on('click', function () {
 	}
 });
 
-// pause button clicked (sidebar)- pause play selected exploration
+//pause button clicked (sidebar)- pause play selected exploration
 pauseExplButton.on('click', function(){
 	pausePlayback(selectedExploration);
 });
 
-// stop button clicked (sidebar)- stop play selected exploration
+//stop button clicked (sidebar)- stop play selected exploration
 stopExplButton.on('click', function(){
 	stopPlayback(selectedExploration);
 });
 
-// save button clicked (sidebar)- save recorded exploration and set selected exploration as saved
+//save button clicked (sidebar)- save recorded exploration and set selected exploration as saved
 saveExplButton.click(function(){
 	saveExploration(currentUser.getCurrentExploration());
 });
 
-// delete button clicked (sidebar)- delete exploration from current user,s explorations list
-// if selected exploration is not null do: select the next exploraiton from the list.
+//delete button clicked (sidebar)- delete exploration from current user,s explorations list
+//if selected exploration is not null do: select the next exploraiton from the list.
 deleteExplButton.click(function(){
 	if (selectedExploration){
 		deleteExploration(selectedExploration);
 	}
 });
 
-// reset button clicked (sidebar) - reset to init. SelectedExploration === first exploration in Exploration list
+//reset button clicked (sidebar) - reset to init. SelectedExploration === first exploration in Exploration list
 resetExplButton.click(resetExplorations);
 
 //==========================================
 //======== exploration chooser and login====
 
-// Explorations dropdown list (sidebar) - click item on the list to set selected exploration
+//Explorations dropdown list (sidebar) - click item on the list to set selected exploration
 explChooser.onclick = updateSelectedExploration;
-// Show and hide path button (on main canvas top-right) - show and hide path view
+//Show and hide path button (on main canvas top-right) - show and hide path view
 showPathButton.onclick = toggleVisiblePath;
 
 //submit button
@@ -152,6 +152,7 @@ logonButton.onclick = function(){
 var myWindow = null;
 var newAccount = el("create-new-account");
 newAccount.onclick = function(){
+	//open new web browser
 	myWindow = window.open("new-account.html", "_blank", "toolbar=yes, scrollbars=no, resizable=no, top=500, left=800, width=270, height=180");
 };
 
@@ -163,7 +164,7 @@ notificationContainer.addEventListener('click',function(){
 	stopRecording();
 	updateNotifications();
 	if(showListNotifications()){
-		if(notificationSelector.style.visibility == "hidden"){
+		if(notificationSelector.style.visibility === "hidden"){
 			showNotificationButtons();
 		}
 
@@ -185,6 +186,7 @@ removeNotification.addEventListener("click", function(){
 	deselectExploration();
 });
 
+//play button for notification - play without set expl to old
 quickplayNotification.addEventListener("click", function(){
 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
 	startPlayback(selected);
@@ -195,6 +197,7 @@ quickplayNotification.addEventListener("click", function(){
 //===========================================
 //=========== annotation ====================
 
+//remove annotation
 removeImgButton.addEventListener('click', function(){
 	var previewImg = el("preview-city-img");
 	while(previewImg.firstChild)//remove old labels
@@ -202,7 +205,7 @@ removeImgButton.addEventListener('click', function(){
 		previewImg.removeChild(previewImg.firstChild);
 	}
 });
-
+//save annotation
 saveAnnButton.addEventListener('click', function(){
 	var annInput = el('annInput').value;
 	if(annInput === "")	{
@@ -215,6 +218,7 @@ saveAnnButton.addEventListener('click', function(){
 //==========================================
 //=========== inserting expl ===============
 
+//insert button displayed when paused playback
 insertButton.click(function(){
 	inserting = true;
 	startRecording();
@@ -226,6 +230,7 @@ insertButton.click(function(){
 
 });
 
+//stop insert button clicked to add recording to current exploration
 stopInsertButton.click( function(){
 	var currentExpl = currentUser.getCurrentExploration();
 
@@ -320,12 +325,14 @@ el("submit-shared-file").addEventListener('click',function(){
 		}
 		else {
 			shareVoiceMessage(userLabelValue);
+
 		}
 		break;
 
 
 	}
 	el("sendOption").value = "select";
+	el("record-voice").value="Start Recording";
 
 
 });
@@ -333,7 +340,7 @@ el("submit-shared-file").addEventListener('click',function(){
 //==========================================
 //=========== select - options (Send to:)===
 
-//on click on select options to send to other users
+//on click on select send options (exploration, text, audio)to send to other users
 function selectedSendInfoOption() {
 	if(el("shared-with").value===''){
 		el("sendOption").value = "select";
@@ -376,42 +383,52 @@ function selectedSendInfoOption() {
 //=====================================================
 //=========== Send Voice ==============================
 
+// click button to start, stop or reset recording
 el("record-voice").onclick = function(){
-	if(el("record-voice").value=="Start Recording" && audioRecorder){
+	if(el("record-voice").value==="Start Recording" && audioRecorder){
 		updateRecordVoiceButton();
 		startRecordVoiceMessage();
 
-	}else if(el("record-voice").value=="Stop Recording" && audioRecorder){
+	}else if(el("record-voice").value==="Stop Recording" && audioRecorder){
 		updateRecordVoiceButton();
 		stopRecordVoiceMessage();
+	}
+	else if(el("record-voice").value==="Reset Recording" && audioRecorder){
+		updateRecordVoiceButton();
+	    audioRecorder.clear();
 	}
 	else{
 		window.alert("No voice input device detected");
 	}
-
+	//update reocrding voice button
+	function updateRecordVoiceButton(){
+		// if user is currently logged on, disable all userImage button
+		if (el("record-voice").value==="Start Recording"){
+			el("record-voice").value="Stop Recording";
+		}
+		else if(el("record-voice").value==="Stop Recording"){
+			el("record-voice").value="Reset Recording";
+		}
+		else if(el("record-voice").value==="Reset Recording"){
+			el("record-voice").value="Start Recording";
+		}
+	}
+	//start recording
+	function startRecordVoiceMessage(){
+		voiceMessageRecording = false;
+		if (audioRecorder){
+			voiceMessageRecording = true;
+			voiceMessageData = null;
+			startAudioRecording();
+		}
+	}
+	//stop recording
+	function stopRecordVoiceMessage(){
+		stopAudioRecording();
+	}
 };
 
-function updateRecordVoiceButton(){
-	// if user is currently logged on, disable all userImage button
-	if (el("record-voice").value==="Start Recording"){
-		el("record-voice").value="Stop Recording";
-	}
-	else{
-		el("record-voice").value = "Start Recording";
-	}
-}
 
-function startRecordVoiceMessage(){
-	voiceMessageRecording = false;
-	if (audioRecorder){
-		voiceMessageRecording = true;
-		voiceMessageData = null;
-		startAudioRecording();
-	}
-}
-function stopRecordVoiceMessage(){
-	stopAudioRecording();
-}
 //=====================================================
 //=========== show messages from all other senders  ===
 
@@ -419,10 +436,7 @@ function stopRecordVoiceMessage(){
 function selectedMessageSenderOption(){
 	el("showTextArea").innerHTML = '';
 	var selectedName = el("messageFromOption").value;
-	console.log("selected name: "+selectedName)
-
 	var messagesFromSender = currentUser.getMessagesBySender(selectedName);
-	console.log(messagesFromSender )
 	for(var i = 0; i<messagesFromSender.length; i++){
 		el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
 		if(messagesFromSender[i].isNew && selectedName!==currentUser.name){
@@ -449,11 +463,10 @@ function selectedMessageSenderOption(){
 
 }
 
-
 //show audio messages
 function selectedAudioMessageSenderOption(){
 	var selectedName = el("audioMessageFromOption").value;
-	if(selectedName == "select"){
+	if(selectedName === "select"){
 		el("audio-messages-list").parentNode.removeChild(el("audio-messages-list"));
 
 	}
@@ -466,6 +479,8 @@ function selectedAudioMessageSenderOption(){
 	}
 
 }
+
+//append audio message when select sender from Audio message drop down list
 function appendAudioMessageOnSideBar(selectedName){
 	var newAudioMessages = [];
 	//currentUser.audioMessages.forEach(function(message){
@@ -549,6 +564,7 @@ function removegroupElem(classname) {
 	}
 }
 
+// play audio message when click message label
 function playAudioMessage(message){
 	return function(){
 		var audioBlob = message.audioData;

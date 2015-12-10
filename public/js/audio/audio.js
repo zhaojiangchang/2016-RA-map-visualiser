@@ -74,7 +74,7 @@ function stopAudioRecording(cb){
 
 // called when sources are confirmed
 function gotSources(sourceInfos) {
-    for (var i = 0; i != sourceInfos.length; ++i) {
+    for (var i = 0; i !== sourceInfos.length; ++i) {
         var sourceInfo = sourceInfos[i];
         var option = document.createElement("option");
         option.value = sourceInfo.id;

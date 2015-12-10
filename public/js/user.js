@@ -322,7 +322,7 @@ function loadAllExplorations(userName, cb){
 
 //shares the exploration with the user
 function shareExplFile(exploration, userName){
-	if(userName==currentUser.name ||selectedExploration===null){
+	if(userName===currentUser.name ||selectedExploration===null){
 		return;
 	}
 	$.ajax({
@@ -377,7 +377,7 @@ function shareTextMessage(userLabelValue){
 		contentType: "application/json"
 	});
 }
-
+// init share div - (city info, text message, audio message and send)
 function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
 	el("share-file").style.display = "none";
