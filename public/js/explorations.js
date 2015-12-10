@@ -260,6 +260,12 @@ function stopRecording(audioCB) {
 	progressBar.load(currentUser.getCurrentExploration());
 }
 
+//remove recording related graphics
+function removeRecordingGraphics(){
+	d3.select("#record-border").remove();
+	d3.select("#record-circle").remove();
+}
+
 //index of last event which was played
 var currentEventIndex = 0,
 // for pausePlayback
@@ -724,6 +730,7 @@ function ensureExplorationSelected(){
 	}
 }
 
+//set selectedExploration isNew === false
 function setExplorationIsOld(expl){
 	expl.isNew = false;
 	$.ajax({

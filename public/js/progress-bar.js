@@ -121,7 +121,7 @@ function ProgressBar() {
 
 		for (var i = 0; i < exploration.numEvents(); i++){
 			var event = exploration.getEvent(i);
-			if (event.type == "travel"){
+			if (event.type === "travel"){
 				travelEvents.push(event);
 				}
 		}
@@ -174,16 +174,16 @@ function ProgressBar() {
 		playControl.on("click", function() {
 			var currentClass = $("#play-control").attr("class");
 
-			if (currentClass == "start") {
+			if (currentClass === "start") {
 				startPlayback(selectedExploration);
 			}
-			else if (currentClass == "resume"){
+			else if (currentClass === "resume"){
 				resumePlayback(selectedExploration);
 			}
-			else if (currentClass == "pause") {
+			else if (currentClass === "pause") {
 				pausePlayback(selectedExploration);
 			}
-			else if (currentClass == "replay") {
+			else if (currentClass === "replay") {
 				startPlayback(selectedExploration);
 			}
 		});

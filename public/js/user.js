@@ -73,8 +73,8 @@ function User(name, explorations){
 	this.getMessagesBySender = function(name){
 		var messagesForSelectedSender = [];
 		for (var i = 0; i<this.messages.length; i++){
-			if(this.messages[i][0].from===name){
 				for (var j = 0; j<this.messages[i].length; j++){
+					if(this.messages[i][j].from===name ||this.messages[i][j].to===name){
 					messagesForSelectedSender[j] = this.messages[i][j];
 				}
 			}
@@ -322,7 +322,7 @@ function loadAllExplorations(userName, cb){
 
 //shares the exploration with the user
 function shareExplFile(exploration, userName){
-	if(userName==currentUser.name ||selectedExploration===null){
+	if(userName===currentUser.name ||selectedExploration===null){
 		return;
 	}
 	$.ajax({
@@ -377,7 +377,7 @@ function shareTextMessage(userLabelValue){
 		contentType: "application/json"
 	});
 }
-
+// init share div - (city info, text message, audio message and send)
 function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
 	el("share-file").style.display = "none";
