@@ -256,7 +256,7 @@ function goToFirstLocation(exploration){
 // A function to return the index of a given city
 function getCityIndex(name){
 	for(var j = 0; j < cities.length; j++){
-		if(cities[j].properties.NAME == name){
+		if(cities[j].properties.NAME === name){
 			return j;
 		}
 	}

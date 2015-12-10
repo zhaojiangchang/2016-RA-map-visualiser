@@ -1,10 +1,10 @@
 
-/* global document, $, currentUser,userLoggedOn,d3,atob,Blob,disableAction,enableAction,playing,
+/* global document, $, currentUser,userLoggedOn,atob,Blob,disableAction,enableAction,playing,
    ensureExplorationSelected,explRecording, height, width, svg, updateLocationInfo, selectedExploration,
    stopRecording, selectExploration, playAudioMessage, pathView, Image, submitAnnotation, selectedImgFile,
    window, loadAllExplorations, selectedLocation, Uint8Array*/
 /* exported updateSideBar, showNotificationButtons, toggleVisiblePath,addRecordingGraphics, removeRecordingGraphics,
-   displayLocationInfo, setVoiceMessageIsOld, removeAudioGraphic, displayAudioGraphic, divHideShow*/
+   displayLocationInfo, setVoiceMessageIsOld, removeAudioGraphic, displayAudioGraphic*/
 /*global selectedImgFile:true*/
 
 //=================================================================================
@@ -27,8 +27,11 @@ notificationContainer = el("notification-container"),
 removeNotification = el("remove-notification"),
 quickplayNotification = el("quickplay-notification"),
 notificationSelector = el("notification-selector"),
-showPathButton = el("show-path"),
-IMAGE_PATH = "data/image/";
+showPathButton = el("show-path");
+
+//-------------------------------
+
+var IMAGE_PATH = "data/image/";
 
 
 
@@ -131,36 +134,36 @@ function updateLogonElements(){
 	else{
 		toggleLogon(false, "default" , "pointer");
 	}
+	function toggleLogon(loggedOn, cursorD, cursorP){
+		// update logon button and username / password
+		logonButton.value = loggedOn ? "Log off" : "Log on";
+		userNameInput.disabled = loggedOn;
+		passwordInput.disabled = loggedOn;
+		userNameInput.style.cursor = cursorD;
+		passwordInput.style.cursor = cursorD;
+		// update user image
+		var elems = document.getElementsByClassName("user-button");
+		for(var i = 0; i<elems.length; i++){
 
-}
-
-function toggleLogon(loggedOn, cursorD, cursorP){
-	// update logon button and username / password
-	logonButton.value = loggedOn ? "Log off" : "Log on";
-	userNameInput.disabled = loggedOn;
-	passwordInput.disabled = loggedOn;
-	userNameInput.style.cursor = cursorD;
-	passwordInput.style.cursor = cursorD;
-	// update user image
-	var elems = document.getElementsByClassName("user-button");
-	for(var i = 0; i<elems.length; i++){
-
-		elems[i].disabled = loggedOn;
-		if (!loggedOn)
-		{
-			elems[i].style.cursor = cursorP;
+			elems[i].disabled = loggedOn;
+			if (!loggedOn)
+			{
+				elems[i].style.cursor = cursorP;
+			}
+			else
+			{
+				elems[i].style.cursor = cursorD;
+			}
 		}
-		else
-		{
-			elems[i].style.cursor = cursorD;
+		// logoff set value to default
+		if (!loggedOn){
+			userNameInput.value = "";
+			passwordInput.value = "";
 		}
 	}
-	// logoff set value to default
-	if (!loggedOn){
-		userNameInput.value = "";
-		passwordInput.value = "";
-	}
 }
+
+
 
 //=====================================================
 //=========== Notification ============================
@@ -211,21 +214,6 @@ function updateNotifications(){
 		$("#notification-container").html( "Have new notificaiton.");
 		notificationContainer.style.cursor = "pointer";
 	}
-//	if(newExplCount>0 && newMessageCount==0){
-//	resetVisibility(notificationContainer,"visible");
-//	$("#notification-container").html(newExplCount + " new expls.");
-//	notificationContainer.style.cursor = "pointer";
-//	}
-//	else if(newExplCount>0 && newMessageCount>0){
-//	resetVisibility(notificationContainer,"visible");
-//	$("#notification-container").html(newMessageCount + " new msgs and "+newExplCount+" expls.");
-//	notificationContainer.style.cursor = "pointer";
-//	}
-//	else if(newExplCount==0 && newMessageCount>0){
-//	resetVisibility(notificationContainer,"visible");
-//	$("#notification-container").html(newMessageCount + " new msgs.");
-//	notificationContainer.style.cursor = "pointer";
-//	}
 	else{
 		resetVisibility(notificationContainer,"visible");
 		$("#notification-container").html(" No new notification.");
@@ -233,6 +221,7 @@ function updateNotifications(){
 	}
 	showListNotifications();
 }
+
 //function triggered when notification container clicked
 //return true - when has new shared exploration
 function showListNotifications(){
@@ -312,58 +301,30 @@ function showListNotifications(){
 	}
 	return hasNewNoti;
 
-}
-function addOptions(message){
-	resetVisibility(el("text-message-div"), "visible");
-	el("showTextArea").innerHTML = '';
-	for(var i = 0; i<currentUser.messages.length; i++){
-		for(var j = 0; j<currentUser.messages[i].length; j++){
-			if(currentUser.messages[i][j].from==message.from){
-				el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(currentUser.messages[i][j].timeStamp));
-				if(currentUser.messages[i][j].isNew){
-					el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+"(New Message): " + currentUser.messages[i][j].message;
+	function addOptions(message){
+		resetVisibility(el("text-message-div"), "visible");
+		el("showTextArea").innerHTML = '';
+		for(var i = 0; i<currentUser.messages.length; i++){
+			for(var j = 0; j<currentUser.messages[i].length; j++){
+				if(currentUser.messages[i][j].from===message.from){
+					el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(currentUser.messages[i][j].timeStamp));
+					if(currentUser.messages[i][j].isNew){
+						el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+"(New Message): " + currentUser.messages[i][j].message;
 
-				}
-				else{
-					el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
+					}
+					else{
+						el("showTextArea").innerHTML += "\n"+currentUser.messages[i][j].from+": " + currentUser.messages[i][j].message;
 
+					}
+					el("showTextArea").innerHTML += "\n";
 				}
-				el("showTextArea").innerHTML += "\n";
+
 			}
-
 		}
-	}
-	updateNotifications();
-}
-
-
-function hideNotificationButtons(){
-	resetVisibility(notificationSelector, "hidden");
-	resetVisibility(removeNotification, "hidden");
-	resetVisibility(quickplayNotification, "hidden");
-}
-function showNotificationButtons(){
-	resetVisibility(notificationSelector, "visible");
-	resetVisibility(removeNotification, "visible");
-	resetVisibility(quickplayNotification, "visible");
-}
-
-//this function called once showPathButton clicked (event.js)
-function toggleVisiblePath(){
-	if(!selectedExploration){
-		return;
-	}
-	if(selectedExploration.hasCityEvents()){
-		if(showPathButton.innerHTML=="Show Path"){
-			pathView.showPathElems();
-		}
-		else if(showPathButton.innerHTML=="Hide Path"){
-			pathView.hidePathElems();
-		}
+		updateNotifications();
 	}
 }
 
-//init shared element value
 function updateShareExplElements(){
 	el("shared-with").value = "";
 	el("message-send-identify").innerHTML = "";
@@ -402,12 +363,6 @@ function addRecordingGraphics(){
 		r: 	 circleRadius})
 		.style('fill', 'red')
 		.transition().duration();
-}
-
-//remove recording related graphics
-function removeRecordingGraphics(){
-	d3.select("#record-border").remove();
-	d3.select("#record-circle").remove();
 }
 
 //=====================================================
@@ -457,94 +412,94 @@ function getAnnotationFromLocalServer(city){
 		}
 		el("location-div").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
-		var container = document.createElement("div");
-		container.className = "annotation-container-2";
 
-		annotations.forEach(function(annotation){
-
-			var userName = annotation.userName;
-			var timeStamp = new Date(annotation.timeStamp);
-
-			// h:mm format
-			var time = 	timeStamp.getHours() + ":" +
-			(timeStamp.getMinutes().toString().length < 2 ?
-					"0" + timeStamp.getMinutes() :
-						timeStamp.getMinutes());
-			var date = timeStamp.getDate() + "/" + (timeStamp.getMonth()+1) + "/" + timeStamp.getFullYear().toString().substring(2,4);
-			var annInfo = "<i> – " + userName + " " + time + " on " + date + "</i>";
-			// make necessary DOM elements
-			var rowDiv = document.createElement("div");
-			var textDiv = document.createElement("div");
-			var controlsDiv = document.createElement("div");
-			var imgDiv = document.createElement('div');
-			var content = document.createElement("p");
-			var info = document.createElement("p");
-
-			// set class (styles are applied in styles.css)
-			content.className = "annotation-text annotation-content";
-			info.className = "annotation-text annotation-info";
-			controlsDiv.className = "annotation-inner-container annotation-controls";
-			textDiv.className ="annotation-inner-container annotation-text-container";
-			rowDiv.className = "annotation-row";
-			imgDiv.className = "annotation-image";
-
-			if(annotation.imageData!==null){
-				var image = new Image();
-				image.src = annotation.imageData;
-				image.width = 50;
-				image.height = 50;
-				imgDiv.appendChild(image);
-				image.onclick = function(){
-					while(el("preview-city-img").firstChild){//remove old labels
-						el("preview-city-img").removeChild(el("preview-city-img").firstChild);
-					}
-					var img = new Image();
-					img.src = annotation.imageData;
-					img.width = 250;
-					img.height = 300;
-					el("preview-city-img").appendChild(img);
-
-				};
-			}
-			content.innerHTML = annotation.text;
-			info.innerHTML = annInfo;
-
-			// display delete button if user owns the annotation
-			// TODO: more reliable equality check
-			if (currentUser !== null && currentUser.name === userName){
-				var deleteButton = document.createElement("input");
-				deleteButton.type = "image";
-				deleteButton.src = IMAGE_PATH + "delete.png";
-				deleteButton.id = "delete-button";
-				deleteButton.onclick = function () { deleteAnnotation(annotation); };
-				controlsDiv.appendChild(deleteButton);
-			}
-
-			// removing an annotation from a location.
-			function deleteAnnotation(annotation){
-				$.ajax({
-					type: 'POST',
-					url: "/deleteAnnotation",
-					data: JSON.stringify(annotation),
-					contentType: "application/json",
-					complete: updateLocationInfo
-				});
-			}
-			textDiv.appendChild(content);
-			textDiv.appendChild(info);
-
-			rowDiv.appendChild(textDiv);
-			rowDiv.appendChild(controlsDiv);
-			container.appendChild(rowDiv);
-			container.appendChild(imgDiv);
-		});
-
+		appendAnnotations(annotations);
 		// TODO: load all annotations at once
-		el("annotation-container")
-		.appendChild(container);
 
 	}
+}
+//append annotations
+function appendAnnotations(annotations){
+	var container = document.createElement("div");
+	container.className = "annotation-container-2";
+	annotations.forEach(function(annotation){
+		var userName = annotation.userName;
+		var timeStamp = new Date(annotation.timeStamp);
 
+		// h:mm format
+		var time = 	timeStamp.getHours() + ":" +
+		(timeStamp.getMinutes().toString().length < 2 ?
+				"0" + timeStamp.getMinutes() :
+					timeStamp.getMinutes());
+		var date = timeStamp.getDate() + "/" + (timeStamp.getMonth()+1) + "/" + timeStamp.getFullYear().toString().substring(2,4);
+		var annInfo = "<i> – " + userName + " " + time + " on " + date + "</i>";
+		// make necessary DOM elements
+		var rowDiv = document.createElement("div");
+		var textDiv = document.createElement("div");
+		var controlsDiv = document.createElement("div");
+		var imgDiv = document.createElement('div');
+		var content = document.createElement("p");
+		var info = document.createElement("p");
+
+		// set class (styles are applied in styles.css)
+		content.className = "annotation-text annotation-content";
+		info.className = "annotation-text annotation-info";
+		controlsDiv.className = "annotation-inner-container annotation-controls";
+		textDiv.className ="annotation-inner-container annotation-text-container";
+		rowDiv.className = "annotation-row";
+		imgDiv.className = "annotation-image";
+
+		if(annotation.imageData!==null){
+			var image = new Image();
+			image.src = annotation.imageData;
+			image.width = 50;
+			image.height = 50;
+			imgDiv.appendChild(image);
+			image.onclick = function(){
+				while(el("preview-city-img").firstChild){//remove old labels
+					el("preview-city-img").removeChild(el("preview-city-img").firstChild);
+				}
+				var img = new Image();
+				img.src = annotation.imageData;
+				img.width = 250;
+				img.height = 300;
+				el("preview-city-img").appendChild(img);
+
+			};
+		}
+		content.innerHTML = annotation.text;
+		info.innerHTML = annInfo;
+
+		// display delete button if user owns the annotation
+		// TODO: more reliable equality check
+		if (currentUser !== null && currentUser.name === userName){
+			var deleteButton = document.createElement("input");
+			deleteButton.type = "image";
+			deleteButton.src = IMAGE_PATH + "delete.png";
+			deleteButton.id = "delete-button";
+			deleteButton.onclick = function () { deleteAnnotation(annotation); };
+			controlsDiv.appendChild(deleteButton);
+		}
+
+		// removing an annotation from a location.
+		function deleteAnnotation(annotation){
+			$.ajax({
+				type: 'POST',
+				url: "/deleteAnnotation",
+				data: JSON.stringify(annotation),
+				contentType: "application/json",
+				complete: updateLocationInfo
+			});
+		}
+		textDiv.appendChild(content);
+		textDiv.appendChild(info);
+
+		rowDiv.appendChild(textDiv);
+		rowDiv.appendChild(controlsDiv);
+		container.appendChild(rowDiv);
+		container.appendChild(imgDiv);
+		el("annotation-container").appendChild(container);
+	});
 }
 
 //makes an annotation text input element.
@@ -568,6 +523,7 @@ function makeAnnotationInput(container){
 //=========== Messages  ==========================
 var messageFromNameList = [];
 //check local server  - messages
+//update the currentUse - assign message and new message to current user
 function checkTextMessages(){
 	if(currentUser===null){
 		return;
@@ -580,13 +536,14 @@ function checkTextMessages(){
 		dataType: "json",
 	});
 	function setMessage(messages){
-		console.log(messages )
 		messageFromNameList = [];
 		currentUser.setMessages(messages);
 		var newMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			messageFromNameList[i] = messages[i][0].from;
 			for(var j = 0; j< messages[i].length; j++){
+				if(messages[i][j].from!==currentUser.name && $.inArray(messages[i][j].from,messageFromNameList[i])===-1){
+					messageFromNameList[i] = messages[i][j].from;
+				}
 				if(messages[i][j].isNew===true && messages[i][j].from!==currentUser.name){
 					newMessages.push(messages[i][j]);
 				}
@@ -598,32 +555,34 @@ function checkTextMessages(){
 
 		if(messageFromNameList.length!==0){
 			el("text-message-div").style.visibility = "visible";
-			if(el("messageFrom1")===null){
-				var option = document.createElement('option');
-				option.setAttribute("id", "messageFrom1");
-				option.innerHTML = "Select a sender";
-				option.value = "select";
-				el("messageFromOption").appendChild(option);
-			}
-			for(var k = 0; k<messageFromNameList.length;k++){
-				var name = messageFromNameList[k];
-				console.log(name)
-
-				if(el(name+"Message")===null){
-					var option2 = document.createElement('option');
-					option2.setAttribute("id", name+"Message");
-					option2.innerHTML = name;
-					option2.value = name;
-					el("messageFromOption").appendChild(option2);
-				}
-			}
+			appendTextMessageNameList(messageFromNameList);
 		}
 		else{
 			el("text-message-div").style.visibility = "hidden";
 		}
 	}
-}
+	function appendTextMessageNameList(messageFromNameList){
+		if(el("messageFrom1")===null){
+			var option = document.createElement('option');
+			option.setAttribute("id", "messageFrom1");
+			option.innerHTML = "Select a sender";
+			option.value = "select";
+			el("messageFromOption").appendChild(option);
+		}
+		for(var k = 0; k<messageFromNameList.length;k++){
+			var name = messageFromNameList[k];
 
+			if(el(name+"Message")===null){
+				var option2 = document.createElement('option');
+				option2.setAttribute("id", name+"Message");
+				option2.innerHTML = name;
+				option2.value = name;
+				el("messageFromOption").appendChild(option2);
+			}
+		}
+	}
+}
+//set local server text message isNew === false
 function setMessageIsOld(m){
 	currentUser.setTextMessageIsOld(m);
 	$.ajax({
@@ -641,6 +600,7 @@ function setMessageIsOld(m){
 	});
 }
 
+//set local server audio message isNew === false
 function setNewAudioMessageIsOld(m){
 	$.ajax({
 		type: 'POST',
@@ -661,8 +621,10 @@ function setNewAudioMessageIsOld(m){
 		checkAudioMessages();
 	}
 }
+
 var audioMessageFromNameList = [];
 //check local server  - messages
+//if current user's audio message not equals null display audio message drop down to show the messages
 function checkAudioMessages(){
 	if(currentUser===null){
 		return;
@@ -696,7 +658,7 @@ function checkAudioMessages(){
 			}
 			var byteArray = new Uint8Array(byteNumbers);
 			message.audioData = new Blob([byteArray], {type: "audio/wav"});
-			if($.inArray(message.from,audioMessageFromNameList )==-1){
+			if($.inArray(message.from,audioMessageFromNameList )===-1){
 				audioMessageFromNameList.push(message.from);
 			}
 
@@ -704,11 +666,10 @@ function checkAudioMessages(){
 		});
 		var newAudioMessages = [];
 		for (var i = 0; i < messages.length; i++){
-			if(messages[i].from!=currentUser.name && messages[i].isNew){
-				if(messages[i].from!=currentUser.name){
+			if(messages[i].from!==currentUser.name && messages[i].isNew){
+				if(messages[i].from!==currentUser.name){
 					newAudioMessages.push(messages[i]);
 				}
-
 			}
 		}
 
@@ -738,7 +699,7 @@ function addAudioMessageDropDownNameList(audioMessageFromNameList){
 	}
 	for(var j = 0; j<audioMessageFromNameList.length;j++){
 		var name = audioMessageFromNameList[j];
-		if(el(name+"VoiceMessage")===null){
+		if(el(name+"VoiceMessage")===null && name!== currentUser.name){
 			var option2 = document.createElement('option');
 			option2.setAttribute("id", name+"VoiceMessage");
 			option2.innerHTML = name;
@@ -749,6 +710,8 @@ function addAudioMessageDropDownNameList(audioMessageFromNameList){
 
 
 }
+
+//set audio message to old once user played audio message from notification bar
 function setVoiceMessageIsOld(m){
 	currentUser.setIsOld(m);
 	$.ajax({
@@ -766,13 +729,10 @@ function setVoiceMessageIsOld(m){
 	});
 }
 
-
-
-
-
 //=====================================================
 //=========== functions  ==============================
 
+//exploration control buttons
 function changeButtonColour(name, state){
 	var button = el(name + "-exploration-button");
 
@@ -806,20 +766,22 @@ function removeAudioGraphic(){
 function el(id){
 	return document.getElementById(id);
 }
+//time format: 10:59 - 30th Mar 2015
 function makeShortTimeFormat(date){
 	// convert millis to mm:ss
 	var hours = date.getHours().toString(),
 	minutes = date.getMinutes()<10		? "0" + date.getMinutes().toString() : date.getMinutes(),
 			//seconds = date.getSeconds()< 10 	? "0" + date.getSeconds().toString() : date.getSeconds(),
 			day = date.getDate(),
-			month = monthAsString(date.getMonth());
+			month = monthAsString(date.getMonth()),
+			year = date.getYear() + 1900;
 
-	return hours + ":" + minutes + " -" + day + "th " + month;
+	return hours + ":" + minutes + " -" + day + "th " + month +" "+ year;
 	function monthAsString(monthIndex){
 		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
 	}
 }
-
+//
 window.setInterval(function(){
 	if(currentUser!==null){
 		loadAllExplorations(currentUser.name, gotExplorations);
@@ -829,8 +791,8 @@ window.setInterval(function(){
 	if(selectedLocation!==null){
 		getAnnotationFromLocalServer(selectedLocation);
 	}
-	//updateShareExplElements();
 	checkTextMessages();
+	checkAudioMessages();
 }, 20000);
 
 
@@ -840,19 +802,38 @@ function gotExplorations(allExplorations){
 }
 
 $("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
-	return a.text == b.text ? 0 : a.text < b.text ? -1 : 1;
+	return a.text === b.text ? 0 : a.text < b.text ? -1 : 1;
 }));
 
-function divHideShow(div){
-	if (div.style.visibility==="visible"){
-		div.style.visibility= "hidden";
-	}
-	else{
-		div.style.visibility = "visible";
-		//setTimeout(function () {div.style.display = "none";}, 3000);
-	}
-}
 //reset notifications lable when logoff
 function resetVisibility(idVar, state){
 	idVar.style.visibility = state;
 }
+
+function hideNotificationButtons(){
+	resetVisibility(notificationSelector, "hidden");
+	resetVisibility(removeNotification, "hidden");
+	resetVisibility(quickplayNotification, "hidden");
+}
+function showNotificationButtons(){
+	resetVisibility(notificationSelector, "visible");
+	resetVisibility(removeNotification, "visible");
+	resetVisibility(quickplayNotification, "visible");
+}
+
+//this function called once showPathButton clicked (event.js)
+function toggleVisiblePath(){
+	if(!selectedExploration){
+		return;
+	}
+	if(selectedExploration.hasCityEvents()){
+		if(showPathButton.innerHTML==="Show Path"){
+			pathView.showPathElems();
+		}
+		else if(showPathButton.innerHTML==="Hide Path"){
+			pathView.hidePathElems();
+		}
+	}
+}
+
+//init shared element value
