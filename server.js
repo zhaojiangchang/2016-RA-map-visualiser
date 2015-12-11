@@ -306,12 +306,13 @@ app.post('/postAnnotation', function(req, res){
 	ensureDirExists(path);
 	path += location.properties.NAME + "/";
 	ensureDirExists(path);
+	path += userName + "/";
+	ensureDirExists(path);
 
 	var fileName = path + userName + " " + timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
 	fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
 		if (err){ console.log("errooor: "+err); }
 	});
-	console.log(annotation.imageData);
 	res.sendStatus(200); // success code
 });
 
@@ -323,19 +324,25 @@ app.get("/getAnnotations", function(req, res){
 	console.log("retrieving annotations for: " + locationName);
 
 	var path = "public/data/annotation/";
-	// ensure both dirs exist.
-	ensureDirExists(path);
-	path += locationName + "/";
 	ensureDirExists(path);
 
-	var annotationFiles = fs.readdirSync(path);
-
-	// get all annotation objects (1 per file)
+	var annotationCityFolders = fs.readdirSync(path);
 	var annotations = [];
-	annotationFiles.forEach(function(filename, index){
-		annotations.push(JSON.parse(fs.readFileSync(path+filename)));
-	});
+	for(var i = 0; i< annotationCityFolders.length; i++){
+		path = path + annotationCityFolders[i]+"/"
+		var annotationCity = fs.readdirSync(path);
+		for(var j= 0; j< annotationCity.length; j++){
+			var pathTemp = path +annotationCity[j]+"/";
+			if(!fs.existsSync(path)){
+				continue;
+			}
+			var annotationFiles = fs.readdirSync(pathTemp);
+			annotationFiles.forEach(function(fname, index){
+				annotations.push(JSON.parse(fs.readFileSync(pathTemp+fname)));
+			});
 
+		}
+	}
 	annotations.sort(function(a, b){ // by date
 		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
 	});

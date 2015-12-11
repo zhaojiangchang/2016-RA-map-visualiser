@@ -69,7 +69,7 @@ var svg = d3.select("body").append("svg")
 .attr("id", "svg_map")
 .call(zoom) // attach zoom listener
 .on("dblclick.zoom", null)
-.on("click", deselectLocation); // disable double-click zoom
+.on("click", hideAnnotation); // disable double-click zoom
 
 // contains all map graphics
 var map = svg.append("g")
@@ -92,9 +92,8 @@ d3.json("data/map/kaz.json", function(error, json) {
 	.attr("stroke", "#FFAA40");
 });
 
-function deselectLocation(){
+function hideAnnotation(){
 	el("location-div").style.display = "none";
-	selectedLocation = null;
 }
 // cities
 d3.json("data/map/kaz_places.json", function(error, json){
@@ -138,20 +137,44 @@ function selectLocation(city){
 
 // adds an annotations to the currently selected location
 function submitAnnotation(annotationText){
+	if(annotationText===null){
+		return;
+	}
+	var textAndImg = {
+			userName: currentUser.name,
+			timeStamp: new Date(),
+			text: annotationText,
+			imgFile: null,
+			fileName: null,
+			imageData: null,
+	};
 	var annotation = {
-		userName: currentUser.name,
 		location: selectedLocation,
-		text: annotationText,
-		timeStamp: new Date(),
-		imgFile: null,
-		fileName: null,
-		imageData: null,
+		info:[],
+
 	};
 	if(selectedImgFile!==null){
-		annotation.imgFile = selectedImgFile;
-		annotation.fileName = selectedImgFile.title;
-		annotation.imageData = selectedImgFile.src;
+		textAndImg.imgFile = selectedImgFile;
+		textAndImg.fileName = selectedImgFile.title;
+		textAndImg.imageData = selectedImgFile.src;
 
+	}
+	if(annotation.info.length===0){
+		var INFO = {
+				cityName: selectedLocation.properties.NAME,
+				textAndImg: textAndImg,
+		};
+		annotation.info[0] = INFO;
+	}
+	for(var i=0; i< annotation.info.length; i++){
+		if(annotation.info[i].cityName===selectedLocation.properties.NAME){
+			var INFO2 = {
+					cityName: selectedLocation.properties.NAME,
+					textAndImg: textAndImg,
+			};
+			annotation.info[i] = INFO2;
+			break;
+		}
 	}
 	$.ajax({
 		type: 'POST',
