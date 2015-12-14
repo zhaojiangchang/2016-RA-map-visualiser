@@ -59,6 +59,9 @@ function updateExplorationChooser(){
 	}else {
 		$("#exploration-selector").show();
 	}
+	explorations.sort(function(b, a){
+		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
+	});
 	explorations.forEach(function(exploration, index){
 		var explOption = document.createElement('option');
 		explOption.setAttribute("id", exploration.timeStamp);
@@ -434,7 +437,7 @@ function appendAnnotations(annotations){
 	for(var i = 0; i<annotations.length; i++){
 		infos.push.apply(infos,annotations[i].info);
 	}
-	infos.sort(function(a, b){
+	infos.sort(function(b, a){
 		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
 	});
 
@@ -831,7 +834,7 @@ function gotExplorations(allExplorations){
 	updateExplorationChooser();
 }
 
-$("#messageFromOption").html($("#messageFromOption option").sort(function (a, b) {
+$("#messageFromOption").html($("#messageFromOption option").sort(function (b, a) {
 	return a.text === b.text ? 0 : a.text < b.text ? -1 : 1;
 }));
 

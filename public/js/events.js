@@ -437,6 +437,9 @@ function selectedMessageSenderOption(){
 	el("showTextArea").innerHTML = '';
 	var selectedName = el("messageFromOption").value;
 	var messagesFromSender = currentUser.getMessagesBySender(selectedName);
+	messagesFromSender.sort(function(b, a){
+		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
+	});
 	for(var i = 0; i<messagesFromSender.length; i++){
 		el("showTextArea").innerHTML += "\nTime: " + makeShortTimeFormat(new Date(messagesFromSender[i].timeStamp));
 		if(messagesFromSender[i].isNew && selectedName!==currentUser.name){
@@ -484,6 +487,9 @@ function selectedAudioMessageSenderOption(){
 function appendAudioMessageOnSideBar(selectedName){
 	var newAudioMessages = [];
 	//currentUser.audioMessages.forEach(function(message){
+		currentUser.audioMessages.sort(function(b, a){
+		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
+	});
 	for(var i = 0; i <currentUser.audioMessages.length; i++){
 		var message = currentUser.audioMessages[i];
 		if(message.from===selectedName ||message.to===selectedName) {
