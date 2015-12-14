@@ -25,11 +25,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. **/
 
-// the location of image files
+//the location of image files
 var IMAGE_PATH = "data/image/";
-// width and height of window (TODO: make these update dynamically)
+//width and height of window (TODO: make these update dynamically)
 var width = $(window).width() * 0.8,
-	height = $(window).height();
+height = $(window).height();
 
 //How far we should scale into a selection
 var SCALE_FACTOR = 1200;
@@ -42,10 +42,10 @@ var EASE_FUNCTION = "cubic-in-out";
 
 //The path to the easing function text file
 
-// data to be bound to svg elements
+//data to be bound to svg elements
 var cities, distances, direction, paths;
 
-// location/city that was last selected.
+//location/city that was last selected.
 var selectedLocation;
 
 var projection = d3.geo.mercator()
@@ -56,7 +56,7 @@ var projection = d3.geo.mercator()
 var path = d3.geo.path().projection(projection)
 .pointRadius(2.5);
 
-// mousewheel zooming
+//mousewheel zooming
 var zoom = d3.behavior.zoom()
 .on("zoom.normal",function() {
 	map.attr("transform","translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -69,16 +69,16 @@ var svg = d3.select("body").append("svg")
 .attr("id", "svg_map")
 .call(zoom) // attach zoom listener
 .on("dblclick.zoom", null)
-.on("click", deselectLocation); // disable double-click zoom
+.on("click", hideAnnotation); // disable double-click zoom
 
-// contains all map graphics
+//contains all map graphics
 var map = svg.append("g")
-	.attr("id","map_area")
-	.attr("transform", "translate(0,0)scale(1)");
+.attr("id","map_area")
+.attr("transform", "translate(0,0)scale(1)");
 
 svg.style('cursor','move');
 
-// Read country outline from file
+//Read country outline from file
 d3.json("data/map/kaz.json", function(error, json) {
 	var subunits = topojson.feature(json, json.objects.kaz_subunits);
 
@@ -92,11 +92,10 @@ d3.json("data/map/kaz.json", function(error, json) {
 	.attr("stroke", "#FFAA40");
 });
 
-function deselectLocation(){
+function hideAnnotation(){
 	el("location-div").style.display = "none";
-	selectedLocation = null;
 }
-// cities
+//cities
 d3.json("data/map/kaz_places.json", function(error, json){
 	cities = json.features;
 	// places group to contain all elements of a place
@@ -104,10 +103,10 @@ d3.json("data/map/kaz_places.json", function(error, json){
 	.data(cities)
 	.enter()
 	.append("g")
-		.attr("id", function(d) { return d.properties.NAME; })
-		.on("dblclick.zoom", cityClicked)
-		.on("click", selectLocation)
-		.attr("class", "place");
+	.attr("id", function(d) { return d.properties.NAME; })
+	.on("dblclick.zoom", cityClicked)
+	.on("click", selectLocation)
+	.attr("class", "place");
 
 	places.append("path")
 	.attr("d", path);
@@ -128,7 +127,7 @@ d3.json("data/map/kaz_places.json", function(error, json){
 	.style("text-anchor", function(d) { return d.geometry.coordinates[0] > -1 ? "start" : "end"; });
 });
 
-// updates info bar to show information about the location and allows user to add annotations
+//updates info bar to show information about the location and allows user to add annotations
 function selectLocation(city){
 	el("location-div").style.display = "block";
 	selectedLocation = city;
@@ -136,40 +135,66 @@ function selectLocation(city){
 
 }
 
-// adds an annotations to the currently selected location
+//adds an annotations to the currently selected location
 function submitAnnotation(annotationText){
-	var annotation = {
-		userName: currentUser.name,
-		location: selectedLocation,
-		text: annotationText,
-		timeStamp: new Date(),
-		imgFile: null,
-		fileName: null,
-		imageData: null,
+	if(annotationText===null){
+		return;
+	}
+	var textAndImg = {
+			userName: currentUser.name,
+			text: annotationText,
+			fileName: null,
+			imageData: null,
 	};
+
 	if(selectedImgFile!==null){
-		annotation.imgFile = selectedImgFile;
-		annotation.fileName = selectedImgFile.title;
-		annotation.imageData = selectedImgFile.src;
+		textAndImg.fileName = selectedImgFile.title;
+		textAndImg.imageData = selectedImgFile.src;
 
 	}
-	$.ajax({
-		type: 'POST',
-		url: "/postAnnotation",
-		data: JSON.stringify(annotation),
-		contentType: "application/json",
-		complete: updateLocationInfo
-	});
+	var INFO = {
+			cityName: selectedLocation.properties.NAME,
+			timeStamp: new Date(),
+			textAndImg: textAndImg,
+	};
+	var find = false;
+	for(var i= 0; i<currentUser.annotations.length; i++){
+		if(currentUser.annotations[i].location.properties.NAME===selectedLocation.properties.NAME &&
+				currentUser.annotations[i].userName===currentUser.name){
+			find = true;
+			currentUser.annotations[i].info.push(INFO);
+			submitAnnotation(currentUser.annotations[i]);
+			break;
+		}
+	}
+	if(!find){
+		var annotation = {
+				userName: currentUser.name,
+				location: selectedLocation,
+				info:[],
+
+		};
+		annotation.info.push(INFO);
+		currentUser.annotations.push(annotation);
+		submitAnnotation(currentUser.annotations[currentUser.annotations.length-1]);
+	}
+	function submitAnnotation(annotation){
+		$.ajax({
+			type: 'POST',
+			url: "/postAnnotation",
+			data: JSON.stringify(annotation),
+			contentType: "application/json",
+			complete: updateLocationInfo
+		});
+
+	}
 }
 
-
-// refresh the location info bar
+//refresh the location info bar
 function updateLocationInfo(){
 	if (selectedLocation){
-
 		selectLocation(selectedLocation);
 	}
-
 }
 
 //smoothly transitions from current location to a city
@@ -179,13 +204,13 @@ function travelToCity(city, duration, elapsedTime) {
 	transitionTo(center, null, duration, elapsedTime);
 }
 
-// duration [optional] sets duration of transition
-// elapsedTime [optional] makes the transition from elapsedTime to end
+//duration [optional] sets duration of transition
+//elapsedTime [optional] makes the transition from elapsedTime to end
 function transitionTo(center, scale, duration, elapsedTime){
 
 	var cx = center[0],
-		cy = center[1],
-		screenWidth = scale ? height / scale : 200;
+	cy = center[1],
+	screenWidth = scale ? height / scale : 200;
 
 	var end = [];
 	end[0] = cx;
@@ -193,7 +218,7 @@ function transitionTo(center, scale, duration, elapsedTime){
 	end[2] = screenWidth;
 
 	var sb = getRealBounds(),
-		start = [sb[0][0], sb[0][1], height / d3.transform(map.attr("transform")).scale[0]];
+	start = [sb[0][0], sb[0][1], height / d3.transform(map.attr("transform")).scale[0]];
 
 	center = [width / 2, height / 2];
 	var interpolator = d3.interpolateZoom(start, end);
@@ -219,7 +244,7 @@ function transitionTo(center, scale, duration, elapsedTime){
 	}
 }
 
-// updates the zoom.scale and zoom.translation properties to the map's current state
+//updates the zoom.scale and zoom.translation properties to the map's current state
 function updateScaleAndTrans(){
 	var scale = d3.transform(map.attr("transform")).scale[0];
 	var translate = [d3.transform(map.attr("transform")).translate[0], d3.transform(map.attr("transform")).translate[1]];
@@ -227,7 +252,7 @@ function updateScaleAndTrans(){
 	zoom.translate(translate);
 }
 
-// A function to reset the map to the center, zoomed out.
+//A function to reset the map to the center, zoomed out.
 function reset(){
 	var x = width / 2;
 	var y = height / 2;
@@ -253,7 +278,7 @@ function goToFirstLocation(exploration){
 	transitionTo( [center[0], center[1]], scale );
 }
 
-// A function to return the index of a given city
+//A function to return the index of a given city
 function getCityIndex(name){
 	for(var j = 0; j < cities.length; j++){
 		if(cities[j].properties.NAME === name){
@@ -262,36 +287,36 @@ function getCityIndex(name){
 	}
 }
 
-// when a city is clicked
+//when a city is clicked
 function cityClicked(d){
 	travelToCity(d);
 }
 
-// A function that takes you to a city
-// location: number (city index) or string (city name)
-// duration: duration of transition
-// elapsedTime: continue transition from this time
+//A function that takes you to a city
+//location: number (city index) or string (city name)
+//duration: duration of transition
+//elapsedTime: continue transition from this time
 function goToLoc(location, duration, elapsedTime) {
 	if (typeof location === "number"){
 		location = cities[index];
-		}
+	}
 	if (typeof location === "string"){
 		location = cities[getCityIndex(location)];
-		}
+	}
 
 	selectLocation(location); // so that information appears in sidebar
 	travelToCity(location, duration, elapsedTime);
 }
 
-// Pings a country on the screen
+//Pings a country on the screen
 function ping(location) {
 	var source;
 	if (typeof location === "number"){
 		source = cities[location];
-		}
+	}
 	if (typeof location === "string"){
 		source = cities[getCityIndex(location)];
-		}
+	}
 
 	var center = path.centroid(source);
 	var screenvars = getAbsoluteBounds();
@@ -347,7 +372,7 @@ function ping(location) {
 function getRealBounds(transform) {
 	if (!transform){
 		transform = d3.transform(map.attr("transform"));
-		}
+	}
 
 	var tx = transform.translate[0];
 	var ty = transform.translate[1];
@@ -362,7 +387,7 @@ function getRealBounds(transform) {
 }
 
 
-//
+
 function getAbsoluteBounds() {
 	var transforms = d3.transform(map.attr("transform"));
 
