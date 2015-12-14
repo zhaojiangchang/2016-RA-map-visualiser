@@ -13,6 +13,7 @@ function User(name, explorations){
 	// a recording in progress (none at start)
 	this.currentExpl = null;
 	// the user's messages
+	this.annotations = [];
 	this.messages = [];
 	this.audioMessages = [];
 	this.newMessages = [];
@@ -178,7 +179,19 @@ function User(name, explorations){
 	this.hasExplorations = function(){
 		return this.explorations.length > 0;
 	};
-
+	//set annotations to null
+	this.setAnnotationsToNull = function(){
+		this.annotations = [];
+	};
+	//remove info by annotation
+	this.removeInfoByAnnotation = function(annotation, info){
+		var index = this.annotations.indexOf(annotation);
+		if(index===-1){
+			return;
+		}
+		var indexInfo = this.annotations[index].info.indexOf(info);
+		this.annotations[index].info.splice(indexInfo, 1);
+	};
 }
 
 //=====================================================

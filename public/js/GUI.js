@@ -410,6 +410,13 @@ function getAnnotationFromLocalServer(city){
 		if (annotations === "no_annotations") {
 			return;
 		}
+		currentUser.setAnnotationsToNull();
+		for(var i= 0; i< annotations.length; i++){
+			if(annotations[i].location.properties.NAME === selectedLocation.properties.NAME &&
+					annotations[i].userName===currentUser.name && currentUser.annotations.indexOf(annotations[i])<0){
+				currentUser.annotations.push(annotations[i]);
+			}
+		}
 		el("location-div").style.display = "block";
 		// make a secondary annotation container so that all annotations can be loaded at once
 
@@ -422,9 +429,21 @@ function getAnnotationFromLocalServer(city){
 function appendAnnotations(annotations){
 	var container = document.createElement("div");
 	container.className = "annotation-container-2";
-	annotations.forEach(function(annotation){
-		var userName = annotation.userName;
-		var timeStamp = new Date(annotation.timeStamp);
+
+	var infos = [];
+	for(var i = 0; i<annotations.length; i++){
+		infos.push.apply(infos,annotations[i].info);
+	}
+	infos.sort(function(a, b){
+		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
+	});
+
+	if(infos.length===0){
+		return;
+	}
+	infos.forEach(function(info){
+		var userName = info.textAndImg.userName;
+		var timeStamp = new Date(info.timeStamp);
 
 		// h:mm format
 		var time = 	timeStamp.getHours() + ":" +
@@ -439,19 +458,19 @@ function appendAnnotations(annotations){
 		var controlsDiv = document.createElement("div");
 		var imgDiv = document.createElement('div');
 		var content = document.createElement("p");
-		var info = document.createElement("p");
+		var p = document.createElement("p");
 
 		// set class (styles are applied in styles.css)
 		content.className = "annotation-text annotation-content";
-		info.className = "annotation-text annotation-info";
+		p.className = "annotation-text annotation-info";
 		controlsDiv.className = "annotation-inner-container annotation-controls";
 		textDiv.className ="annotation-inner-container annotation-text-container";
 		rowDiv.className = "annotation-row";
 		imgDiv.className = "annotation-image";
-
-		if(annotation.imageData!==null){
+		imgDiv.id = "annotation-image";
+		if(info.textAndImg.imageData!==null){
 			var image = new Image();
-			image.src = annotation.imageData;
+			image.src = info.textAndImg.imageData;
 			image.width = 50;
 			image.height = 50;
 			imgDiv.appendChild(image);
@@ -460,15 +479,15 @@ function appendAnnotations(annotations){
 					el("preview-city-img").removeChild(el("preview-city-img").firstChild);
 				}
 				var img = new Image();
-				img.src = annotation.imageData;
+				img.src = info.textAndImg.imageData;
 				img.width = 250;
 				img.height = 300;
 				el("preview-city-img").appendChild(img);
-
 			};
+			container.appendChild(imgDiv);
 		}
-		content.innerHTML = annotation.text;
-		info.innerHTML = annInfo;
+		content.innerHTML = info.textAndImg.text;
+		p.innerHTML = annInfo;
 
 		// display delete button if user owns the annotation
 		// TODO: more reliable equality check
@@ -477,7 +496,19 @@ function appendAnnotations(annotations){
 			deleteButton.type = "image";
 			deleteButton.src = IMAGE_PATH + "delete.png";
 			deleteButton.id = "delete-button";
-			deleteButton.onclick = function () { deleteAnnotation(annotation); };
+
+			deleteButton.onclick = function () {
+				var ann = null;
+				for(var i= 0; i<currentUser.annotations.length; i++){
+					if(currentUser.annotations[i].info.indexOf(info)>=0){
+						ann = currentUser.annotations[i];
+						currentUser.removeInfoByAnnotation(ann, info);
+
+						break;
+					}
+				}
+				deleteAnnotation(ann);
+			};
 			controlsDiv.appendChild(deleteButton);
 		}
 
@@ -492,12 +523,11 @@ function appendAnnotations(annotations){
 			});
 		}
 		textDiv.appendChild(content);
-		textDiv.appendChild(info);
+		textDiv.appendChild(p);
 
 		rowDiv.appendChild(textDiv);
 		rowDiv.appendChild(controlsDiv);
 		container.appendChild(rowDiv);
-		container.appendChild(imgDiv);
 		el("annotation-container").appendChild(container);
 	});
 }
@@ -781,7 +811,7 @@ function makeShortTimeFormat(date){
 		return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][monthIndex];
 	}
 }
-//
+
 window.setInterval(function(){
 	if(currentUser!==null){
 		loadAllExplorations(currentUser.name, gotExplorations);

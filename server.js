@@ -296,24 +296,37 @@ app.post("/createAccount", function(req, res){
 //saves a new annotation to file
 app.post('/postAnnotation', function(req, res){
 	var annotation = req.body;
-	var timeStamp = new Date(annotation.timeStamp);
-	var location = annotation.location;
-	var userName = annotation.userName; // string
-	var text = annotation.text;
+	var info = annotation.info[annotation.info.length-1];
+	var textAndImg = info.textAndImg;
+	var timeStamp = new Date(info.textAndImg.timeStamp);
+	var location = info.cityName;
+	var userName = info.textAndImg.userName; // string
+	var text = info.textAndImg.text;
 
 	var path = "public/data/annotation/";
 	// makes annotation path if none exists.
 	ensureDirExists(path);
-	path += location.properties.NAME + "/";
+	path += location + "/";
 	ensureDirExists(path);
-	path += userName + "/";
-	ensureDirExists(path);
-
-	var fileName = path + userName + " " + timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
-	fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
-		if (err){ console.log("errooor: "+err); }
-	});
+//	path += userName + "/";
+//	ensureDirExists(path);
+	//var fileName = path + userName + " " + timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
+	var fileName = path + userName+ ".json";
+	if(!fs.existsSync(fileName)){
+		fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
+			if (err){ console.log("errooor: "+err); }
+		});
+	}
+	else{
+		var ann = JSON.parse(fs.readFileSync(fileName));
+		ann = annotation;
+		fs.writeFile(fileName, JSON.stringify(ann, null, 4), function(err) {
+			if (err){ console.log("errooor: "+err); }
+		});
+	}
 	res.sendStatus(200); // success code
+	return;
+
 });
 
 //retrieves and sends all annotations for a specified location
@@ -325,27 +338,19 @@ app.get("/getAnnotations", function(req, res){
 
 	var path = "public/data/annotation/";
 	ensureDirExists(path);
+	path += locationName + "/";
+	ensureDirExists(path);
 
-	var annotationCityFolders = fs.readdirSync(path);
+	var annotationCityByName = fs.readdirSync(path);
 	var annotations = [];
-	for(var i = 0; i< annotationCityFolders.length; i++){
-		path = path + annotationCityFolders[i]+"/"
-		var annotationCity = fs.readdirSync(path);
-		for(var j= 0; j< annotationCity.length; j++){
-			var pathTemp = path +annotationCity[j]+"/";
-			if(!fs.existsSync(path)){
-				continue;
-			}
-			var annotationFiles = fs.readdirSync(pathTemp);
-			annotationFiles.forEach(function(fname, index){
-				annotations.push(JSON.parse(fs.readFileSync(pathTemp+fname)));
-			});
-
-		}
+	for(var i = 0; i< annotationCityByName.length; i++){
+		var filename = annotationCityByName[i];
+		var annotation = JSON.parse(fs.readFileSync(path + filename));
+		annotations.push(annotation);
 	}
-	annotations.sort(function(a, b){ // by date
-		return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
-	});
+//	annotations.sort(function(a, b){ // by date
+//	return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
+//	});
 
 	res.send(JSON.stringify(annotations));
 
@@ -364,8 +369,10 @@ app.post("/deleteAnnotation", function(req, res){
 		var inputAnnotation = JSON.parse(fs.readFileSync(path + filename));
 
 		// if annotations are equal, delete the file
-		if (annotation.userName === inputAnnotation.userName && annotation.timeStamp === inputAnnotation.timeStamp && annotation.text === inputAnnotation.text){
-			fs.unlinkSync(path + filename);
+		if (annotation.userName === inputAnnotation.userName){
+			fs.writeFile(path + filename, JSON.stringify(annotation, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
 			res.sendStatus(200); // success code
 			return;
 		}

@@ -2,7 +2,7 @@
 /*global document, $, console, currentUser, userLoggedOn, d3, Blob,updateNotifications, clearTimeout, explChooser,
 	el, setTimeout, makeShortTimeFormat, zoom, updateScaleAndTrans, goToLoc, window, FileReader,
 	map, audioRecorder, startAudioRecording, addRecordingGraphics, updateExplorationControls, getCityIndex,
-	stopAudioRecording, removeRecordingGraphics, alert, goToFirstLocation, showPathButton, isNextEvent,
+	stopAudioRecording, alert, goToFirstLocation, showPathButton, isNextEvent,
 	loadAllExplorations, gotExplorations, updateExplorationChooser, changeButtonColour, ProgressBar, PathView*/
 /*exported startRecording, startPlayback, insertIntoSelectedExploration, saveExploration, deleteExploration,
     updateSelectedExploration, ensureExplorationSelected, setPositionFromClickedPathLine*/
