@@ -170,9 +170,9 @@ input,label {
 
 .notification-container {
 	position: fixed;
-	left: 67.7%;
+	left: 66.7%;
 	top: 96%;
-	width: 250px;
+	width: 240px;
 	height: 20px;
 	border: 2px solid black;
 	font-size: 150%;
@@ -183,9 +183,9 @@ input,label {
 
 #notification-selector {
 	position: fixed;
-	left: 67.7%;
+	left: 66.7%;
 	top: 84%;
-	width: 250px;
+	width: 240px;
 	height: 70px;
 	background-color: #fff;
 	visibility: hidden;
@@ -202,7 +202,7 @@ input,label {
 
 #remove-notification{
 	position: fixed;
-	left: 78.5%;
+	left: 77.5%;
 	top: 80.6%;
 	width:20px;
 	height:20px;
@@ -212,7 +212,7 @@ input,label {
 
 #quickplay-notification{
 	position: fixed;
-	left: 79.8%;
+	left: 78.8%;
 	top: 80.6%;
 	width:20px;
 	height:20px;
@@ -235,7 +235,7 @@ input,label {
 
 #player-panel {
   	position: fixed;
-  	left: 15%;
+  	left: 13%;
   	top: 85%;
 }
 

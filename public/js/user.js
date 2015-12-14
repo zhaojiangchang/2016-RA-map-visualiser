@@ -1,3 +1,8 @@
+
+/*global $, window, selectedExploration, setTimeout, el, alert, updateSideBar,resetExplorations, updateNotifications,
+ 	Exploration, atob, Uint8Array, Blob, voiceMessageData, FileReader, appendAudioMessageOnSideBar, addAudioMessageDropDownNameList*/
+/*exported attemptLogin, logout, userLoggedOn,attemptCreateAccount, shareExplFile, shareTextMessage,
+    shareVoiceMessage, deleteAudioMessage, deletedVoiceMessageFromCurrentUser*/
 var currentUser = null; // the user who is currently logged in
 
 //user object is created with their name and explorations
@@ -8,6 +13,7 @@ function User(name, explorations){
 	// a recording in progress (none at start)
 	this.currentExpl = null;
 	// the user's messages
+	this.annotations = [];
 	this.messages = [];
 	this.audioMessages = [];
 	this.newMessages = [];
@@ -24,74 +30,58 @@ function User(name, explorations){
 	};
 	this.getMessages = function(){
 		return this.messages;
-	}
+	};
 	this.getAudioMessages = function(){
 		return this.audioMessage;
-	}
-	this.setIsOld = function(message){
-		for (var i = 0; i<this.messages.length; i++){
-			for (var j = 0; j<this.messages[i].length; j++){
-				if(this.messages[i][j]===message){
-					this.messages[i][j].isNew = false;
-
-				}
-			}
+	};
+	this.setTextMessageIsOld = function(message){
+		var m = this.messages.indexOf(message);
+		if(m!==-1){
+			this.message[m].isNew = false;
 		}
-		for (var a = 0; a<this.newMessages.length; a++){
-			if(this.newMessages[a]===message){
-				this.newMessages.splice(a,1);
-			}
-
+		m = this.newMessages.indexOf(message);
+		if(m!==-1){
+			this.newMessages.splice(m,1);
 		}
-
-	}
+	};
 	this.setAudioMessageIsOld = function(message){
-		for (var i = 0; i<this.audioMessages.length; i++){
-			for (var j = 0; j<this.audioMessages[i].length; j++){
-				if(this.audioMessages[i][j]===message){
-					this.audioMessages[i][j].isNew = false;
 
-				}
-			}
+		var m = this.audioMessages.indexOf(message);
+		if(m!==-1){
+			this.audioMessages[m].isNew = false;
 		}
-		for (var a = 0; a<this.newAudioMessages.length; a++){
-			if(this.newAudioMessages[a]===message){
-				this.newAudioMessages.splice(a,1);
-			}
-
+		m = this.newAudioMessages.indexOf(message);
+		if(m!==-1){
+			this.newAudioMessages.splice(m,1);
 		}
-
-	}
+	};
 	this.haveMessages = function(){
-		if(this.messages.length == 0) return false;
-		else return true;
-	}
+		return this.messages.length === 0;
+	};
 	this.haveAudioMessages = function(){
-		if(this.audioMessages.length == 0) return false;
-		else return true;
-	}
+		return this.audioMessages.length > 0;
+	};
 	this.haveNewMessages = function(){
-		if(this.newMessages.length==0) return false;
-		else return true;
-	}
+		return this.newMessages.length > 0;
+	};
 	this.haveNewAudioMessages = function(){
-		if(this.newAudioMessages.length==0) return false;
-		else return true;
-	}
+		return this.newAudioMessages.length > 0;
+
+	};
 	this.setNewMessages = function(newMessages){
 		this.newMessages = newMessages;
-	}
+	};
 	this.getMessagesBySender = function(name){
 		var messagesForSelectedSender = [];
 		for (var i = 0; i<this.messages.length; i++){
-			if(this.messages[i][0].from===name){
 				for (var j = 0; j<this.messages[i].length; j++){
+					if(this.messages[i][j].from===name ||this.messages[i][j].to===name){
 					messagesForSelectedSender[j] = this.messages[i][j];
 				}
 			}
 		}
 		return messagesForSelectedSender;
-	}
+	};
 	this.getAudioMessagesBySender = function(name){
 		var audioMessagesForSelectedSender = [];
 		for (var i = 0; i<this.audioMessages.length; i++){
@@ -102,7 +92,7 @@ function User(name, explorations){
 			}
 		}
 		return audioMessagesForSelectedSender;
-	}
+	};
 
 	this.removeAudioMessageByMessage = function(message){
 		var index = this.audioMessages.indexOf(message);
@@ -114,7 +104,7 @@ function User(name, explorations){
 			this.newAudioMessages.splice(index,1);
 		}
 
-	}
+	};
 	// add an exploration
 	this.addExploration = function (expl){
 		this.explorations.push(expl);
@@ -122,11 +112,11 @@ function User(name, explorations){
 
 	this.setExplorations = function(explorations){
 		this.explorations = explorations;
-	}
+	};
 
 	this.getCurrentExploration = function(){
 		return this.currentExpl;
-	}
+	};
 	this.setCurrentExploration = function(expl){
 		this.currentExpl = expl;
 	};
@@ -135,14 +125,13 @@ function User(name, explorations){
 		this.currentExpl = null;
 	};
 	this.haveExploration = function(expl){
-		if(this.explorations.indexOf(expl)>=0) return true;
-		else return false;
+		return (this.explorations.indexOf(expl)>=0);
 	};
 	// gets an exploration (given a timestamp) from the user's collection of explorations
 	this.getExploration = function(timeStamp){
 		var userExpl = null;
 		this.explorations.forEach(function(expl){
-			if (expl.timeStamp.localeCompare(timeStamp)==0){
+			if (expl.timeStamp.localeCompare(timeStamp)===0){
 				userExpl = expl;
 			}
 		});
@@ -151,7 +140,7 @@ function User(name, explorations){
 	this.getSharedExploration = function(){
 		var sharedExpl = [];
 		this.explorations.forEach(function(expl){
-			if(expl.userName.localeCompare(name)!=0){
+			if(expl.userName.localeCompare(name)!==0){
 				sharedExpl.push(expl);
 			}
 		});
@@ -164,7 +153,7 @@ function User(name, explorations){
 
 	this.getExplorations = function(){
 		return this.explorations;
-	}
+	};
 
 	// gets all the explorations which are considered new
 	this.getNewExplorations = function(){
@@ -175,21 +164,34 @@ function User(name, explorations){
 			}
 		});
 		return newExplorations;
-	}
+	};
 
 	// removes the first exploration from the user
 	this.removeExploration = function(exploration){
 		for (var i = 0; i < this.explorations.length; i++){
-			if (this.explorations[i].equals(exploration))
+			if (this.explorations[i].equals(exploration)){
 				this.explorations.splice(i, 1);
+				}
 			return true;
 		}
-	}
+	};
 	// has the user got any explorations?
 	this.hasExplorations = function(){
 		return this.explorations.length > 0;
-	}
-
+	};
+	//set annotations to null
+	this.setAnnotationsToNull = function(){
+		this.annotations = [];
+	};
+	//remove info by annotation
+	this.removeInfoByAnnotation = function(annotation, info){
+		var index = this.annotations.indexOf(annotation);
+		if(index===-1){
+			return;
+		}
+		var indexInfo = this.annotations[index].info.indexOf(info);
+		this.annotations[index].info.splice(indexInfo, 1);
+	};
 }
 
 //=====================================================
@@ -222,11 +224,7 @@ function login(name){
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
 	el("share-file").style.display = "block";
-	if(selectedLocation==null){
-		el("file-browse").style.display = "none";
-	}
-
-
+	el("location-div").style.display = "none";
 	function gotExplorations(allExplorations){
 		currentUser.setExplorations(allExplorations);
 		updateSideBar();
@@ -255,9 +253,11 @@ function createAccount(name, pw){
 		url: "/createAccount",
 		data: JSON.stringify({userName: name, password: pw}),
 		contentType: "application/json",
-		success: window.document.write("new account created!"), //callback when ajax request finishes
-	});
-	window.close(1000);
+		success: newAccountCreated});
+
+	function newAccountCreated(){
+		window.document.write("new account created!"); //callback when ajax request finishes
+	}
 }
 
 //attempts to create an account. Alerts user if name and pw are unacceptable
@@ -299,7 +299,7 @@ function loadAllExplorations(userName, cb){
 		var allExplorationsData = JSON.parse(explorations);
 		var explorationCount = allExplorationsData.length;
 
-		if (explorationCount == 0){
+		if (explorationCount === 0){
 			$("#noOfFilesLoaded").html("no notification loaded");
 		}
 		else {
@@ -335,8 +335,9 @@ function loadAllExplorations(userName, cb){
 
 //shares the exploration with the user
 function shareExplFile(exploration, userName){
-	if(userName==currentUser.name) return;
-	if(selectedExploration==null) return;
+	if(userName===currentUser.name ||selectedExploration===null){
+		return;
+	}
 	$.ajax({
 		type: 'POST',
 		url: "/shareExploration",
@@ -347,11 +348,15 @@ function shareExplFile(exploration, userName){
 		}),
 		success: function(response){
 			if(!JSON.parse(response)){
-				el("expl-sent-message").innerHTML = "user does not exist!";
+				el("message-send-identify").innerHTML = "user does not exist!";
+				setTimeout(function(){
+					el("message-send-identify").style.display = "none"; }, 5000);
 			}
 			else {
 				var userLabelValue = el("shared-with").value;
-				el("expl-sent-message").innerHTML = "Sent to: "+userLabelValue+ "     ExplName:"+ selectedExploration.name;
+				el("message-send-identify").innerHTML = "Sent to: "+userLabelValue+ "     ExplName:"+ selectedExploration.name;
+				setTimeout(function(){
+					el("message-send-identify").style.display = "none";}, 5000);
 			}
 
 		}, //callback when ajax request finishes
@@ -362,20 +367,22 @@ function shareExplFile(exploration, userName){
 //=========== Message =================================
 //share text message to userLabelValue
 function shareTextMessage(userLabelValue){
-	testMessageToSend = el("text-message-input").value;
-	if(testMessageToSend==null) return;
+	var testMessageToSend = el("text-message-input").value;
+	if(testMessageToSend===null){
+		return;
+	}
 	var Message = {
 			timeStamp: new Date(),
 			from: currentUser.name,
 			to: userLabelValue,
 			message: testMessageToSend,
 			isNew: true
-	}
+	};
 	$.ajax({
 		type: 'POST',
 		url: "/postMessage",
 		data: JSON.stringify(Message),
-		success: function(response){
+		success: function(){
 			el("sendOption").value = "select";
 			el("text-message-input-div").style.display = "none";
 			el("shared-with").value = "";
@@ -383,7 +390,7 @@ function shareTextMessage(userLabelValue){
 		contentType: "application/json"
 	});
 }
-
+// init share div - (city info, text message, audio message and send)
 function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
 	el("share-file").style.display = "none";
@@ -391,7 +398,7 @@ function resetShareDiv(){
 	el("location-div").style.display = "none";
 	while(el("messageFromOption").firstChild){//remove old labels
 		//if(el("messageFromOption").value!='select')
-			el("messageFromOption").removeChild(el("messageFromOption").firstChild);
+		el("messageFromOption").removeChild(el("messageFromOption").firstChild);
 	}
 	while(el("audio-messages-list").firstChild){
 		el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
@@ -399,7 +406,9 @@ function resetShareDiv(){
 }
 //share voice message to userLabelValue
 function shareVoiceMessage(userLabelValue){
-	if(voiceMessageData==null)return;
+	if(voiceMessageData===null){
+		return;
+	}
 	//converted audio
 	var newFormetVoice = null;
 	var VoiceMessage = null;
@@ -415,17 +424,19 @@ function shareVoiceMessage(userLabelValue){
 				to: userLabelValue,
 				audioData: newFormetVoice,
 				isNew: true
-		}
-		console.log(VoiceMessage.from)
+		};
 		$.ajax({
 			type: 'POST',
 			url: "/postVoiceMessage",
 			data: JSON.stringify(VoiceMessage),
-			success: function(response){
+			success: function(){
 				el("record-voice").style.display = "none";
 				el("shared-with").value = "";
-			},
-			contentType: "application/json"
+				el("message-send-identify").style.display = "block";
+				el("message-send-identify").innerHTML = "Voice message send to "+ userLabelValue;
+				setTimeout(function(){
+					el("message-send-identify").style.display = "none";}, 5000);},
+					contentType: "application/json"
 		});
 	}
 
@@ -433,26 +444,30 @@ function shareVoiceMessage(userLabelValue){
 
 //delete voice message
 function deleteAudioMessage(message){
-	$.ajax({
-		type: 'POST',
-		url: "deleteAudioMessage",
-		data: JSON.stringify({
-			message: message,
-			currentUser: currentUser.name }),
-		contentType: "application/json",
-		success: deletedVoiceMessageFromCurrentUser
-	});
+	return function(){
+		$.ajax({
+			type: 'POST',
+			url: "deleteAudioMessage",
+			data: JSON.stringify({
+				message: message,
+				currentUser: currentUser.name }),
+				contentType: "application/json",
+				success: deletedVoiceMessageFromCurrentUser
+		});
 
-	function deletedVoiceMessageFromCurrentUser(response){
+		function deletedVoiceMessageFromCurrentUser(){
 			currentUser.removeAudioMessageByMessage(message);
 			while(el("audio-messages-list").firstChild){
 				el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
 			}
 			if(currentUser.audioMessages.length>0)
+				{
 				appendAudioMessageOnSideBar();
-			else{
+				}
+				else{
 
 				addAudioMessageDropDownNameList();
 			}
-	}
+		}
+	};
 }

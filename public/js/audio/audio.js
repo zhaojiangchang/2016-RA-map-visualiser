@@ -1,3 +1,7 @@
+/* global document, navigator, window, AudioContext, console, displayAudioGraphic, removeAudioGraphic,
+     voiceMessageRecording, currentUser, voiceMessageData, videoSelect, alert, MediaStreamTrack, Recorder, */
+/* exported saveAudio, startAudioRecording, stopAudioRecording,*/
+/*global voiceMessageData:true, voiceMessageRecording:true*/
 // =================================================================================
 // Author: github.com/samdutton, modified by Will Hardwick-Smith
 // original code from https://github.com/samdutton/simpl/blob/master/getusermedia/sources/js/main.js
@@ -70,7 +74,7 @@ function stopAudioRecording(cb){
 
 // called when sources are confirmed
 function gotSources(sourceInfos) {
-    for (var i = 0; i != sourceInfos.length; ++i) {
+    for (var i = 0; i !== sourceInfos.length; ++i) {
         var sourceInfo = sourceInfos[i];
         var option = document.createElement("option");
         option.value = sourceInfo.id;
@@ -112,6 +116,7 @@ function errorCallback(error){
 
 // sends request to use mic
 function start(){
+
     if (!!window.stream) {
         window.stream.stop();
     }
