@@ -510,9 +510,7 @@ function insertIntoSelectedExploration(insertee){
 
 //loads audio data into the audio element
 function setupAudio(exploration){
-	if(exploration.getAudio()===null){
-		return;
-	}
+	if(exploration.audio===""){return;}
 	el("has-audio").style.visibility = "visible";
 	var audioBlob = exploration.getAudio();
 	audioElem.src = (window.URL || window.webkitURL).createObjectURL(audioBlob);
@@ -625,6 +623,7 @@ function saveExploration(exploration) {
 		var reader = new FileReader();
 		reader.addEventListener("loadend", audioConverted);
 		reader.readAsBinaryString(exploration.getAudio());
+
 	}
 	function audioConverted(){
 		var audioString = reader.result;

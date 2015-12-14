@@ -74,8 +74,8 @@ function User(name, explorations){
 	this.getMessagesBySender = function(name){
 		var messagesForSelectedSender = [];
 		for (var i = 0; i<this.messages.length; i++){
-				for (var j = 0; j<this.messages[i].length; j++){
-					if(this.messages[i][j].from===name ||this.messages[i][j].to===name){
+			for (var j = 0; j<this.messages[i].length; j++){
+				if(this.messages[i][j].from===name ||this.messages[i][j].to===name){
 					messagesForSelectedSender[j] = this.messages[i][j];
 				}
 			}
@@ -171,7 +171,7 @@ function User(name, explorations){
 		for (var i = 0; i < this.explorations.length; i++){
 			if (this.explorations[i].equals(exploration)){
 				this.explorations.splice(i, 1);
-				}
+			}
 			return true;
 		}
 	};
@@ -390,7 +390,7 @@ function shareTextMessage(userLabelValue){
 		contentType: "application/json"
 	});
 }
-// init share div - (city info, text message, audio message and send)
+//init share div - (city info, text message, audio message and send)
 function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
 	el("share-file").style.display = "none";
@@ -460,13 +460,8 @@ function deleteAudioMessage(message){
 			while(el("audio-messages-list").firstChild){
 				el("audio-messages-list").removeChild(el("audio-messages-list").firstChild);
 			}
-			if(currentUser.audioMessages.length>0)
-				{
+			if(currentUser.audioMessages.length>0){
 				appendAudioMessageOnSideBar();
-				}
-				else{
-
-				addAudioMessageDropDownNameList();
 			}
 		}
 	};
