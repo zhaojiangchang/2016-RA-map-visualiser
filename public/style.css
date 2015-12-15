@@ -85,7 +85,11 @@ input,label {
 .location-pane {
 	/*background-color: rgb(0,150,150);*/
 }
-
+.annotation-container-2 {
+	width: 300px;
+	height: 200px;
+	overflow: scroll;
+}
 /* Annotation stuff */
 #delete-button {
 	width: 10px;

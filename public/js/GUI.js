@@ -395,37 +395,37 @@ function getAnnotationFromLocalServer(city){
 	if(city===undefined){
 		return;
 	}
+	var info = city.properties.NAME +" "+city.geometry.coordinates[0].toString()+" "+city.geometry.coordinates[1].toString()
 	// get annotations for this location
 	$.ajax({
 		type: 'GET',
 		url: "/getAnnotations",
-		data: city.properties.NAME,
+		//data: info,
+		data: JSON.stringify(info),
+		contentType: "application/json",
+				//complete: updateLocationInfo
 		success: displayAnnotations,
-		dataType: "json",
+		//dataType: "json",
 	});
-
 	// displays annotations associated with the current location
 	function displayAnnotations(annotations){
 		while(el("annotation-container").firstChild){//remove old labels
 			el("annotation-container").removeChild(el("annotation-container").firstChild);
 		}
-		// if response is "no_annotations", no annotations were found, so do nothing
-		if (annotations === "no_annotations") {
-			return;
-		}
-		currentUser.setAnnotationsToNull();
-		for(var i= 0; i< annotations.length; i++){
-			if(annotations[i].location.properties.NAME === selectedLocation.properties.NAME &&
-					annotations[i].userName===currentUser.name && currentUser.annotations.indexOf(annotations[i])<0){
-				currentUser.annotations.push(annotations[i]);
-			}
-		}
 		el("location-div").style.display = "block";
-		// make a secondary annotation container so that all annotations can be loaded at once
-
-		appendAnnotations(annotations);
-		// TODO: load all annotations at once
-
+		// if response is "no_annotations", no annotations were found, so do nothing
+		if(annotations.length>0){
+			currentUser.setAnnotationsToNull();
+			for(var i= 0; i< annotations.length; i++){
+				if(annotations[i].location.properties.NAME === selectedLocation.properties.NAME &&
+						annotations[i].userName===currentUser.name && currentUser.annotations.indexOf(annotations[i])<0){
+					currentUser.annotations.push(annotations[i]);
+				}
+			}
+			// make a secondary annotation container so that all annotations can be loaded at once
+			appendAnnotations(annotations);
+			// TODO: load all annotations at once
+		}
 	}
 }
 //append annotations

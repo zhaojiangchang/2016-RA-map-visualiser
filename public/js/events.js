@@ -309,7 +309,7 @@ el("submit-shared-file").addEventListener('click',function(){
 		}
 		shareExplFile(selectedExploration, userLabelValue);
 		setTimeout(function(){
-			el("selectedExplName").style.display = "none";}, 5000);
+			resetVisibility(el("selectedExplName"), "hidden");}, 5000);
 		break;
 	case "text":
 		if(el("text-message-input").value === '') {
