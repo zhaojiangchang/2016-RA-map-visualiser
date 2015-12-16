@@ -65,7 +65,7 @@ function updateExplorationChooser(){
 	explorations.forEach(function(exploration, index){
 		var explOption = document.createElement('option');
 		explOption.setAttribute("id", exploration.timeStamp);
-		var explorationName = exploration.name;
+		var explorationName = exploration.name
 		explOption.innerHTML = explorationName;
 		explOption.value = index;
 		explChooser.appendChild(explOption);
@@ -177,9 +177,9 @@ function updateNotifications(){
 	//set visibility to all notification buttons/labels hidden when log on.
 	resetVisibility(notificationContainer,"hidden");
 	el("audioMessageFromOption").value = "select";
-	resetVisibility(el("audio-messages-list"), "hidden");
+	//resetVisibility(el("audio-messages-list"), "hidden");
 
-	hideNotificationButtons();
+	//hideNotificationButtons();
 	if (!userLoggedOn()){
 		return;
 	}
@@ -213,14 +213,16 @@ function updateNotifications(){
 	});
 	// show notification message
 	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html( "Have new notificaiton.");
-		notificationContainer.style.cursor = "pointer";
+			el("message-menuBar").style.background = "red";
+		// resetVisibility(notificationContainer,"visible");
+		// $("#notification-container").html( "Have new notificaiton.");
+		// notificationContainer.style.cursor = "pointer";
 	}
 	else{
-		resetVisibility(notificationContainer,"visible");
-		$("#notification-container").html(" No new notification.");
-		notificationContainer.style.cursor = "not-allowed";
+		el("message-menuBar").style.background = "#337ab7";
+		// resetVisibility(notificationContainer,"visible");
+		// $("#notification-container").html(" No new notification.");
+		// notificationContainer.style.cursor = "not-allowed";
 	}
 	showListNotifications();
 }
@@ -305,7 +307,7 @@ function showListNotifications(){
 	return hasNewNoti;
 
 	function addOptions(message){
-		resetVisibility(el("text-message-div"), "visible");
+		//resetVisibility(el("text-message-div"), "visible");
 		el("showTextArea").innerHTML = '';
 		for(var i = 0; i<currentUser.messages.length; i++){
 			for(var j = 0; j<currentUser.messages[i].length; j++){
@@ -587,11 +589,11 @@ function checkTextMessages(){
 		updateNotifications();
 
 		if(messageFromNameList.length!==0){
-			el("text-message-div").style.visibility = "visible";
+			//el("text-message-div").style.visibility = "visible";
 			appendTextMessageNameList(messageFromNameList);
 		}
 		else{
-			el("text-message-div").style.visibility = "hidden";
+			//el("text-message-div").style.visibility = "hidden";
 		}
 	}
 	function appendTextMessageNameList(messageFromNameList){
@@ -673,11 +675,11 @@ function checkAudioMessages(){
 		audioMessageFromNameList = [];
 		currentUser.setAudioMessages(messages);
 		if(currentUser.audioMessages.length<1){
-			el("audio-message-div").style.visibility = "hidden";
+			//el("audio-message-div").style.visibility = "hidden";
 			return;
 		}
 		else{
-			el("audio-message-div").style.visibility = "visible";
+			//el("audio-message-div").style.visibility = "visible";
 		}
 		currentUser.audioMessages.forEach(function(message){
 			if(message.audioData===null){
@@ -708,12 +710,12 @@ function checkAudioMessages(){
 
 		currentUser.newAudioMessages = newAudioMessages;
 		if(audioMessageFromNameList.length>0){
-			el("audio-message-div").style.display = "block";
+			///el("audio-message-div").style.display = "block";
 			addAudioMessageDropDownNameList(audioMessageFromNameList);
 			updateNotifications();
 		}
 		else{
-			el("audio-message-div").style.display = "none";
+			//el("audio-message-div").style.display = "none";
 		}
 
 	}

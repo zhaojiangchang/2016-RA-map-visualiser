@@ -25,11 +25,12 @@ var	belowBarDiv = $("#below-bar"),
 function ProgressBar() {
 
 	// dimensions and position
-	var progressWidth = 910,
-		progressHeight = 36,
+	var progressWidth = $(window).width()*0.6,
+		progressHeight = $(window).height()*0.04,
 		progressTop = 0,
 		progressLeft = 0;
-
+	$("#bar-container").css("width",progressWidth);
+	$("#bar-container").css("height",progressHeight);
 	// add the progress bar svg
 	var progressSVG = d3.select("#bar-container").append("svg")
 	.attr("id","play-svg")

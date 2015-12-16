@@ -44,6 +44,44 @@ guestUsers.forEach(function(userName){
 		passwordInput.value = "password";
 	};
 });
+
+
+//=================================================
+//================== sidebarMenu ==================
+el('login-menuBar').addEventListener("click", function(){
+	el("menuBar-info").style.display = "block";
+	el("usersLogin").style.display = "block";
+	el("exploration").style.display = "none";
+	el("message").style.display = "none";
+});
+el("exploration-menuBar").addEventListener("click", function(){
+	if(!currentUser){
+		return;
+	}
+	el("menuBar-info").style.display = "block";
+	el("exploration").style.display = "block";
+	el("usersLogin").style.display = "none";
+	el("message").style.display = "none";
+});
+el("message-menuBar").addEventListener("click", function(){
+	if(!currentUser){
+		return;
+	}
+	if(el("message-menuBar").style.background === "red"){
+		el("notification").style.display = "block";
+		showListNotifications();
+	}
+	else{
+		el("notification").style.display = "none";
+	}
+	el("menuBar-info").style.display = "block";
+	el("exploration").style.display = "none";
+	el("usersLogin").style.display = "none";
+	el("message").style.display = "block";
+});
+el("exitMenuBarInfo").onclick = function(){
+	el("menuBar-info").style.display = "none";
+}
 //=================================================
 //========= exploration controls ==================
 
@@ -160,22 +198,22 @@ newAccount.onclick = function(){
 //=============== notifications ============
 
 //notification container clicked - show or hide the selector box
-notificationContainer.addEventListener('click',function(){
-	stopRecording();
-	updateNotifications();
-	if(showListNotifications()){
-		if(notificationSelector.style.visibility === "hidden"){
-			showNotificationButtons();
-		}
+// notificationContainer.addEventListener('click',function(){
+// 	stopRecording();
+// 	updateNotifications();
+// 	if(showListNotifications()){
+// 		if(notificationSelector.style.visibility === "hidden"){
+// 			showNotificationButtons();
+// 		}
 
-		else {
-			hideNotificationButtons();
-		}
-	}
-	else{
-		hideNotificationButtons();
-	}
-});
+// 		else {
+// 			hideNotificationButtons();
+// 		}
+// 	}
+// 	else{
+// 		hideNotificationButtons();
+// 	}
+// });
 
 //remove exploration from selector box, not delete from user's folder
 removeNotification.addEventListener("click", function(){

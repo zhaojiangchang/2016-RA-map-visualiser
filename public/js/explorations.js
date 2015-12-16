@@ -340,6 +340,7 @@ function startPlayback(exploration){
 
 //stops playback and resets position to the start
 function stopPlayback(exploration){
+	el("location-div").style.display = "none";
 	clearTimeout(playTimerID);
 
 	if (exploration.hasAudio()){
@@ -561,7 +562,7 @@ function selectExploration(exploration){
 	}else{
 		showPathButton.style.visibility = "hidden";
 	}
-	$("#share-file").show();
+	//$("#share-file").show();
 	updateExplorationControls();
 
 	// transitions to the first location in the exploration
@@ -585,7 +586,7 @@ function deselectExploration(){
 		disableAction(["delete"]);
 	}
 	// all sharing elements (includes: send to, text message, audio message)
-	$("#share-file").hide();
+	//$("#share-file").hide();
 
 
 }
