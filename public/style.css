@@ -19,17 +19,16 @@ body {
 	width: 100%;
 	height: 100%;
 	cursor:pointer;
-
 }
 
 #side-bar {
 	position: fixed;
-	top: 0%;
-	left: 81%;
-	width: 20%;
-	height: 100%;
+	top: 2%;
+	left: 78%;
+	width: 19%;
+	height: 90%;
 	background-color: #99C2C2;
-	border: 3px solid black;
+	display: none;
 }
 
 #side-bar > * { /* all child elements of sidebar */
@@ -79,16 +78,17 @@ input,label {
 	width: 40px;
 	height: 40px;
 	display: inline-block;
-	background-color : #99C2C2;
 }
 
 .location-pane {
 	/*background-color: rgb(0,150,150);*/
 }
 .annotation-container-2 {
-	width: 300px;
+	width: 285px;
 	height: 200px;
 	overflow: scroll;
+	background-color : #FFF8DC;
+	border-color:black;
 }
 /* Annotation stuff */
 #delete-button {
@@ -97,8 +97,9 @@ input,label {
 }
 
 #exploration-selector{
-	width: 200px;
+	width: 100%;
 	display: none;
+	background-color: #FFF8DC;
 }
 .annotation-row {
 	/*display: table-row;*/
@@ -121,7 +122,7 @@ input,label {
 }
 
 .annotation-text {
-	font-size: 14px;
+	font-size: 12px;
 	display: inline;
 }
 
@@ -134,16 +135,15 @@ input,label {
 }
 
 
-#show-path {
-	position: fixed;
-	left: 75%;
-	top: 1%;
+/*#show-path {
+	position: absolute;
+
 	width: 100px;
 	height: 30px;
 	font-size: 150%;
 	cursor: pointer;
 	visibility: hidden;
-}
+}*/
 /* Mini-map */
 #minimap {
 	background-color: #ccc;
@@ -171,29 +171,33 @@ input,label {
 	width: 926px;
 	cursor: pointer;
 }
-
+#notification{
+	width: 90%;
+	height: 100px;
+    border: 5px;
+    background-color: #FFF8DC;
+}
 .notification-container {
 	position: fixed;
-	left: 66.7%;
-	top: 96%;
+/*
 	width: 240px;
-	height: 20px;
+	height: 20px;*/
 	border: 2px solid black;
-	font-size: 150%;
-	background-color: #ccc;
-	visibility: hidden;
+	font-size: 12px;
+	background-color: #FFF8DC;
 	cursor: pointer;
 }
 
 #notification-selector {
-	position: fixed;
-	left: 66.7%;
-	top: 84%;
+/*	position: fixed;
+
 	width: 240px;
-	height: 70px;
-	background-color: #fff;
-	visibility: hidden;
+	height: 70px;*/
+	width: 100%;
+	height: 100px;
+	background-color: #FFF8DC;
 	cursor: pointer;
+
 }
 
 #fileslist-container {
@@ -205,9 +209,6 @@ input,label {
 }
 
 #remove-notification{
-	position: fixed;
-	left: 77.5%;
-	top: 80.6%;
 	width:20px;
 	height:20px;
 	visibility: hidden;
@@ -215,9 +216,6 @@ input,label {
 }
 
 #quickplay-notification{
-	position: fixed;
-	left: 78.8%;
-	top: 80.6%;
 	width:20px;
 	height:20px;
 	visibility: hidden;
@@ -239,7 +237,7 @@ input,label {
 
 #player-panel {
   	position: fixed;
-  	left: 13%;
+  	left: 20%;
   	top: 85%;
 }
 
@@ -257,8 +255,6 @@ input,label {
   	display: inline-block;
   	background-color: #28AADE;
   	border-radius: 20px;
-  	width: 910px;
-  	height: 36px;
 }
 
 /* button (play, pause) */
@@ -305,6 +301,7 @@ input,label {
 #insert-button {
 	position: absolute;
 	padding: 10px;
+	left:100%;
 	background: #35b128;
 	border: 1px solid #33842a;
 	border-radius: 10px;
@@ -312,6 +309,7 @@ input,label {
 	/* text */
 	color: #f3f3f3;
 	font-size: 1.2em;
+	display:none;
 }
 
 #stop-insert-button {
@@ -346,20 +344,21 @@ input,label {
 }
 
 #exploration-title {
-	left: 5%;
+	left: 1%;
+	top: 100%;
 }
 
 #has-audio {
 	position: absolute;
 	display: none;
 	margin: 5px;
-	left: 75%;
+	left: 90%;
 	width: 3em;
 	height: 3em;
 }
 
 #duration-text {
-	left: 85%;
+	left: 95%;
 }
 
 #path-play {
@@ -383,7 +382,164 @@ input,label {
 	display: none;
 }
 
-.showTextArea {
-	 font-size: 20pt;
+#showTextArea {
+   font-size: 12px;
    font-family: Arial;
+   background-color: #FFF8DC;
+}
+#location-div {
+	 border:1px solid;
+     background:#FFF8DC;
+     left: 20px;
+     top: 20px;
+     width:300px;
+     height:350px;
+     display:none;
+     position:absolute;
+     overflow: scroll;
+}
+#menuBar {
+	position: fixed;
+	top: 1%;
+	left: 98.3%;
+	display: block;
+}
+
+#message-menuBar{
+	margin-top: 65%;
+	transform-origin: center top;
+  	transform: translateX(-50%) rotate(-90deg);
+ 	transition: all 0.3s ease 0s;
+}
+
+#login-menuBar{
+	left:-1%;
+	width: 80px;
+	margin-top: 40%;
+	transform-origin: center top;
+  	transform: translateX(-50%) rotate(-90deg);
+  	background: green;
+}
+#exploration-menuBar{
+	left:1.5%;
+	margin-top: 66%;
+	transform-origin: center top;
+  	transform: translateX(-50%) rotate(-90deg);
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+#menuBar-info{
+	position: fixed;
+	top: 0%;
+	left: 79.3%;
+	width: 19%;
+	height: 90%;
+	background-color: #FFF8DC;
+	display: block;
+	padding-left: 5px;
+	padding-top: 5px;
+
+}
+#username-input{
+	width: 80%;
+	background-color: #FFF8DC;
+
+}
+#password-input{
+	background-color: #FFF8DC;
+	width: 80%;
+}
+#shared-with{
+	background-color: #FFF8DC;
+	width: 80%;
+}
+#notification{
+	width: 19%;
+	height: 20%;
+}
+#annInput{
+	background-color: #FFF8DC;
+	width: 80%;
+}
+#annotation-input-container{
+	width: 80%;
+}
+#notification-selector{
+	top:73%;
+	width:90%;
+}
+#menuBarButtons{
+	position: fixed;
+	top: 0%;
+	left: 98.1%;
+	width: 2.3%;
+	height: 100%;
+	background-color: #F5F5DC;
+	display: block;
+	padding-left: 5px;
+	padding-top: 5px;
+
+}
+#title{
+	position: fixed;
+	top: -5%;
+	left: 99.1%;
+	width: 60%;
+	height: 4.3%;
+	background-color: #FFF8DC;
+	display: block;
+	padding-left: 5px;
+	padding-top: 5px;
+	transform-origin: center;
+  	transform: translateX(-50%) rotate(-90deg);
+ 	transition: all 0.3s ease 0s;
+}
+#exitMenuBarInfo{
+    padding: 0;
+    border: none;
+    background: none;	
+    color:black;
+
+}
+#exitPopup{
+    padding: 0;
+    border: none;
+    background: none;	
+    color:black;
+
+}
+select{
+	width: 50%;
+}
+#audioMessageBoder{
+	width: 90%;
+	height: 100px;
+    border: 5px;
+    background-color: #FFF8DC;
+}
+.myTooltip{
+	top: 5%;
+	left: 5%;
+}
+
+#notifi-selector-div{
+	position: absolute;
+	min-width: 90%;
+}
+#uploadFile{
+	position: absolute;
+	width:100%;
 }

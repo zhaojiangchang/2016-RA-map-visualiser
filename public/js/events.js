@@ -37,6 +37,7 @@ selectedImgFile = null,
 voiceMessageRecording = false,
 voiceMessageData = null;
 
+
 //add onclick listener - when click guest user image to assign predefined user name and password
 guestUsers.forEach(function(userName){
 	el(userName).onclick= function() {
@@ -44,6 +45,66 @@ guestUsers.forEach(function(userName){
 		passwordInput.value = "password";
 	};
 });
+
+
+//=================================================
+//================== sidebarMenu ==================
+$(document).ready(function(){
+	el('login-menuBar').addEventListener("click", function(){
+		if($('#login-menuBar').text()=="Sign In"){
+			el("menuBar-info").style.display = "block";
+			el("usersLogin").style.display = "block";
+			el("exploration").style.display = "none";
+			el("message").style.display = "none";
+		}
+		else{
+			selectedLocation = null;
+			if (!explRecording){
+				logout(currentUser);
+				$('#login-menuBar').text("Sign In");
+				el("menuBar-info").style.display = "none";
+			}
+		}
+		
+	});
+	el("exploration-menuBar").addEventListener("click", function(){
+		if(!currentUser){
+			return;
+		}
+		el("menuBar-info").style.display = "block";
+		el("exploration").style.display = "block";
+		el("usersLogin").style.display = "none";
+		el("message").style.display = "none";
+	});
+	el("message-menuBar").addEventListener("click", function(){
+		if(!currentUser){
+			return;
+		}
+		
+		if(el("message-menuBar").style.background === "red"){
+			el("notification").style.display = "block";
+			showListNotifications();
+			el("notification-selector").style.display = "block";
+
+		}
+		else{
+			el("notification").style.display = "none";
+			el("notification-selector").style.display = "none";
+		}
+		el("menuBar-info").style.display = "block";
+		el("exploration").style.display = "none";
+		el("usersLogin").style.display = "none";
+		el("message").style.display = "block";
+	});
+	el("exitMenuBarInfo").onclick = function(){
+		el("menuBar-info").style.display = "none";
+	}
+	el("exitPopup").onclick = function(){
+		el("location-div").style.display = "none";
+		
+	}
+});
+
 //=================================================
 //========= exploration controls ==================
 
@@ -95,6 +156,7 @@ playExplButton.on('click', function () {
 		resumePlayback(selectedExploration);
 	}
 	else {
+		palyExplNotification = false;
 		startPlayback(selectedExploration);
 	}
 });
@@ -160,39 +222,39 @@ newAccount.onclick = function(){
 //=============== notifications ============
 
 //notification container clicked - show or hide the selector box
-notificationContainer.addEventListener('click',function(){
-	stopRecording();
-	updateNotifications();
-	if(showListNotifications()){
-		if(notificationSelector.style.visibility === "hidden"){
-			showNotificationButtons();
-		}
+// notificationContainer.addEventListener('click',function(){
+// 	stopRecording();
+// 	updateNotifications();
+// 	if(showListNotifications()){
+// 		if(notificationSelector.style.visibility === "hidden"){
+// 			showNotificationButtons();
+// 		}
 
-		else {
-			hideNotificationButtons();
-		}
-	}
-	else{
-		hideNotificationButtons();
-	}
-});
+// 		else {
+// 			hideNotificationButtons();
+// 		}
+// 	}
+// 	else{
+// 		hideNotificationButtons();
+// 	}
+// });
 
 //remove exploration from selector box, not delete from user's folder
-removeNotification.addEventListener("click", function(){
-	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
-	selected.isNew = false;
-	setExplorationIsOld(selected);
-	checkTextMessages();
-	deselectExploration();
-});
+// removeNotification.addEventListener("click", function(){
+// 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
+// 	selected.isNew = false;
+// 	setExplorationIsOld(selected);
+// 	checkTextMessages();
+// 	deselectExploration();
+// });
 
 //play button for notification - play without set expl to old
-quickplayNotification.addEventListener("click", function(){
-	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
-	startPlayback(selected);
-	selected.isNew = true;
-	checkTextMessages();
-});
+// quickplayNotification.addEventListener("click", function(){
+// 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
+// 	startPlayback(selected);
+// 	selected.isNew = true;
+// 	checkTextMessages();
+// });
 
 //===========================================
 //=========== annotation ====================
@@ -261,8 +323,48 @@ stopInsertButton.click( function(){
 
 //==========================================
 //=========== inserting image ==============
+$("#uploadFile").change(function () {
+	var file, reader, slashIndex;
 
+	if (this.files.length > 0) {
+		file = this.files[0];
+		fileName = file.name;
+		selectedFile = [];
+		slashIndex = fileName.lastIndexOf(".");
+
+		if (fileName.substring(slashIndex) === ".png") {
+				var selectedFile = file;
+				var reader = new FileReader();
+
+				var imgtag = document.createElement("img");
+				imgtag.title = selectedFile.name;
+
+				reader.onload = function(event) {
+					imgtag.src = event.target.result;
+				};
+
+				reader.readAsDataURL(selectedFile);
+				var previewImg = el("preview-city-img");
+				while(previewImg.firstChild)//remove old labels
+				{
+					previewImg.removeChild(previewImg.firstChild);
+				}
+				previewImg.appendChild(imgtag);
+				el("location-div").appendChild(previewImg);
+
+				selectedImgFile = imgtag;
+				if(inputFile.parent().hasClass("btn-success")) {
+					inputFile.parent().removeClass("btn-success");
+					inputFile.parent().addClass("btn-primary");
+				}
+		} 
+		else {
+			alert("png file only!")
+		}
+	}
+});
 //file browse for image select
+
 function onFileSelected(event) {
 	var selectedFile = event.target.files[0];
 	var reader = new FileReader();
@@ -580,3 +682,6 @@ function playAudioMessage(message){
 }
 //---- INIT
 resetExplorations();
+
+
+onchange="onFileSelected(event)"

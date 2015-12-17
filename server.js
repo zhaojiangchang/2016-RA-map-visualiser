@@ -312,51 +312,64 @@ app.post('/postAnnotation', function(req, res){
 //	ensureDirExists(path);
 	//var fileName = path + userName + " " + timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
 	
-if(!fs.existsSync(path)){
-		path = "public/data/annotation/";
-		var cities = fs.readdirSync(path);
-		for(var j =0; j<cities.length; j++){
+	if(!fs.existsSync(path)){
+			path = "public/data/annotation/";
+			var cities = fs.readdirSync(path);
+			for(var j =0; j<cities.length; j++){
 
-			var cityName = cities[j];
-			var cityPath = path + cityName +"/";
-			var cityAnns = fs.readdirSync(cityPath);
-			for (var annByName = 0; annByName<cityAnns.length; annByName++){
-				var userName = cityAnns[annByName];
-				var userAnnPath = cityPath+userName;
-				var userAnn = JSON.parse(fs.readFileSync(userAnnPath));
-				if(userAnn.location.geometry.coordinates[0]==coordinates[0] &&userAnn.location.geometry.coordinates[1]==coordinates[1] ){
-					path = path+locationName+"/";
-					for(var l = 0; l<userAnn.info.length; l++){
-						annotation.info.push(userAnn.info[l]);
+				var cityName = cities[j];
+				var cityPath = path + cityName +"/";
+				var cityAnns = fs.readdirSync(cityPath);
+				for (var annByName = 0; annByName<cityAnns.length; annByName++){
+					var name = cityAnns[annByName];
+					var userAnnPath = cityPath+name;
+					var userAnn = JSON.parse(fs.readFileSync(userAnnPath));
+					if(userAnn.location.geometry.coordinates[0]==annotation.location.geometry.coordinates[0] && userAnn.location.geometry.coordinates[1]==annotation.location.geometry.coordinates[1] ){
+						path = path+locationName+"/";
+						for(var l = 0; l<userAnn.info.length; l++){
+							annotation.info.push(userAnn.info[l]);
+						}
+						fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
+							if (err){ console.log("errooor: "+err); }
+						});
+						fs.renameSync(cityPath, path);
+						res.sendStatus(200); // success code
+						return;
 					}
-					fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
-						if (err){ console.log("errooor: "+err); }
-					});
-					fs.renameSync(cityPath, path);
-					res.sendStatus(200); // success code
-					return;
 				}
-			}
-		}			
-		ensureDirExists(path);
-		var fileName = path + userName+ ".json";
-		fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
-			if (err){ console.log("errooor: "+err); }
-		});
-		res.sendStatus(200); // success code
-		return;
-	}
-	
-else{
+			}			
+			console.log("path not exist")
+			path = "public/data/annotation/"+locationName+"/";
+			ensureDirExists(path);
+			console.log(path)
+			var fileName = path + userName+ ".json";
+			fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
+			res.sendStatus(200); // success code
+			return;
+		}
+		
+	else{
 		var path = "public/data/annotation/";
-		path += locationName + "/"+ userName+ ".json";
-		var ann = JSON.parse(fs.readFileSync(path));
-		ann = annotation;
-		fs.writeFile(path, JSON.stringify(ann, null, 4), function(err) {
-			if (err){ console.log("errooor: "+err); }
-		});
-		res.sendStatus(200); // success code
-		return;
+			path += locationName + "/"+ userName+ ".json";
+		if(!fs.existsSync(path)){
+			fs.writeFile(path, JSON.stringify(annotation, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
+			res.sendStatus(200); // success code
+			return;
+		}
+		else{
+			var ann = JSON.parse(fs.readFileSync(path));
+			ann.location = annotation.location;
+			ann.info = annotation.info;
+			fs.writeFile(path, JSON.stringify(ann, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
+			res.sendStatus(200); // success code
+			return;
+		}
 	}
 });
 
@@ -380,6 +393,7 @@ app.get("/getAnnotations", function(req, res){
 		for(var j =0; j<cities.length; j++){
 
 			var cityName = cities[j];
+			console.log(cityName)
 			var cityPath = path + cityName +"/";
 			var cityAnns = fs.readdirSync(cityPath);
 			for (var annByName = 0; annByName<cityAnns.length; annByName++){

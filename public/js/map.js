@@ -105,7 +105,13 @@ d3.json("data/map/kaz_places.json", function(error, json){
 	.append("g")
 	.attr("id", function(d) { return d.properties.NAME; })
 	.on("dblclick.zoom", cityClicked)
-	.on("click", selectLocation)
+	.on("click", function(city){
+		if(!currentUser){
+			return;
+		}
+		selectLocation(city);
+        popupAnn(city);
+	})
 	.attr("class", "place");
 
 	places.append("path")
@@ -399,3 +405,63 @@ function getAbsoluteBounds() {
 
 	return [[xcenter, ycenter], [(width / 2) / transforms.scale[1], (height / 2) / transforms.scale[1]]];
 }
+
+function popupAnn(city){
+ 	if(selectedLocation===undefined ||selectedLocation===null){
+ 		return;
+ 	}
+       	var mouseX,mouseY,windowWidth,windowHeight;
+       var  popupLeft,popupTop;
+       var p = $("#"+selectedLocation.properties.NAME).offset();
+               mouseX = p.left;
+               mouseY = p.top;
+               //To Get the relative position
+               if( this.offsetLeft !=undefined)
+                 mouseX = mouseX - this.offsetLeft;
+               if( this.offsetTop != undefined)
+                 mouseY = mouseY - this.offsetTop;
+
+               if(mouseX < 0)
+                    mouseX =0;
+               if(mouseY < 0)
+                   mouseY = 0;
+
+               windowWidth  = $(window).width()+$(window).scrollLeft();
+               windowHeight = $(window).height()+$(window).scrollTop();
+       
+        
+	          var popupWidth  = $("location-div").outerWidth();
+	          var popupHeight =  $("location-div").outerHeight();
+	          // popupLeft = mouseX;
+	          // popupTop = mouseY;
+
+	          if(mouseX+popupWidth > windowWidth)
+	            popupLeft = mouseX-popupWidth;
+	          else
+	           popupLeft = mouseX;
+
+	          if(mouseY+popupHeight > windowHeight)
+	            popupTop = mouseY-popupHeight;
+	          else
+	            popupTop = mouseY; 
+
+	        if( popupLeft < $(window).scrollLeft()){
+	         popupLeft = $(window).scrollLeft();
+	        }
+
+	        if( popupTop < $(window).scrollTop()){
+	         popupTop = $(window).scrollTop();
+	        }
+
+	         if(popupLeft < 0 || popupLeft == undefined)
+	               popupLeft = 0;
+	          if(popupTop < 0 || popupTop == undefined)
+	               popupTop = 0;
+	           position = [popupLeft, popupTop];
+	    el("location-div").style.left = position[0]+"px";
+	    el("location-div").style.top = position[1]+"px";
+	    el("location-div").style.display = "block";
+	    el("location-div" ).onmouseleave = function() {
+  	    	//el("location-div").style.display = "none";
+  	    };
+ }

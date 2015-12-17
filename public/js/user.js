@@ -212,6 +212,7 @@ function attemptLogin(name, pw){
 	function gotApprovalResponse(approved){
 		if(JSON.parse(approved)){
 			login(name);
+			el("menuBar-info").style.display = "none";
 		}
 		else{
 			alert("username/password are invalid");
@@ -221,14 +222,18 @@ function attemptLogin(name, pw){
 
 //logs the user in, makes all of the user's file accessible
 function login(name){
+	if($('#login-menuBar').text()=="Sign In"){
+		$('#login-menuBar').text("Sign Out");
+	}
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
-	el("share-file").style.display = "block";
+	// el("share-file").style.display = "block";
 	el("location-div").style.display = "none";
 	function gotExplorations(allExplorations){
 		currentUser.setExplorations(allExplorations);
 		updateSideBar();
 	}
+
 }
 
 //logs the current user out, removes access to the user's files
@@ -393,7 +398,7 @@ function shareTextMessage(userLabelValue){
 //init share div - (city info, text message, audio message and send)
 function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
-	el("share-file").style.display = "none";
+	//el("share-file").style.display = "none";
 	el("messageFromOption").value = 'select';
 	el("location-div").style.display = "none";
 	while(el("messageFromOption").firstChild){//remove old labels

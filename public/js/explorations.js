@@ -327,10 +327,9 @@ function startPlayback(exploration){
 		playAudio(exploration.getAudio());
 	}
 	// update to show exploration has been played
-	if(currentUser.getExploration(exploration.timeStamp)){
+	if(currentUser.getExploration(exploration.timeStamp) && !palyExplNotification){
 		setExplorationIsOld(exploration);
 	}
-	exploration.isNew = false;
 
 	// updates GUI and globals
 	updatePlaybackStarted();
@@ -340,6 +339,7 @@ function startPlayback(exploration){
 
 //stops playback and resets position to the start
 function stopPlayback(exploration){
+	el("location-div").style.display = "none";
 	clearTimeout(playTimerID);
 
 	if (exploration.hasAudio()){
@@ -369,6 +369,8 @@ function pausePlayback(exploration, cb){
 
 	if (exploration.hasAudio()){
 		audioElem.pause();
+		el("insert-button").style.display = "block";
+
 	}
 
 	updatePlaybackStopped();
@@ -561,7 +563,7 @@ function selectExploration(exploration){
 	}else{
 		showPathButton.style.visibility = "hidden";
 	}
-	$("#share-file").show();
+	//$("#share-file").show();
 	updateExplorationControls();
 
 	// transitions to the first location in the exploration
@@ -585,7 +587,7 @@ function deselectExploration(){
 		disableAction(["delete"]);
 	}
 	// all sharing elements (includes: send to, text message, audio message)
-	$("#share-file").hide();
+	//$("#share-file").hide();
 
 
 }

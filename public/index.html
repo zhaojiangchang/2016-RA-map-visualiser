@@ -41,92 +41,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 <script src="lib/d3.v3.min.js"></script>
 <script src="lib/topojson.v1.min.js"></script>
 <script src="lib/jquery.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet"
+     href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+<link rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<style>
 
+
+        body {
+            background-color: #FFE59F;
+        }
+</style>
 </head>
 
 <body>
-	<div id="side-bar" style="overflow-y: scroll;">
-
-		<div class="users">
-			<div id="user-buttons">
-				<h3>
-					<b>Select Guest User:</b>
-				</h3>
-				<input type="image" id='obama' class="user-button"
-					src="data/image/userImage/obama.jpeg" alt="javascript button">
-				<input type="image" id='john' class="user-button"
-					src="data/image/userImage/john.jpeg" alt="javascript button">
-				<input type="image" id='lorde' class="user-button"
-					src="data/image/userImage/lorde.jpeg" alt="javascript button">
-				<input type="image" id='will' class="user-button"
-					src="data/image/userImage/will.jpeg" alt="javascript button">
-			</div>
-			<h3>Or...</h3>
-			<div id="user-inputs">
-				<input type="text" id="username-input" placeholder='user-name'>
-				<input type="password" id="password-input" placeholder='password'>
-				<div>
-					<input type="submit" id="logon-button" class="account-submit"
-						value="Logon">
-					<button id="create-new-account" class="account-submit">Create
-						Account</button>
-				</div>
-			</div>
-		</div>
-		<div class="exploration-controls">
-			<h2>Exploration controls</h2>
-			<div id="exploration-buttons">
-				<input type="image" id="record-exploration-button"
-					class="exploration-button" src="data/image/record-off.png"
-					alt="javascript button"> <input type="image"
-					id="play-exploration-button" class="exploration-button"
-					src="data/image/play-off.png" alt="javascript button"> <input
-					type="image" id="pause-exploration-button"
-					class="exploration-button" src="data/image/pause-off.png"
-					alt="javascript button"> <input type="image"
-					id="stop-exploration-button" class="exploration-button"
-					src="data/image/stop-off.png" alt="javascript button"> <input
-					type="image" id="save-exploration-button"
-					class="exploration-button" src="data/image/save-off.png"
-					alt="javascript button"> <input type="image"
-					id="delete-exploration-button" class="exploration-button"
-					src="data/image/delete-off.png" alt="javascript button"> <input
-					type="image" id="reset-exploration-button"
-					class="exploration-button" src="data/image/reset-on.png"
-					alt="javascript button">
-			</div>
-		</div>
-		<div>
-			<div class="selected-exploration">
-				<p id="selected-exploration-name"></p>
-			</div>
-			<div id="exploration-container">
-				<select id="exploration-selector" size="0" placeholder="Username"></select>
-			</div>
-		</div>
-		<div id="share-file" style="display: none;">
-			<h3>
-				<label for="user-input" id="to-label">Send to:</label>
-			</h3>
-			<p></p>
-			<input type="text" id="shared-with" name="user"
-				placeholder="Username" /> <select id="sendOption" size="0"
-				style="display: inline-block;" onchange="selectedSendInfoOption();">
-				<option id="sendExpl" value="select" disabled selected>Enter Username First</option>
-				<option id="sendExpl" value="exploration">Send Exploration</option>
-				<option id="sendExpl" value="text">Send Text</option>
-				<option id="sendExpl" value="voice">Send Voice</option>
-			</select>
-			<div id="text-message-input-div" style="display: none;">
-				<textarea id="text-message-input" cols="40" rows="5"></textarea>
-			</div>
-			<div id="selectedExplNameDivId"></div>
-			<input type="submit" id="record-voice" style="display: none;"
-				value="Start Recording">
-			<button type='button' id="submit-shared-file">Send</button>
-			<p id="message-send-identify"></p>
-
-			<div id="location-div" class="location-pane">
+    <div id="location-div" class="location-pane">
+    	<button id="exitPopup" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
+					<font size = "3" face = "Arial Black">
+					<span style = "color:red">X</span>
+				</font>
+		</button>
 				<h2 id="location-title"></h2>
 				<ul id="location-info">
 					<!-- script will insert elements here -->
@@ -140,61 +78,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				</div>
 				<p></p>
 				<div id="file-browse">
-					<input type="file" onchange="onFileSelected(event)">
-					<button id="save-ann-button">Save Annotation</button>
-					<button id="remove-img-button">Remove Preview Image</button>
+					<!--<input type="file" onchange="onFileSelected(event)">-->
+
+					<button id="save-ann-button"class="btn btn-primary  btn-xs">Save Annotation</button>
+					<button id="remove-img-button"class="btn btn-primary btn-xs">Remove Preview Image</button>
+					<p></p>
+					<div>
+					<input type="file" id = "uploadFile" class="btn btn-success btn-file">
+						<!-- <span class="btn btn-success btn-file" >Browse <input id = "uploadFile" type="file"></span> -->
+					</div>
 					<div id="display-city-image"></div>
 
 					<div id="preview-city-img"></div>
 				</div>
 
-			</div>
-			<div id="show-messages-div">
-				<div id="text-message-div">
-					<h3>
-						<label for="user-messages">Messages From:</label>
-					</h3>
-					<select id="messageFromOption" size="0"
-						onchange="selectedMessageSenderOption();">
-						<option id="messageFrom1" value="select" disabled selected>Select a sender</option>
-					</select>
-					<textarea id="showTextArea" cols="40" rows="5"
-						style="overflow-y: scroll;" readonly></textarea>
-				</div>
-				<div id="audio-message-div">
-					<h3>
-						<label for="user-audio-messages">Audio Messages From:</label>
-					</h3>
-					<select id="audioMessageFromOption" size="0"
-						onchange="selectedAudioMessageSenderOption();">
-						<option id="audio-message-from" value="select" disabled selected>Select a
-							sender</option>
-					</select>
-					<div id="audio-messages-list"></div>
-				</div>
-			</div>
-		</div>
-		<div class='select-device'>
-			<label for='audio-source'>Audio source: </label> <select
-				id='audio-source'></select>
-		</div>
-
 	</div>
-	<button id="show-path">Show Path</button>
-	<div id="notification-container" class="notification-container"></div>
-	<div>
-		<input id="remove-notification" class="notification-elements"
-			type="image" src="data/image/delete.png" alt="javascript button">
-	</div>
-	<div>
-		<input id="quickplay-notification" class="notification-elements"
-			type="image" src="data/image/play.jpeg" alt="javascript button">
-	</div>
-	<div>
-		<select id="notification-selector" class="notification-elements"
-			size="3"></select>
-	</div>
-
 	<div id="player-panel">
 		<div id="above-bar">
 			<div id="time-text"></div>
@@ -212,9 +110,163 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			<p id="duration-text"></p>
 		</div>
 	</div>
+<div id="menuBar">
+	<div id = "title" contenteditable = "true">
+	<b>
+	<font size = "4" face = "Lucida Sans">
+		<span style = "color:#556B2F">Map Visualisation</span>
+	</font>
+	</b>
+	</div>
 
+	<!-- <div id = "menuBarButtons" class = "menuBarButtons"> -->
+	 	
+	<div class="btn-group">
+	  <button type="button" id = "login-menuBar" class="btn btn-primary btn-sm">Sign In</button>
+	  <button type="button" id = "message-menuBar" class="btn btn-primary btn-sm">Message</button>
+	  <button type="button" id = "exploration-menuBar" class="btn btn-primary btn-sm">Exploration</button>
+	</div>
+	<!-- </div> -->
+
+	<div id= "menuBar-info" style="display: none;">
+		<button id="exitMenuBarInfo" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
+					<font size = "3" face = "Arial Black">
+					<span style = "color:red">X</span>
+				</font>
+		</button>
+		<div id="usersLogin" style="display: none;">
+				<div id="user-buttons">
+					<h3>
+						<b>Select Guest User:</b>
+					</h3>
+					<input type="image" id='obama' class="user-button"
+						src="data/image/userImage/obama.jpeg" alt="javascript button">
+					<input type="image" id='john' class="user-button"
+						src="data/image/userImage/john.jpeg" alt="javascript button">
+					<input type="image" id='lorde' class="user-button"
+						src="data/image/userImage/lorde.jpeg" alt="javascript button">
+					<input type="image" id='will' class="user-button"
+						src="data/image/userImage/will.jpeg" alt="javascript button">
+				</div>
+				<h3>Or...</h3>
+				<div id="user-inputs">
+					<input type="text" id="username-input" placeholder='user-name'>
+					<input type="password" id="password-input" placeholder='password'>
+					<div>
+						<input type="submit" id="logon-button" class="btn btn-primary btn-sm"
+							value="Logon">
+						<button id="create-new-account" class="btn btn-primary btn-sm">Create Account</button>	
+					</div>
+				</div>
+			</div>
+			<div id ="exploration" style="display: none;">
+				<div class="exploration-controls">
+					<h2>Exploration controls</h2>
+					<div id="exploration-buttons">
+						<input type="image" id="record-exploration-button"
+							class="exploration-button" src="data/image/record-off.png"
+							alt="javascript button"> <input type="image"
+							id="play-exploration-button" class="exploration-button"
+							src="data/image/play-off.png" alt="javascript button"> <input
+							type="image" id="pause-exploration-button"
+							class="exploration-button" src="data/image/pause-off.png"
+							alt="javascript button"> <input type="image"
+							id="stop-exploration-button" class="exploration-button"
+							src="data/image/stop-off.png" alt="javascript button"> <input
+							type="image" id="save-exploration-button"
+							class="exploration-button" src="data/image/save-off.png"
+							alt="javascript button"> <input type="image"
+							id="delete-exploration-button" class="exploration-button"
+							src="data/image/delete-off.png" alt="javascript button"> <input
+							type="image" id="reset-exploration-button"
+							class="exploration-button" src="data/image/reset-on.png"
+							alt="javascript button">
+					</div>
+					<div class="selected-exploration">
+							<p id="selected-exploration-name"></p>
+					</div>
+					<button id="show-path" class="btn btn-primary btn-sm">Show Path</button>
+					<br></br>
+					<div id="exploration-container">
+						<p>Select an Exploration to play:</p>
+						<select id="exploration-selector" size="5" placeholder="Username"></select>
+					</div>
+				</div>
+			</div>
+		<div id="message" style="display: none;">
+
+			<h3>
+				<label for="user-input" id="to-label">Message Send to:</label>
+			</h3>
+			<p></p>
+			<input type="text" id="shared-with" name="user"
+				placeholder="Username" />
+				<select id="sendOption" size="4"
+				style="display: inline-block; background-color:#FFF8DC;" onchange="selectedSendInfoOption();">
+					<option id="sendExpl" value="select" disabled selected>Enter Username First</option>
+					<option id="sendExpl" value="exploration">Send Exploration</option>
+					<option id="sendExpl" value="text">Send Text</option>
+					<option id="sendExpl" value="voice">Send Voice</option>
+			</select>
+			<div id="text-message-input-div" style="display: none;">
+				<textarea id="text-message-input" style="width:90%" rows="5"></textarea>
+			</div>
+			<div id="selectedExplNameDivId"></div>
+			<input type="submit" id="record-voice" style="display: none;"
+				value="Start Recording">
+			<button type='button' id="submit-shared-file" class="btn btn-primary btn-sm">Send</button>
+			<p id="message-send-identify"></p>
+			<div id="show-messages-div">
+				<div id="text-message-div">
+					<h3>
+						<label for="user-messages">Messages From:</label>
+					</h3>
+					<select id="messageFromOption" size="1"
+						onchange="selectedMessageSenderOption();">
+						<option id="messageFrom1" value="select" disabled selected>Select a sender</option>
+					</select>
+					<textarea id="showTextArea" rows="5" style="width:90%" 
+						style="overflow-y: scroll;" readonly></textarea>
+				</div>
+				<div id="audio-message-div">
+					<h3>
+						<label for="user-audio-messages">Audio Messages From:</label>
+					</h3>
+					<select id="audioMessageFromOption" size="1"
+							onchange="selectedAudioMessageSenderOption();">
+							<option id="audio-message-from" value="select" size = "0">Select a sender</option>
+						</select>
+					<div id = "audioMessageBoder"style="overflow-y: scroll;">
+						<div id="audio-messages-list"></div>
+					</div>
+				</div>
+			</div>
+			<div id = "notification" style="display: none; color: red">
+					<h3>
+						<label for="notification-messages">Notification:</label>
+					</h3>
+					<div id="notification-container" class="notification-container"></div>
+				
+					<div id = "notifi-selector-div">
+						<select id="notification-selector" class="notification-elements"style="overflow: scroll;"
+							size="3">					<!-- 		<div>
+						<input id="remove-notification" class="notification-elements"
+							type="image" src="data/image/delete.png" alt="javascript button">
+						<input id="quickplay-notification" class="notification-elements"
+							type="image" src="data/image/play.jpeg" alt="javascript button">
+					</div> -->
+					</select>
+
+					</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<div class='select-device'>
+			<label for='audio-source'>Audio source: </label> <select
+				id='audio-source'></select>
+		</div>
 	<audio id="exploration-audio"></audio>
-
 	<script src="js/GUI.js"></script>
 	<script src="js/map.js"></script>
 	<script src="js/user.js"></script>
