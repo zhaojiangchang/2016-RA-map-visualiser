@@ -106,8 +106,11 @@ d3.json("data/map/kaz_places.json", function(error, json){
 	.attr("id", function(d) { return d.properties.NAME; })
 	.on("dblclick.zoom", cityClicked)
 	.on("click", function(city){
+		if(!currentUser){
+			return;
+		}
 		selectLocation(city);
-        popupAnn();
+        popupAnn(city);
 	})
 	.attr("class", "place");
 
@@ -403,8 +406,8 @@ function getAbsoluteBounds() {
 	return [[xcenter, ycenter], [(width / 2) / transforms.scale[1], (height / 2) / transforms.scale[1]]];
 }
 
-function popupAnn(){
- 	if(selectedLocation===undefined ||selectedLocation===null ){
+function popupAnn(city){
+ 	if(selectedLocation===undefined ||selectedLocation===null){
  		return;
  	}
        	var mouseX,mouseY,windowWidth,windowHeight;
@@ -459,5 +462,6 @@ function popupAnn(){
 	    el("location-div").style.top = position[1]+"px";
 	    el("location-div").style.display = "block";
 	    el("location-div" ).onmouseleave = function() {
-  	    	el("location-div").style.display = "none";};
-		}
+  	    	//el("location-div").style.display = "none";
+  	    };
+ }

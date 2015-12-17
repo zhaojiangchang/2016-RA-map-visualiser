@@ -87,7 +87,8 @@ input,label {
 	width: 285px;
 	height: 200px;
 	overflow: scroll;
-	background-color : #ffffff;
+	background-color : #FFF8DC;
+	border-color:black;
 }
 /* Annotation stuff */
 #delete-button {
@@ -308,6 +309,7 @@ input,label {
 	/* text */
 	color: #f3f3f3;
 	font-size: 1.2em;
+	display:none;
 }
 
 #stop-insert-button {
@@ -468,6 +470,10 @@ input,label {
 	width: 19%;
 	height: 20%;
 }
+#annInput{
+	background-color: #FFF8DC;
+	width: 80%;
+}
 #annotation-input-container{
 	width: 80%;
 }
@@ -508,6 +514,13 @@ input,label {
     color:black;
 
 }
+#exitPopup{
+    padding: 0;
+    border: none;
+    background: none;	
+    color:black;
+
+}
 select{
 	width: 50%;
 }
@@ -525,5 +538,8 @@ select{
 #notifi-selector-div{
 	position: absolute;
 	min-width: 90%;
-
+}
+#uploadFile{
+	position: absolute;
+	width:100%;
 }

@@ -369,6 +369,8 @@ function pausePlayback(exploration, cb){
 
 	if (exploration.hasAudio()){
 		audioElem.pause();
+		el("insert-button").style.display = "block";
+
 	}
 
 	updatePlaybackStopped();

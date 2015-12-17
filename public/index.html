@@ -60,6 +60,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
 <body>
     <div id="location-div" class="location-pane">
+    	<button id="exitPopup" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
+					<font size = "3" face = "Arial Black">
+					<span style = "color:red">X</span>
+				</font>
+		</button>
 				<h2 id="location-title"></h2>
 				<ul id="location-info">
 					<!-- script will insert elements here -->
@@ -78,7 +83,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 					<button id="save-ann-button"class="btn btn-primary  btn-xs">Save Annotation</button>
 					<button id="remove-img-button"class="btn btn-primary btn-xs">Remove Preview Image</button>
 					<p></p>
-					<span class="btn btn-success btn-file" onchange="onFileSelected(event)">Browse <input type="file"></span><p></p>
+					<div>
+					<input type="file" id = "uploadFile" class="btn btn-success btn-file">
+						<!-- <span class="btn btn-success btn-file" >Browse <input id = "uploadFile" type="file"></span> -->
+					</div>
 					<div id="display-city-image"></div>
 
 					<div id="preview-city-img"></div>
@@ -206,7 +214,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			<div id="selectedExplNameDivId"></div>
 			<input type="submit" id="record-voice" style="display: none;"
 				value="Start Recording">
-			<button type='button' id="submit-shared-file">Send</button>
+			<button type='button' id="submit-shared-file" class="btn btn-primary btn-sm">Send</button>
 			<p id="message-send-identify"></p>
 			<div id="show-messages-div">
 				<div id="text-message-div">
@@ -259,10 +267,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				id='audio-source'></select>
 		</div>
 	<audio id="exploration-audio"></audio>
-	<script>
-	 var w = $(window).width();
- 			$("#notifi-selector-div").css("width", w*0.19);
-	</script>
 	<script src="js/GUI.js"></script>
 	<script src="js/map.js"></script>
 	<script src="js/user.js"></script>
