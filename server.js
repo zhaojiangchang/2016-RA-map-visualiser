@@ -299,60 +299,133 @@ app.post('/postAnnotation', function(req, res){
 	var info = annotation.info[annotation.info.length-1];
 	var textAndImg = info.textAndImg;
 	var timeStamp = new Date(info.textAndImg.timeStamp);
-	var location = info.cityName;
+	var locationName = info.cityName;
 	var userName = info.textAndImg.userName; // string
 	var text = info.textAndImg.text;
 
 	var path = "public/data/annotation/";
 	// makes annotation path if none exists.
 	ensureDirExists(path);
-	path += location + "/";
-	ensureDirExists(path);
+	path += locationName + "/";
+	//ensureDirExists(path);
 //	path += userName + "/";
 //	ensureDirExists(path);
 	//var fileName = path + userName + " " + timeStamp.getHours() + ":" + timeStamp.getMinutes() + ":" + timeStamp.getSeconds() + ".json";
-	var fileName = path + userName+ ".json";
-	if(!fs.existsSync(fileName)){
-		fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
-			if (err){ console.log("errooor: "+err); }
-		});
-	}
-	else{
-		var ann = JSON.parse(fs.readFileSync(fileName));
-		ann = annotation;
-		fs.writeFile(fileName, JSON.stringify(ann, null, 4), function(err) {
-			if (err){ console.log("errooor: "+err); }
-		});
-	}
-	res.sendStatus(200); // success code
-	return;
+	
+	if(!fs.existsSync(path)){
+			path = "public/data/annotation/";
+			var cities = fs.readdirSync(path);
+			for(var j =0; j<cities.length; j++){
 
+				var cityName = cities[j];
+				var cityPath = path + cityName +"/";
+				var cityAnns = fs.readdirSync(cityPath);
+				for (var annByName = 0; annByName<cityAnns.length; annByName++){
+					var name = cityAnns[annByName];
+					var userAnnPath = cityPath+name;
+					var userAnn = JSON.parse(fs.readFileSync(userAnnPath));
+					if(userAnn.location.geometry.coordinates[0]==annotation.location.geometry.coordinates[0] && userAnn.location.geometry.coordinates[1]==annotation.location.geometry.coordinates[1] ){
+						path = path+locationName+"/";
+						for(var l = 0; l<userAnn.info.length; l++){
+							annotation.info.push(userAnn.info[l]);
+						}
+						fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
+							if (err){ console.log("errooor: "+err); }
+						});
+						fs.renameSync(cityPath, path);
+						res.sendStatus(200); // success code
+						return;
+					}
+				}
+			}			
+			console.log("path not exist")
+			path = "public/data/annotation/"+locationName+"/";
+			ensureDirExists(path);
+			console.log(path)
+			var fileName = path + userName+ ".json";
+			fs.writeFile(fileName, JSON.stringify(annotation, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
+			res.sendStatus(200); // success code
+			return;
+		}
+		
+	else{
+		var path = "public/data/annotation/";
+			path += locationName + "/"+ userName+ ".json";
+		if(!fs.existsSync(path)){
+			fs.writeFile(path, JSON.stringify(annotation, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
+			res.sendStatus(200); // success code
+			return;
+		}
+		else{
+			var ann = JSON.parse(fs.readFileSync(path));
+			ann.location = annotation.location;
+			ann.info = annotation.info;
+			fs.writeFile(path, JSON.stringify(ann, null, 4), function(err) {
+				if (err){ console.log("errooor: "+err); }
+			});
+			res.sendStatus(200); // success code
+			return;
+		}
+	}
 });
 
 //retrieves and sends all annotations for a specified location
 app.get("/getAnnotations", function(req, res){
 	console.log("get");
-
-	var locationName = req._parsedUrl.query; // data is appended to the URL
+	var info = req._parsedUrl.query; // data is appended to the URL
+	info = decodeURI(info);	
+	var infoArray = info.split(" ");
+	var locationName = infoArray[0].substr(1);
+	var coordinates = [parseFloat(infoArray[1]), parseFloat(infoArray[2].substring(0, infoArray[2].length-1))];
 	console.log("retrieving annotations for: " + locationName);
-
 	var path = "public/data/annotation/";
 	ensureDirExists(path);
-	path += locationName + "/";
-	ensureDirExists(path);
-
-	var annotationCityByName = fs.readdirSync(path);
+	path += locationName + "/";	
 	var annotations = [];
+	if(!fs.existsSync(path)){
+		path = "public/data/annotation/";
+		var cities = fs.readdirSync(path);
+		var renameFolder = false;
+		for(var j =0; j<cities.length; j++){
+
+			var cityName = cities[j];
+			console.log(cityName)
+			var cityPath = path + cityName +"/";
+			var cityAnns = fs.readdirSync(cityPath);
+			for (var annByName = 0; annByName<cityAnns.length; annByName++){
+				var userName = cityAnns[annByName];
+				var userAnnPath = cityPath+userName;
+				var userAnn = JSON.parse(fs.readFileSync(userAnnPath));
+				if(userAnn.location.geometry.coordinates[0]==coordinates[0] &&userAnn.location.geometry.coordinates[1]==coordinates[1] ){
+					path = path+locationName+"/";
+					fs.renameSync(cityPath, path);
+					renameFolder = true;
+					break;
+				}
+			}
+			if(renameFolder){
+				break;
+			}
+		}
+		if(!renameFolder){
+			res.send(annotations);
+			return;
+		}
+	}
+	var annotationCityByName = fs.readdirSync(path);
 	for(var i = 0; i< annotationCityByName.length; i++){
 		var filename = annotationCityByName[i];
 		var annotation = JSON.parse(fs.readFileSync(path + filename));
 		annotations.push(annotation);
 	}
-//	annotations.sort(function(a, b){ // by date
-//	return new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime();
-//	});
 
-	res.send(JSON.stringify(annotations));
+
+
+	res.send(annotations);
 
 });
 
