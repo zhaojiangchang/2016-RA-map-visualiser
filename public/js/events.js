@@ -37,6 +37,7 @@ selectedImgFile = null,
 voiceMessageRecording = false,
 voiceMessageData = null;
 
+
 //add onclick listener - when click guest user image to assign predefined user name and password
 guestUsers.forEach(function(userName){
 	el(userName).onclick= function() {
@@ -48,11 +49,23 @@ guestUsers.forEach(function(userName){
 
 //=================================================
 //================== sidebarMenu ==================
+$(document).ready(function(){
 el('login-menuBar').addEventListener("click", function(){
-	el("menuBar-info").style.display = "block";
-	el("usersLogin").style.display = "block";
-	el("exploration").style.display = "none";
-	el("message").style.display = "none";
+	if($('#login-menuBar').text()=="Sign In"){
+		el("menuBar-info").style.display = "block";
+		el("usersLogin").style.display = "block";
+		el("exploration").style.display = "none";
+		el("message").style.display = "none";
+	}
+	else{
+		selectedLocation = null;
+		if (!explRecording){
+			logout(currentUser);
+			$('#login-menuBar').text("Sign In");
+			el("menuBar-info").style.display = "none";
+		}
+	}
+	
 });
 el("exploration-menuBar").addEventListener("click", function(){
 	if(!currentUser){
@@ -67,12 +80,16 @@ el("message-menuBar").addEventListener("click", function(){
 	if(!currentUser){
 		return;
 	}
+	
 	if(el("message-menuBar").style.background === "red"){
 		el("notification").style.display = "block";
 		showListNotifications();
+		el("notification-selector").style.display = "block";
+
 	}
 	else{
 		el("notification").style.display = "none";
+		el("notification-selector").style.display = "none";
 	}
 	el("menuBar-info").style.display = "block";
 	el("exploration").style.display = "none";
@@ -82,6 +99,7 @@ el("message-menuBar").addEventListener("click", function(){
 el("exitMenuBarInfo").onclick = function(){
 	el("menuBar-info").style.display = "none";
 }
+});
 //=================================================
 //========= exploration controls ==================
 
@@ -133,6 +151,7 @@ playExplButton.on('click', function () {
 		resumePlayback(selectedExploration);
 	}
 	else {
+		palyExplNotification = false;
 		startPlayback(selectedExploration);
 	}
 });
@@ -216,21 +235,21 @@ newAccount.onclick = function(){
 // });
 
 //remove exploration from selector box, not delete from user's folder
-removeNotification.addEventListener("click", function(){
-	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
-	selected.isNew = false;
-	setExplorationIsOld(selected);
-	checkTextMessages();
-	deselectExploration();
-});
+// removeNotification.addEventListener("click", function(){
+// 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
+// 	selected.isNew = false;
+// 	setExplorationIsOld(selected);
+// 	checkTextMessages();
+// 	deselectExploration();
+// });
 
 //play button for notification - play without set expl to old
-quickplayNotification.addEventListener("click", function(){
-	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
-	startPlayback(selected);
-	selected.isNew = true;
-	checkTextMessages();
-});
+// quickplayNotification.addEventListener("click", function(){
+// 	var selected = currentUser.getSharedExploration()[notificationSelector.options[notificationSelector.selectedIndex].value];
+// 	startPlayback(selected);
+// 	selected.isNew = true;
+// 	checkTextMessages();
+// });
 
 //===========================================
 //=========== annotation ====================

@@ -222,6 +222,9 @@ function attemptLogin(name, pw){
 
 //logs the user in, makes all of the user's file accessible
 function login(name){
+	if($('#login-menuBar').text()=="Sign In"){
+		$('#login-menuBar').text("Sign Out");
+	}
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
 	// el("share-file").style.display = "block";

@@ -327,10 +327,9 @@ function startPlayback(exploration){
 		playAudio(exploration.getAudio());
 	}
 	// update to show exploration has been played
-	if(currentUser.getExploration(exploration.timeStamp)){
+	if(currentUser.getExploration(exploration.timeStamp) && !palyExplNotification){
 		setExplorationIsOld(exploration);
 	}
-	exploration.isNew = false;
 
 	// updates GUI and globals
 	updatePlaybackStarted();

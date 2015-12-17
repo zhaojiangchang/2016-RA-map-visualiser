@@ -42,7 +42,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 <script src="lib/topojson.v1.min.js"></script>
 <script src="lib/jquery.min.js"></script>
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet"
+     href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+<link rel="stylesheet"
+      href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <style>
+
+
         body {
             background-color: #FFE59F;
         }
@@ -94,13 +103,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 		</div>
 	</div>
 <div id="menuBar">
+	<div id = "title" contenteditable = "true">
+	<b>
+	<font size = "4" face = "Lucida Sans">
+		<span style = "color:#556B2F">Map Visualisation</span>
+	</font>
+	</b>
+	</div>
+
+	<!-- <div id = "menuBarButtons" class = "menuBarButtons"> -->
+	 	
 	<div class="btn-group">
-	  <button type="button" id = "login-menuBar" class="btn btn-primary btn-sm">Login</button>
+	  <button type="button" id = "login-menuBar" class="btn btn-primary btn-sm">Sign In</button>
 	  <button type="button" id = "message-menuBar" class="btn btn-primary btn-sm">Message</button>
 	  <button type="button" id = "exploration-menuBar" class="btn btn-primary btn-sm">Exploration</button>
 	</div>
+	<!-- </div> -->
+
 	<div id= "menuBar-info" style="display: none;">
-		<button id="exitMenuBarInfo" type="button" class="btn btn-primary btn-md"style = "height: 32px;"> Close</button>
+		<button id="exitMenuBarInfo" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
+					<font size = "3" face = "Arial Black">
+					<span style = "color:red">X</span>
+				</font>
+		</button>
 		<div id="usersLogin" style="display: none;">
 				<div id="user-buttons">
 					<h3>
@@ -163,16 +188,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 		<div id="message" style="display: none;">
 
 			<h3>
-				<label for="user-input" id="to-label">Send to:</label>
+				<label for="user-input" id="to-label">Message Send to:</label>
 			</h3>
 			<p></p>
 			<input type="text" id="shared-with" name="user"
-				placeholder="Username" /> <select id="sendOption" size="0"
-				style="display: inline-block;" onchange="selectedSendInfoOption();">
-				<option id="sendExpl" value="select" disabled selected>Enter Username First</option>
-				<option id="sendExpl" value="exploration">Send Exploration</option>
-				<option id="sendExpl" value="text">Send Text</option>
-				<option id="sendExpl" value="voice">Send Voice</option>
+				placeholder="Username" />
+				<select id="sendOption" size="4"
+				style="display: inline-block; background-color:#FFF8DC;" onchange="selectedSendInfoOption();">
+					<option id="sendExpl" value="select" disabled selected>Enter Username First</option>
+					<option id="sendExpl" value="exploration">Send Exploration</option>
+					<option id="sendExpl" value="text">Send Text</option>
+					<option id="sendExpl" value="voice">Send Voice</option>
 			</select>
 			<div id="text-message-input-div" style="display: none;">
 				<textarea id="text-message-input" style="width:90%" rows="5"></textarea>
@@ -187,7 +213,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 					<h3>
 						<label for="user-messages">Messages From:</label>
 					</h3>
-					<select id="messageFromOption" size="0"
+					<select id="messageFromOption" size="1"
 						onchange="selectedMessageSenderOption();">
 						<option id="messageFrom1" value="select" disabled selected>Select a sender</option>
 					</select>
@@ -198,27 +224,31 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 					<h3>
 						<label for="user-audio-messages">Audio Messages From:</label>
 					</h3>
-					<select id="audioMessageFromOption" size="0"
-						onchange="selectedAudioMessageSenderOption();">
-						<option id="audio-message-from" value="select" size = "5"disabled selected>Select a sender</option>
-					</select>
-					<div id="audio-messages-list"></div>
-
+					<select id="audioMessageFromOption" size="1"
+							onchange="selectedAudioMessageSenderOption();">
+							<option id="audio-message-from" value="select" size = "0">Select a sender</option>
+						</select>
+					<div id = "audioMessageBoder"style="overflow-y: scroll;">
+						<div id="audio-messages-list"></div>
+					</div>
 				</div>
 			</div>
-						<div id = "notification" style="display: none;">
+			<div id = "notification" style="display: none; color: red">
+					<h3>
+						<label for="notification-messages">Notification:</label>
+					</h3>
 					<div id="notification-container" class="notification-container"></div>
-					<div>
+				
+					<div id = "notifi-selector-div">
+						<select id="notification-selector" class="notification-elements"style="overflow: scroll;"
+							size="3">					<!-- 		<div>
 						<input id="remove-notification" class="notification-elements"
 							type="image" src="data/image/delete.png" alt="javascript button">
-					</div>
-					<div>
 						<input id="quickplay-notification" class="notification-elements"
 							type="image" src="data/image/play.jpeg" alt="javascript button">
-					</div>
-					<div>
-						<select id="notification-selector" class="notification-elements"style="overflow-y: scroll; width:90%"
-							size="3"></select>
+					</div> -->
+					</select>
+
 					</div>
 			</div>
 		</div>
@@ -229,7 +259,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				id='audio-source'></select>
 		</div>
 	<audio id="exploration-audio"></audio>
-
+	<script>
+	 var w = $(window).width();
+ 			$("#notifi-selector-div").css("width", w*0.19);
+	</script>
 	<script src="js/GUI.js"></script>
 	<script src="js/map.js"></script>
 	<script src="js/user.js"></script>

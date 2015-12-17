@@ -32,9 +32,7 @@ showPathButton = el("show-path");
 //-------------------------------
 
 var IMAGE_PATH = "data/image/";
-
-
-
+var palyExplNotification = false;
 //updates elements in the side bar
 function updateSideBar(){
 	updateUserButtons(currentUser);
@@ -214,13 +212,13 @@ function updateNotifications(){
 	// show notification message
 	if(newExplCount>0 ||newMessageCount||newAudioMessageCount>0){
 			el("message-menuBar").style.background = "red";
-		// resetVisibility(notificationContainer,"visible");
+		 resetVisibility(el("notification"),"visible");
 		// $("#notification-container").html( "Have new notificaiton.");
 		// notificationContainer.style.cursor = "pointer";
 	}
 	else{
 		el("message-menuBar").style.background = "#337ab7";
-		// resetVisibility(notificationContainer,"visible");
+		 resetVisibility(el("notification"),"hidden");
 		// $("#notification-container").html(" No new notification.");
 		// notificationContainer.style.cursor = "not-allowed";
 	}
@@ -237,27 +235,26 @@ function showListNotifications(){
 
 	var newSharedExpls = currentUser.getSharedExploration();
 	var hasNewNoti = false;
-	var newMessages = [];
+	var newTextMessages = [];
 	var newAudioMessages = [];
 	if(currentUser.haveNewMessages()) {
-		newMessages = currentUser.newMessages;
+		newTextMessages = currentUser.newMessages;
 	}
 	if(currentUser.haveNewAudioMessages()){
 		newAudioMessages = currentUser.newAudioMessages;
 	}
 
 	// if has new shared exploration append to notificationSelector
-	if(newSharedExpls.length>0 || newMessages.length>0 ||newAudioMessages.length>0){
+	if(newSharedExpls.length>0 || newTextMessages.length>0 ||newAudioMessages.length>0){
 
-		if(newMessages.length>0){
-			newMessages.forEach(function(message, index){
+		if(newTextMessages.length>0){
+			newTextMessages.forEach(function(message, index){
 				var newOption = document.createElement('option');
 				newOption.setAttribute("id", currentUser.name+"Message"+ index);
 				newOption.value = index;
 				var messageName = "Txt Msg: "+message.from + " "+makeShortTimeFormat(new Date(message.timeStamp));
 				newOption.innerHTML = messageName;
 				newOption.onclick  = function(){
-					//TODO: show message
 					setMessageIsOld(message);
 					addOptions(message);
 				};
@@ -275,8 +272,11 @@ function showListNotifications(){
 					var explorationName = "Expl: "+ expl.name;
 					newOption.innerHTML = explorationName;
 					newOption.onclick  = function(){
+						palyExplNotification = true;
 						stopRecording();
 						selectExploration(expl);
+						startPlayback(selectedExploration);
+						updateNotifications();
 					};
 					notificationSelector.appendChild(newOption);
 					hasNewNoti = true;
@@ -824,7 +824,8 @@ window.setInterval(function(){
 		updateExplorationChooser();
 	}
 	if(selectedLocation!==null){
-		getAnnotationFromLocalServer(selectedLocation);
+		//getAnnotationFromLocalServer(selectedLocation);
+		selectedLocation=null;
 	}
 	checkTextMessages();
 	checkAudioMessages();
@@ -847,13 +848,13 @@ function resetVisibility(idVar, state){
 
 function hideNotificationButtons(){
 	resetVisibility(notificationSelector, "hidden");
-	resetVisibility(removeNotification, "hidden");
-	resetVisibility(quickplayNotification, "hidden");
+	// resetVisibility(removeNotification, "hidden");
+	// resetVisibility(quickplayNotification, "hidden");
 }
 function showNotificationButtons(){
 	resetVisibility(notificationSelector, "visible");
-	resetVisibility(removeNotification, "visible");
-	resetVisibility(quickplayNotification, "visible");
+	// resetVisibility(removeNotification, "visible");
+	// resetVisibility(quickplayNotification, "visible");
 }
 
 //this function called once showPathButton clicked (event.js)
