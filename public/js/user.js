@@ -227,8 +227,9 @@ function login(name){
 	}
 	currentUser = new User(name);
 	loadAllExplorations(name, gotExplorations);
+	el("menuBarInfoTitle-message").innerHTML = "Welcome "+currentUser.name;
+	el("menuBarInfoTitle-exploration").innerHTML = "Welcome "+currentUser.name;
 	// el("share-file").style.display = "block";
-	el("location-div").style.display = "none";
 	function gotExplorations(allExplorations){
 		currentUser.setExplorations(allExplorations);
 		updateSideBar();
@@ -400,7 +401,6 @@ function resetShareDiv(){
 	el("showTextArea").innerHTML = '';
 	//el("share-file").style.display = "none";
 	el("messageFromOption").value = 'select';
-	el("location-div").style.display = "none";
 	while(el("messageFromOption").firstChild){//remove old labels
 		//if(el("messageFromOption").value!='select')
 		el("messageFromOption").removeChild(el("messageFromOption").firstChild);

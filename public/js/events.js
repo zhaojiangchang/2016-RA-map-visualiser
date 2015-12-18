@@ -96,13 +96,16 @@ $(document).ready(function(){
 		el("usersLogin").style.display = "none";
 		el("message").style.display = "block";
 	});
-	el("exitMenuBarInfo").onclick = function(){
+	el("menuBarInfoClose-exploration").onclick = function(){
 		el("menuBar-info").style.display = "none";
 	}
-	el("exitPopup").onclick = function(){
+	el("menuBarInfoClose-message").onclick = function(){
+		el("menuBar-info").style.display = "none";
+	}
+	el("popupClose").addEventListener("click",function(){
 		el("location-div").style.display = "none";
 		
-	}
+	});
 });
 
 //=================================================
@@ -158,6 +161,7 @@ playExplButton.on('click', function () {
 	else {
 		palyExplNotification = false;
 		startPlayback(selectedExploration);
+		el("location-div").style.display = "none";
 	}
 });
 
@@ -270,11 +274,14 @@ removeImgButton.addEventListener('click', function(){
 //save annotation
 saveAnnButton.addEventListener('click', function(){
 	var annInput = el('annInput').value;
+		console.log(annInput)
 	if(annInput === "")	{
+		console.log("null ann")
 		return;
 	}
 	submitAnnotation(annInput);
 	selectedImgFile = null;
+	el("preview-city-img").style.pointerEvents = 'none';
 });
 
 //==========================================
@@ -332,7 +339,7 @@ $("#uploadFile").change(function () {
 		selectedFile = [];
 		slashIndex = fileName.lastIndexOf(".");
 
-		if (fileName.substring(slashIndex) === ".png") {
+		if (fileName.substring(slashIndex) === ".png" ||fileName.substring(slashIndex) === ".jpg") {
 				var selectedFile = file;
 				var reader = new FileReader();
 
@@ -353,13 +360,9 @@ $("#uploadFile").change(function () {
 				el("location-div").appendChild(previewImg);
 
 				selectedImgFile = imgtag;
-				if(inputFile.parent().hasClass("btn-success")) {
-					inputFile.parent().removeClass("btn-success");
-					inputFile.parent().addClass("btn-primary");
-				}
 		} 
 		else {
-			alert("png file only!")
+			alert("png or jpg file only!")
 		}
 	}
 });

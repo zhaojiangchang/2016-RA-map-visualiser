@@ -349,16 +349,16 @@ function addRecordingGraphics(){
 	var circleCX = borderWidth + circleRadius;
 	var circleCY = borderWidth + circleRadius;
 
-	svg.append("rect")
-	.attr({
-		id:    "record-border",
-		x:     0 + borderWidth/2,
-		y:     0 + borderWidth/2,
-		width: width - borderWidth*2,
-		height:height - bottomPadding - borderWidth*2})
-		.style("stroke", "red")
-		.style("fill", "none")
-		.style("stroke-width", borderWidth);
+	// svg.append("rect")
+	// .attr({
+	// 	id:    "record-border",
+	// 	x:     0 + borderWidth/2,
+	// 	y:     0 + borderWidth/2,
+	// 	width: width - borderWidth*2,
+	// 	height:height - bottomPadding - borderWidth*2})
+	// 	.style("stroke", "red")
+	// 	.style("fill", "none")
+	// 	.style("stroke-width", borderWidth);
 
 	svg.append('circle')
 	.attr({
@@ -375,10 +375,7 @@ function addRecordingGraphics(){
 
 //displays information about the location selected
 function displayLocationInfo(city){
-
-
-	el("location-title").innerHTML = city.properties.NAME;
-
+	el("popupTitle").innerHTML =city.properties.NAME;
 
 	var annotations = el("annotation-container");
 	annotations.innerHTML = null; // clear previous annotations
@@ -414,7 +411,7 @@ function getAnnotationFromLocalServer(city){
 		while(el("annotation-container").firstChild){//remove old labels
 			el("annotation-container").removeChild(el("annotation-container").firstChild);
 		}
-		el("location-div").style.display = "block";
+
 		// if response is "no_annotations", no annotations were found, so do nothing
 		if(annotations.length>0){
 			currentUser.setAnnotationsToNull();
@@ -432,6 +429,7 @@ function getAnnotationFromLocalServer(city){
 }
 //append annotations
 function appendAnnotations(annotations){
+	appendCityInfo(annotations[0]);
 	var container = document.createElement("div");
 	container.className = "annotation-container-2";
 
@@ -537,6 +535,35 @@ function appendAnnotations(annotations){
 	});
 }
 
+function appendCityInfo(annotations){
+	while(el("location-info").firstChild){//remove old labels
+			el("location-info").removeChild(el("location-info").firstChild);
+		}
+	var country = annotations.location.properties.SOV0NAME;
+	appendList("Country: "+country);
+	var timeZone = annotations.location.properties.TIMEZONE;
+	appendList("Time Zone:"+timeZone);
+	var capitalCity = null;
+	if(annotations.location.properties.ADM0CAP===1){
+			capitalCity = "Yes";
+		}
+		else{
+			capitalCity = "No"
+		}
+	appendList("Capital City: "+capitalCity);
+	var population = annotations.location.properties.POP_MIN;
+	appendList("Population: "+population);
+	var latitude = annotations.location.properties.LATITUDE;
+	appendList("Latitude: "+latitude);
+	var longitude = annotations.location.properties.LONGITUDE;
+	appendList("Longitude: "+longitude);
+}
+function appendList(list){
+	var li = document.createElement("li");
+	li.appendChild(document.createTextNode(list));
+	el("location-info").appendChild(li);
+	
+}
 //makes an annotation text input element.
 function makeAnnotationInput(container){
 	var annInput = document.createElement("input");
@@ -822,10 +849,6 @@ window.setInterval(function(){
 		loadAllExplorations(currentUser.name, gotExplorations);
 		enableAction(["delete"]);
 		updateExplorationChooser();
-	}
-	if(selectedLocation!==null){
-		//getAnnotationFromLocalServer(selectedLocation);
-		selectedLocation=null;
 	}
 	checkTextMessages();
 	checkAudioMessages();

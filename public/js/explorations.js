@@ -200,6 +200,7 @@ function startRecording() {
 	var mapCities = document.getElementsByClassName("place");
 	for (var i = 0; i < mapCities.length; i++){
 		var city = mapCities.item(i);
+
 		city.addEventListener("dblclick", recordTravel(city.id));
 	}
 
@@ -339,7 +340,6 @@ function startPlayback(exploration){
 
 //stops playback and resets position to the start
 function stopPlayback(exploration){
-	el("location-div").style.display = "none";
 	clearTimeout(playTimerID);
 
 	if (exploration.hasAudio()){
