@@ -93,7 +93,7 @@ d3.json("data/map/kaz.json", function(error, json) {
 });
 
 function hideAnnotation(){
-	el("location-div").style.display = "none";
+	//el("location-div").style.display = "none";
 }
 //cities
 d3.json("data/map/kaz_places.json", function(error, json){
@@ -110,7 +110,6 @@ d3.json("data/map/kaz_places.json", function(error, json){
 			return;
 		}
 		selectLocation(city);
-        popupAnn(city);
 	})
 	.attr("class", "place");
 
@@ -135,9 +134,15 @@ d3.json("data/map/kaz_places.json", function(error, json){
 
 //updates info bar to show information about the location and allows user to add annotations
 function selectLocation(city){
-	el("location-div").style.display = "block";
 	selectedLocation = city;
+	if(playing||explRecording){
+		el("location-div").style.display = "none";
+		return;
+	}
 	displayLocationInfo(city);
+	popupAnn(city);
+	el("location-div").style.display = "block";
+
 
 }
 
@@ -460,7 +465,6 @@ function popupAnn(city){
 	           position = [popupLeft, popupTop];
 	    el("location-div").style.left = position[0]+"px";
 	    el("location-div").style.top = position[1]+"px";
-	    el("location-div").style.display = "block";
 	    el("location-div" ).onmouseleave = function() {
   	    	//el("location-div").style.display = "none";
   	    };

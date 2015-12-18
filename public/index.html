@@ -60,12 +60,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 
 <body>
     <div id="location-div" class="location-pane">
-    	<button id="exitPopup" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
-					<font size = "3" face = "Arial Black">
-					<span style = "color:red">X</span>
+    <div class="popupTitle" id ="popupTitle" >Title</div> 
+    <div class="popupClose" id="popupClose">X</div>
+    	<!-- <button id="exitPopup" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
+					<font size = "2" face = "Arial Black">
+					<span style = "color:black">X</span>
 				</font>
-		</button>
-				<h2 id="location-title"></h2>
+		</button> -->
+				<!-- <h2 id="location-title"></h2> -->
 				<ul id="location-info">
 					<!-- script will insert elements here -->
 				</ul>
@@ -129,16 +131,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 	<!-- </div> -->
 
 	<div id= "menuBar-info" style="display: none;">
-		<button id="exitMenuBarInfo" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
+	 	
+<!-- 		<button id="exitMenuBarInfo" type="button" class="btn btn-primary btn-md"style = "height: 32px;">
 					<font size = "3" face = "Arial Black">
 					<span style = "color:red">X</span>
 				</font>
-		</button>
+		</button> -->
 		<div id="usersLogin" style="display: none;">
 				<div id="user-buttons">
-					<h3>
+					<h4>
 						<b>Select Guest User:</b>
-					</h3>
+					</h4>
 					<input type="image" id='obama' class="user-button"
 						src="data/image/userImage/obama.jpeg" alt="javascript button">
 					<input type="image" id='john' class="user-button"
@@ -148,7 +151,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 					<input type="image" id='will' class="user-button"
 						src="data/image/userImage/will.jpeg" alt="javascript button">
 				</div>
-				<h3>Or...</h3>
+				<h4>Or...</h4>
 				<div id="user-inputs">
 					<input type="text" id="username-input" placeholder='user-name'>
 					<input type="password" id="password-input" placeholder='password'>
@@ -160,8 +163,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				</div>
 			</div>
 			<div id ="exploration" style="display: none;">
+				<div class="menuBarInfoTitle" id ="menuBarInfoTitle-exploration" >Title</div> 
+   				<div class="menuBarInfoClose" id="menuBarInfoClose-exploration">X</div>
 				<div class="exploration-controls">
-					<h2>Exploration controls</h2>
+					<h4>
+						<label>Exploration controls</label>
+					</h4>
 					<div id="exploration-buttons">
 						<input type="image" id="record-exploration-button"
 							class="exploration-button" src="data/image/record-off.png"
@@ -188,16 +195,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 					<button id="show-path" class="btn btn-primary btn-sm">Show Path</button>
 					<br></br>
 					<div id="exploration-container">
-						<p>Select an Exploration to play:</p>
+					<h5>
+						<label>Select an Exploration to play:</label>
+					</h5>
 						<select id="exploration-selector" size="5" placeholder="Username"></select>
 					</div>
 				</div>
 			</div>
 		<div id="message" style="display: none;">
-
-			<h3>
+			<div class="menuBarInfoTitle" id ="menuBarInfoTitle-message" >Title</div> 
+   			<div class="menuBarInfoClose" id="menuBarInfoClose-message">X</div>
+			<h4>
 				<label for="user-input" id="to-label">Message Send to:</label>
-			</h3>
+			</h4>
 			<p></p>
 			<input type="text" id="shared-with" name="user"
 				placeholder="Username" />
@@ -218,9 +228,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 			<p id="message-send-identify"></p>
 			<div id="show-messages-div">
 				<div id="text-message-div">
-					<h3>
+					<h4>
 						<label for="user-messages">Messages From:</label>
-					</h3>
+					</h4>
 					<select id="messageFromOption" size="1"
 						onchange="selectedMessageSenderOption();">
 						<option id="messageFrom1" value="select" disabled selected>Select a sender</option>
@@ -229,9 +239,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 						style="overflow-y: scroll;" readonly></textarea>
 				</div>
 				<div id="audio-message-div">
-					<h3>
+					<h4>
 						<label for="user-audio-messages">Audio Messages From:</label>
-					</h3>
+					</h4>
 					<select id="audioMessageFromOption" size="1"
 							onchange="selectedAudioMessageSenderOption();">
 							<option id="audio-message-from" value="select" size = "0">Select a sender</option>
@@ -242,9 +252,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. -->
 				</div>
 			</div>
 			<div id = "notification" style="display: none; color: red">
-					<h3>
+					<h4>
 						<label for="notification-messages">Notification:</label>
-					</h3>
+					</h4>
 					<div id="notification-container" class="notification-container"></div>
 				
 					<div id = "notifi-selector-div">
